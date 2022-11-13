@@ -1,0 +1,40 @@
+{
+  "name": "@randajan/ram-db",
+  "version": "0.0.1",
+  "description": "Realtime database",
+  "repository": "randajan/ram-db",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "start": "set NODE_ENV=dev&& node ./index.js",
+    "build": "set NODE_ENV=prod&& node ./index.js"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@randajan/jet-core": "^3.0.8"
+  },
+  "devDependencies": {
+    "@randajan/simple-lib": "^2.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "database"
+  ],
+  "homepage": "https://github.com/randajan/ram-db",
+  "bugs": {
+    "url": "https://github.com/randajan/ram-db/issues"
+  },
+  "author": {
+    "name": "Jan Randa",
+    "email": "jnranda@gmail.com",
+    "url": "https://www.linkedin.com/in/randajan/"
+  }
+}
