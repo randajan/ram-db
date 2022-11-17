@@ -15,10 +15,17 @@ window.test = new Table("test", _ => {
         loadCols: tbl => {
             tblx = tbl;
             data = jet.copy(testData, true);
-            tbl.cols.load(data.shift());
+            tbl.cols.set([
+                {name:"col1", isPrimary:true},
+                {name:"col2", isReadonly:true},
+                "col3",
+                {name:"col4", init:"blaghul"},
+                {name:"col5", formula:_=>"hou", isVirtual:true}
+            ]);
+            //tbl.cols("c2").set(["isReadonly", "resetIf"], true);
         },
         loadRows: tbl => {
-            tbl.rows.load(data);
+            //tbl.rows.load(data);
         },
         getRow: rowId => data[rowId],
         setRow: (rowId, raws) => {

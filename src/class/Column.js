@@ -1,65 +1,82 @@
 import jet from "@randajan/jet-core";
-import Row from "./Row.js";
+import { addTrait } from "../helpers.js";
 
+const knownTraits = new Set();
 
-const columnTraits = {
-    readonly:"function",
-    resetIf:"function",
-    init:"function",
-    formula:"function",
-    ref:"function",
-    separator:"string"
+const traitRemote = (col, name)=>{
+    knownTraits.add(addTrait(col, name,
+        _=>col.table.cols[name] === col,
+        _=>col.table.cols[name] = col.name,
+        "is", "as"
+    ));
+};
+
+const traitPrivate = (col, name, type, keepDefault, validate)=>{
+    let _p = keepDefault ? type.jet.create() : undefined;
+    knownTraits.add(addTrait(col, name, 
+        _=>_p,
+        val=>{
+            col.table.cols.isNotState("loading", "set '"+String.jet.to(val)+"'", name);
+            val = (keepDefault || val != null) ? type.jet.to(val) : undefined;
+            if (validate) { validate(val); }
+            _p = val;
+            return col;
+        }
+    
+    ));
 };
   
 export default class Column extends jet.types.Plex {
 
     static is(col) { return col instanceof Column; }
 
-    constructor(table, name, id) {
-        const _p = {};
-
+    constructor(table, name) {
         super();
 
         const enumerable = true;
         Object.defineProperties(this, {
             table:{value:table},
-            id:{enumerable, value:id},
-            name:{enumerable, value:name},
-            virtual:{enumerable, get:_=>this.id == null},
-            primary:{enumerable, get:_=>table.cols.primary === this},
+            name:{enumerable, value:name}
         });
 
-        for (let t in columnTraits) {
-            const type = columnTraits[t];
+        traitRemote(this, "primary");
+        traitRemote(this, "label");
+        traitPrivate(this, "isReadonly", Function, false);
+        traitPrivate(this, "resetIf", Function, false);
+        traitPrivate(this, "init", Function, false);
+        traitPrivate(this, "formula", Function, false, val=>{
+            if (val != null || !this.isVirtual) { return }
+            this.throwError("virtual columns require formulas to be set"); 
+        });
+        traitPrivate(this, "ref", Function, false);
+        traitPrivate(this, "separator", String, true);
+        traitPrivate(this, "isVirtual", Boolean, true, val=>{
+            if (!val || this.formula) { return }
+            this.throwError("virtual columns require formulas to be set"); 
+        });
 
-            const set = val=>{
-                table.cols.isNotState("loading", name, "set "+t);
-                if (val == null) { delete _p[t]; return this; }
-                if (typeof val === type) { _p[t] = val; return this; }
-                if (type === "function") { _p[t] = _=>val; return this; }
-                this.throwError(`${t} expecting ${type}`);
+    }
 
-            }
+    set(name, schema) {
+        const isArray = !Object.jet.is(name);
+        jet.map(name, (value, id)=>{
+            const trait = isArray ? value : id;
+            if (!trait) { this.throwError(`trait name missing`); }
+            if (!knownTraits.has(trait)) { this.throwError(`unknown trait '${trait}'`); }
+            this[trait] = isArray ? schema : value;
+        });
+        return this;
+    }
 
-            Object.defineProperty(this, t, {get:_=>_p[t], set});
-            Object.defineProperty(this, "set"+String.jet.capitalize(t), {value:set});
-
-        }
-
-    }   
-
-    throwError(msg) { this.table.cols.throwError(this.name, msg);}
-
-    setPrimary() { this.table.cols.primary = this.name; return this; }
-    setLabel() { this.table.cols.label = this.name; return this; }
+    throwError(msg) { this.table.cols.throwError(msg, this.name);}
 
     toRaw(val) {
         const separator = this.separator;
-        if (!(separator && (Object.jet.is(val) || Array.jet.is(val)))) { return (!Row.is(val) || val.exist) ? val : ""; }
+        if (!(separator && Array.jet.is(val))) { return String.jet.to(val); }
         let raw = "";
         for (let i in val) {
-        const v = val[i];
-        if (v != "" && v != null) { raw += (raw ? separator : "") + v; }
+            const v = val[i];
+            if (jet.isFull(v)) { raw += (raw ? separator : "") + String.jet.to(v); }
         }
         return raw || null;
     }
@@ -75,7 +92,7 @@ export default class Column extends jet.types.Plex {
     }
 
     fetch(vals) {
-        return vals.hasOwnProperty(this.name) ? vals[this.name] : vals[this.id];
+        return jet.get(vals, this.name);
     }
 
     toJSON() {

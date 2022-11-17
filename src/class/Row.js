@@ -7,9 +7,9 @@ export default class Row extends jet.types.Plex {
 
     static is(row) { return row instanceof Row; }
   
-    constructor(table, gid, onSave) {
+    constructor(table, onSave) {
       const _p = {
-        removed:false,
+        state:"seed",
         dirty:true,
         steps:[],
       }
@@ -18,13 +18,13 @@ export default class Row extends jet.types.Plex {
       const now = _=>_p.steps[0] = _p.steps[0] || seed();
   
       const save = (saveError=true, resetOnError=true)=>{
-        if (_p.removed) { if (saveError) { this.throwError("was removed"); }; return this; }
+        if (this.removed) { if (saveError) { this.throwError("was removed"); }; return this; }
         _p.dirty = !onSave(this, now().changes, saveError);
         if (_p.dirty && resetOnError && _p.steps.length > 1) { _p.steps.shift(); _p.dirty = false; }
         return this;
       }
   
-      const remove = _=>{ if (this.exist && onSave(this)) { _p.dirty = false; _p.removed = true; } return this; } 
+      const remove = _=>{ if (this.exist && onSave(this)) { _p.dirty = false; _p.state = "removed"; } return this; } 
   
       const get = (col, missingError, step)=>{
         const c = table.cols(col, missingError); if (!c) { return; }
@@ -33,7 +33,7 @@ export default class Row extends jet.types.Plex {
   
       const set = (update, vals, autoSave=true, saveError=true, resetOnError=true)=>{
         if (!Object.jet.is(vals, false)) { this.throwError("set/update expecting type 'object' as first argument"); }
-        if (_p.removed) { if (saveError) { this.throwError("was removed"); }; return this; }
+        if (this.removed) { if (saveError) { this.throwError("was removed"); }; return this; }
         
         if (!_p.dirty) { _p.steps.unshift(seed()); }
         _p.dirty = now().set(vals, update);
@@ -48,12 +48,10 @@ export default class Row extends jet.types.Plex {
       const enumerable = true;
       Object.defineProperties(this, {
         table:{value:table},
-        gid:{enumerable, value:gid},
-        id:{enumerable, get:_=>table.rows.gidToId(gid) },
-        exist:{enumerable, get:_=>this.id != null },
-  
+        state:{enumerable, get:_=>_p.state},
+        exist:{enumerable, get:_=>_p.state === "exist" },
+        removed:{ enumerable, get:_=>_p.state === "removed"},
         dirty:{ enumerable, get:_=>_p.dirty },
-        removed:{ enumerable, get:_=>_p.removed},
         key:{ enumerable, get:_=>now().key },
         label:{ enumerable, get:_=>now().get(table.cols.label) },
         raws:{ enumerable, get:_=>[...now().raws] },
@@ -71,7 +69,9 @@ export default class Row extends jet.types.Plex {
   
     }
   
-    throwError(msg) { this.table.rows.throwError(this.key || JSON.stringify(this.raws), msg);}
+    throwError(msg) {
+      this.table.rows.throwError(msg, this.key || this.raws);
+    }
   
     toJSON() {
       return this.key

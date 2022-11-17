@@ -33,7 +33,7 @@ export default class RowData {
   get(col, autoCreateRef=true) {
     const { iid, row, raws, before, keying, setting } = this;
 
-    const { id, name, virtual, init, resetIf, formula, readonly } = col;
+    const { id, name, isVirtual, init, resetIf, formula, isReadonly } = col;
 
     const release = rowStack(iid, "get", name);
     if (!release.ok) { row.throwError(`get col '${name}' raised in loop `); }
@@ -41,10 +41,10 @@ export default class RowData {
     let raw = raws[id];    
     const self = _=>col.toVal(raw, keying ? undefined : row, autoCreateRef);
 
-    if (formula && (virtual || setting)) { raw = formula(row, self); } //formula
+    if (formula && (isVirtual || setting)) { raw = formula(row, self); } //formula
     else if (setting && !keying) {
       const bew = before ? before.raws[id] : undefined;
-      if (raw !== bew && readonly && readonly(row, self)) { raw = bew; } //revive value
+      if (raw !== bew && isReadonly && isReadonly(row, self)) { raw = bew; } //revive value
       if (!before ? (init && raw == null) : (resetIf && resetIf(row, self))) { raw = init ? init(row) : undefined; } //init or reset
     } //default
 

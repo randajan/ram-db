@@ -36,5 +36,8 @@
     "name": "Jan Randa",
     "email": "jnranda@gmail.com",
     "url": "https://www.linkedin.com/in/randajan/"
+  },
+  "dependencies": {
+    "@randajan/jet-core": "^3.0.9"
   }
 }

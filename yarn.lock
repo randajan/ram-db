@@ -7,10 +7,10 @@
   resolved "https://registry.yarnpkg.com/@esbuild/linux-loong64/-/linux-loong64-0.14.54.tgz#de2a4be678bd4d0d1ffbb86e6de779cde5999028"
   integrity sha512-bZBrLAIX1kpWelV0XemxBZllyRmM6vgFQQG2GdNb+r3Fkp0FOh1NJSvekXDs7jq70k4euu1cryLMfU+mTXlEpw==
 
-"@randajan/jet-core@^3.0.8":
-  version "3.0.8"
-  resolved "https://registry.yarnpkg.com/@randajan/jet-core/-/jet-core-3.0.8.tgz#d404b890e085dda1313f8d87a75550ed7a576662"
-  integrity sha512-Cxtz6qvXTzA4M7ZslKqhrmHYbRTrb4ZZIdyseD4OAnFsGSd72PcGiBUfKmtJNNUBiBetaQ2VVxBfPFMfQm2B6g==
+"@randajan/jet-core@^3.0.9":
+  version "3.0.9"
+  resolved "https://registry.yarnpkg.com/@randajan/jet-core/-/jet-core-3.0.9.tgz#1f21f3d80995a1e1a3ebb92581e1afef68bc847a"
+  integrity sha512-a8Kd6DtOV9sCotzqXo1ZFaxL95nqjJsY8biknOgUEHv62Xvmd7Tj+7b88fOHqOca9QzJlGHJH/dnzngoGnfxog==
 
 "@randajan/simple-lib@^2.0.0":
   version "2.0.0"

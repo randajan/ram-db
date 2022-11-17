@@ -1,56 +1,51 @@
 import jet from "@randajan/jet-core";
+import { addTrait } from "../helpers.js";
 import Column from "./Column.js";
+
+
+const traitLocal = (cols, name, getCol)=>{
+  let _p;
+  return addTrait(cols, name, _=>_p, col=>{
+    cols.isNotState("loading", "set "+name, col);
+    _p = getCol(col);
+  })
+}
 
 
 export default class Columns extends jet.types.Plex {
 
     constructor(table) {
       const _p = {
-        index:{}, //all columns
-        list:[], //all columns
-        raws:[] //only real
+        index:{},
+        list:[]
       }
   
-      const seed = (name, id)=>{
-        const c = new Column(table, name, id);
-        if (id != null) { _p.raws[id] = c; }
-        _p.list.push(_p.index[name] = c);
-        if (!_p.primary) { _p.primary = _p.label = name; }
-        return c;
+      const set = (name, schema, missingError=false, autoCreate=true)=>{
+        const isArray = !Object.jet.is(name);
+        
+        jet.map(name, (value, id)=>{
+          const objInArray = (isArray && Object.jet.is(value));
+          const col = String.jet.to(objInArray ? value.name : isArray ? value : id);
+
+          if (!col) { this.throwError("set failed column name missing", id); }
+          delete value.name;
+
+          let c = get(col, missingError);
+          if (!c && autoCreate) {
+            _p.list.push(c = _p.index[col] = new Column(table, col));
+            if (!this.primary) { this.primary = this.label = c; }
+          }
+
+          const traits = (isArray && !objInArray) ? schema : value;
+          if (c && traits) { c.set(traits); }
+        });
+
+        return this;
       };
   
       const get = (name, missingError=true)=>{
         if (_p.index[name]) { return _p.index[name]; }
-        if (_p.raws[name]) { return _p.raws[name]; }
-        if (missingError) { this.throwError(name, "missing!"); }
-      }
-  
-      const virtual = (name, formula, existError=true)=>{
-        const n = String.jet.to(name);
-        if (_p.index[n] || _p.raws[n]) {
-          if (existError) { this.throwError(n, "is allready exist"); }
-          return _p.index[n] || _p.raws[n];
-        }
-        if (!n) { this.throwError(n, "isn't valid name"); }
-        this.isNotState("loading", n, "virtual");
-        return seed(name).setFormula(formula);
-      }
-  
-      const load = (cols)=>{
-        return cols.map((name, id)=>this.isNotState("loading", name, "load") || seed(name, id));
-      }
-  
-      const setTrait = (trait, val)=>this.isNotState("loading", val, "set "+trait) || (_p[trait] = get(val).name);
-  
-      const setTraits = (name, traits, missingError=true)=>{
-        const c = _p.index[name] || _p.raws[name];
-        if (!c) { if (missingError) { this.throwError(name, "missing!"); } return false; }
-        Object.assign(c, traits);
-        return true;
-      }
-  
-      const exist = key=>{
-        return _p.index[key] != null;
+        if (missingError) { this.throwError("missing!", name); }
       }
   
       super(get);
@@ -59,29 +54,28 @@ export default class Columns extends jet.types.Plex {
       Object.defineProperties(this, {
         table:{value:table},
         index:{enumerable, get:_=>({..._p.index})},
-        list:{enumerable, get:_=>[..._p.list]},
-        raws:{enumerable, get:_=>[..._p.raws]},
-        count:{enumerable, get:_=>_p.raws.length},
-        exist:{value:exist},
+        list:{enumerable, get:_=>([..._p.list])},
+        count:{enumerable, get:_=>_p.list.length},
+        exist:{value:key=>_p.index[key] != null},
         get:{value:get},
-        virtual:{value:virtual},
-        load:{value:load},
-        primary:{enumerable, get:_=>_p.index[_p.primary], set:v=>setTrait("primary", v)},
-        label:{enumerable, get:_=>_p.index[_p.label], set:v=>setTrait("label", v)},
-        setTraits:{value:setTraits},
-        map:{value:(callback, indexed=false)=>jet.map(indexed ? _p.index : _p.list, callback, false)},
-        forEach:{value:(callback, indexed=false)=>jet.forEach(indexed ? _p.index : _p.list, callback, false)}
+        set:{value:set},
+        map:{value:(callback, sort)=>jet.map(sort ? _p.list.sort(sort) : _p.index, callback, false)},
+        forEach:{value:(callback, sort)=>jet.forEach(sort ? _p.list.sort(sort) : _p.index, callback, false)}
       });
+
+      traitLocal(this, "primary", get);
+      traitLocal(this, "label", get);
       
     }
   
-    throwError(col, msg) { this.table.throwError((col ? "column '"+col+"' " : "") + msg);}
-    isNotState(state, col, msg) {
-      if (this.table.state !== state) { this.throwError(col, `${msg} is allowed only in ${state} proces!`); }
+    throwError(msg, col) {
+      col = String.jet.to(col);
+      this.table.throwError((col ? "column '"+col+"' " : "") + msg);
     }
-  
-    setPrimary(name) { this.primary = name; return this; }
-    setLabel(name) { this.label = name; return this; }
+
+    isNotState(state, msg, col) {
+      if (this.table.state !== state) { this.throwError(`${msg} is allowed only in ${state} proces!`, col); }
+    }
   
     toJSON() {
       return this.list;

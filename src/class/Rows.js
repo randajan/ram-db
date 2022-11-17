@@ -5,14 +5,13 @@ import Row from "./Row.js";
 export default class Rows extends jet.types.Plex {
     constructor(table, getRow, setRow, lastId, onChange) {
       const _p = {
-        gid:0,
         index:{}, //all rows by key
-        raws:[], //only real rows
+        list:[], //all rows
         keys:{}, //gid => rawkeys
         ids:{} //gid => rawid
       }
   
-      onChange = Function.jet.is(onChange) ? onChange : null;
+      onChange = Function.jet.to(onChange);
   
       const onSave = (row, changes, saveError=true)=>{
   
@@ -39,50 +38,45 @@ export default class Rows extends jet.types.Plex {
   
         const result = false !== (!changes ? setRow(id) : dirty ? setRow(id, getRow(id).map((v, cid)=>changes[cid] !== undefined ? changes[cid] : v)) : true);
   
-        if (dirty && result && onChange) { onChange(row, event, changes); }
+        if (dirty && result) { onChange(row, event, changes); }
   
         return result;
       }
   
-      const seed = (vals, id, autoSave=true, saveError=true)=>{
-        const gid = _p.gid ++;
-        const r = new Row(table, gid, onSave);
-        if (id != null) { _p.ids[gid] = id; }
+      const seed = (vals, autoSave=true, saveError=true)=>{
+        const r = new Row(table, onSave);
         return vals ? r.set(vals, autoSave, saveError) : r;
       };
   
-      const exist = key=>{
-        return _p.index[key] != null;
-      }
-  
       const get = (key, missingError=true, autoCreate=true)=>{
         if (_p.index[key] || _p.raws[key]) { return _p.index[key] || _p.raws[key]; }
-        if (missingError) { this.throwError(key, "missing!"); }
+        if (missingError) { this.throwError("missing!", key); }
         return autoCreate ? seed() : null;
       }
-  
-      const load = rows=>rows.map((vals, id)=>this.isNotSeeding(JSON.stringify(vals), "load") || seed(vals, id, true, false));
+
       const push = (vals, create=true, update=true, autoSave=true, saveError=true)=>{
         const c = table.cols.primary;
         let row, key;
   
         if (!c.formula && !c.resetIf) { key = c.toRaw(c.fetch(vals)); } // quick key
-        if (key == null) { row = seed(vals, null, false); key = row.key; }
+        if (key == null) { row = seed(vals, false); key = row.key; }
   
-        if (key == null) { if (saveError) { this.throwError(JSON.stringify(vals), "missing key!"); } return; }
+        if (key == null) { if (saveError) { this.throwError("missing key!", vals); } return; }
         const tr = _p.index[key];
   
         if (update) {
           if (tr) { return tr.update(vals, autoSave, saveError); }
-          if (!create) { if (saveError) { this.throwError(key, "not found. Update failed!"); } return; }
+          if (!create) { if (saveError) { this.throwError("not found. Update failed!", key); } return; }
         }
   
         if (create) {
-          if (tr) { if (saveError) { this.throwError(key, "duplicate key. Create failed!"); } return; }
-          return !row ? seed(vals, null, autoSave, saveError) : autoSave ? row.save(saveError) : row;
+          if (tr) { if (saveError) { this.throwError("duplicate key. Create failed!", key); } return; }
+          return !row ? seed(vals, autoSave, saveError) : autoSave ? row.save(saveError) : row;
         }
   
       }
+
+      const load = rows=>rows.map(vals=>this.isNotSeeding("load", vals) || seed(vals, true, false));
   
       super(get);
   
@@ -93,22 +87,25 @@ export default class Rows extends jet.types.Plex {
         list:{enumerable, get:_=>_p.raws.filter(_=>_)},
         raws:{enumerable, get:_=>[..._p.raws]},
         count:{enumerable, get:_=>_p.raws.length},
-        exist:{value:exist},
+        exist:{value:key=>_p.index[key] != null},
         load:{value:load},
         get:{value:get},
         add:{value:(vals, autoSave=true, saveError=true)=>push(vals, true, false, autoSave, saveError)},
         update:{value:(vals, autoSave=true, saveError=true)=>push(vals, false, true, autoSave, saveError)},
         addOrUpdate:{value:(vals, autoSave=true, saveError=true)=>push(vals, true, true, autoSave, saveError)},
-        gidToId:{value:gid=>_p.ids[gid]},
         map:{value:(callback, indexed=false)=>jet.map(indexed ? _p.index : _p.list, callback, false)},
         forEach:{value:(callback, indexed=false)=>jet.forEach(indexed ? _p.index : _p.list, callback, false)}
       });
   
     }
   
-    throwError(row, msg) { this.table.throwError("row '"+row+"' " + msg); }
-    isNotSeeding(row, msg) {
-      if (this.table.state !== "seeding") { this.throwError(row, msg+" is allowed only in seeding proces!"); }
+    throwError(msg, row) {
+      row = String.jet.to(row);
+      this.table.throwError((row ? "row '"+row+"' " : "") + msg);
+    }
+
+    isNotSeeding(msg, row) {
+      if (this.table.state !== "seeding") { this.throwError(msg+" is allowed only in seeding proces!", row); }
     }
   
     toJSON() {
