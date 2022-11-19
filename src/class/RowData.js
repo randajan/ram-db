@@ -8,42 +8,39 @@ const rowStack = new StackControl();
 export default class RowData {
 
   constructor(row, before, isLock) {
-    this.iid = rowStack._nextIID  = (rowStack._nextIID || 0) + 1;
+    this.uid = rowStack._nextIID = (rowStack._nextIID || 0) + 1;
 
     this.row = row;
     this.before = before;
     this.key = before ? before.key : undefined;
-    this.raws = before ? [...before.raws] : [];
+    this.raws = before ? {...before.raws} : {};
+    this.isDirty = false;
+    this.changes = {};
+
 
     Object.defineProperties(this, {
       lock:{get:_=>isLock(this)},
-      keying:{get:_=>rowStack.has(this.iid, "key")},
+      keying:{get:_=>rowStack.has(this.uid, "key")},
       setting:{get:_=>rowStack.has("set")},
       seeding:{get:_=>row.table.state === "seeding"}
-    })
+    });
 
-  }
-
-  setChanges(cid) {
-    const dirty = (!this.before || this.raws[cid] !== this.before.raws[cid]);
-    if (dirty) { this.changes[cid] = this.raws[cid]; }
-    return dirty;
   }
 
   get(col, autoCreateRef=true) {
-    const { iid, row, raws, before, keying, setting } = this;
+    const { uid, row, raws, before, keying, setting } = this;
 
-    const { id, name, isVirtual, init, resetIf, formula, isReadonly } = col;
+    const { isVirtual, init, resetIf, formula, isReadonly } = col;
 
-    const release = rowStack(iid, "get", name);
-    if (!release.ok) { row.throwError(`get col '${name}' raised in loop `); }
+    const release = rowStack(uid, "get", col);
+    if (!release.ok) { row.throwError(`get col '${col}' raised in loop `); }
    
-    let raw = raws[id];    
+    let raw = raws[col];    
     const self = _=>col.toVal(raw, keying ? undefined : row, autoCreateRef);
 
     if (formula && (isVirtual || setting)) { raw = formula(row, self); } //formula
     else if (setting && !keying) {
-      const bew = before ? before.raws[id] : undefined;
+      const bew = before ? before.raws[col] : undefined;
       if (raw !== bew && isReadonly && isReadonly(row, self)) { raw = bew; } //revive value
       if (!before ? (init && raw == null) : (resetIf && resetIf(row, self))) { raw = init ? init(row) : undefined; } //init or reset
     } //default
@@ -52,37 +49,42 @@ export default class RowData {
   };
 
   set(vals, update=false) {
-    const { iid, row, raws, lock, seeding } = this;
+    const { uid, row, raws, lock } = this;
 
     if (lock) { row.throwError("unexpected set/update"); }
 
     const release = rowStack("set");
     //if (!release.ok) { row.throwError(`set raised in loop `); }
 
-    this.changes = [];
-    let dirty = false;
+    row.table.cols.map(col=>{
+      if (col.isVirtual) { return; }
+      const raw = col.fetch(vals);
+      if (raw !== undefined) { raws[col] = raw === "" ? null : col.toRaw(raw); }
+      else if (!update) { raws[col] = null; }
+    });
 
-    const cr = row.table.cols.raws;
-    const praws = [];
+    this.setChanges();
 
-    for (let c of cr) {
-      praws[c.id] = raws[c.id];
-      const raw = c.fetch(vals);
-      if (raw !== undefined) { raws[c.id] = raw === "" ? null : c.toRaw(raw); }
-      else if (!update) { raws[c.id] = null; }
-      //if (!seeding) { dirty = this.setChanges(c.id) || dirty; } should be useless
-    }
+    this.key = rowStack(uid, "key")(this.get(row.table.cols.primary));
 
-    if (!seeding) { for (let c of cr) {
-      const val = this.get(c, false);
-      raws[c.id] = c.toRaw(val);
-      dirty = this.setChanges(c.id) || dirty;
-    }}
-
-    this.key = rowStack(iid, "key")(this.get(row.table.cols.primary));
-
-    return release(dirty);
+    return release(this.isDirty);
   }
-  
+
+  setChanges() {
+    this.changes = {};
+    this.isDirty = false;
+    if (this.seeding) { return; } // no changes while seeding
+
+    const { row, before, raws, changes } = this;
+    row.table.cols.map(col=>{
+      if (col.isVirtual) { return; }
+      const val = this.get(col, false);
+      raws[col] = col.toRaw(val);
+      //is isDirty column
+      const isDirtyCol = (!before || raws[col] !== this.before.raws[col]);
+      if (isDirtyCol) { changes[col] = raws[col]; }
+      this.isDirty = this.isDirty || isDirtyCol;
+    });
+  }
 
 }

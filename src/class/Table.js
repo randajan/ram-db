@@ -19,7 +19,6 @@ export default class Table extends jet.types.Plex {
   }
 
     constructor(name, config) {
-      const { loadCols, loadRows, getRow, setRow, lastId, onChange } = Object.jet.to(config, name);
   
       const _p = {
         state:"pending",
@@ -29,12 +28,13 @@ export default class Table extends jet.types.Plex {
         if (_p[prop]) { return _p[prop]; }
         if (_p.state !== "pending") { this.throwError(`access to '${prop}' is restricted when table state is '${_p.state}'`); }
   
+        const { loadCols, loadRows, onChange } = Object.jet.to(config, this);
         _p.state = "loading";
         _p.cols = new Columns(this);
         if (loadCols) { loadCols(this); }
   
         _p.state = "seeding";
-        _p.rows = new Rows(this, getRow, setRow, lastId, onChange);
+        _p.rows = new Rows(this, onChange);
         if (loadRows) { loadRows(this); }
   
         _p.state = "ready";

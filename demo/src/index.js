@@ -8,33 +8,25 @@ const testData = [
 
 window.jet = jet;
 
-window.test = new Table("test", _ => {
-    let tblx, data;
+window.test = new Table("test", tbl => {
 
     return {
         loadCols: tbl => {
-            tblx = tbl;
             data = jet.copy(testData, true);
             tbl.cols.set([
-                {name:"col1", isPrimary:true},
-                {name:"col2", isReadonly:true},
-                "col3",
-                {name:"col4", init:"blaghul"},
-                {name:"col5", formula:_=>"hou", isVirtual:true}
+                {isPrimary:true},
+                {isReadonly:true},
+                2,
+                {init:"blaghul"},
+                {formula:_=>"hou", isVirtual:true}
             ]);
             //tbl.cols("c2").set(["isReadonly", "resetIf"], true);
         },
         loadRows: tbl => {
-            //tbl.rows.load(data);
+            tbl.rows.set(data);
         },
-        getRow: rowId => data[rowId],
-        setRow: (rowId, raws) => {
-            data[rowId] = raws || Array(tblx.cols.count);
-            return true;
-        },
-        lastId: () => data.length-1,
-        onChange:_=>{
-            console.log(jet.compare(data, testData, true));
+        onChange:(...info)=>{
+            console.log(...info);
         }
     }
 })

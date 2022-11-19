@@ -1,4 +1,5 @@
 import jet from "@randajan/jet-core";
+import { addTrait } from "../helpers.js";
 
 import RowData from "./RowData.js";
 
@@ -7,24 +8,45 @@ export default class Row extends jet.types.Plex {
 
     static is(row) { return row instanceof Row; }
   
-    constructor(table, onSave) {
+    constructor(table, onChange) {
       const _p = {
         state:"seed",
-        dirty:true,
+        isSeed:table.state === "seeding",
+        isDirty:false,
+        isRemoved:false,
         steps:[],
       }
-  
-      const seed = _=>new RowData(this, _p.steps[0], d=>d !== _p.steps[0]);
-      const now = _=>_p.steps[0] = _p.steps[0] || seed();
-  
-      const save = (saveError=true, resetOnError=true)=>{
-        if (this.removed) { if (saveError) { this.throwError("was removed"); }; return this; }
-        _p.dirty = !onSave(this, now().changes, saveError);
-        if (_p.dirty && resetOnError && _p.steps.length > 1) { _p.steps.shift(); _p.dirty = false; }
+
+      const step = _=>_p.steps[0] || (_p.steps[0] = seed());
+      const seed = _=>new RowData(this, _p.steps[0], d=>d !== step());
+
+      const onChangeHandler = (saveError, changes, onError)=>{
+        try {
+          onChange(this, step().key, changes);
+          _p.isDirty = false;
+          return true;
+        } catch (err) {
+          if (onError) { onError(); }
+          if (saveError) { this.throwError(err); }
+          return false;
+        }
+
+      }
+
+
+      const reset = _=>{
+        if (_p.steps.length < 2) { return this; }
+        if (_p.isDirty) { _p.steps.shift(); _p.isDirty = false; }
         return this;
       }
   
-      const remove = _=>{ if (this.exist && onSave(this)) { _p.dirty = false; _p.state = "removed"; } return this; } 
+      const save = (saveError=true, resetOnError=true)=>onChangeHandler(saveError, step().changes, resetOnError ? reset : null);
+
+      const remove = (saveError=true)=>{
+        if (this.isRemoved) { if (saveError) { this.throwError("was removed"); }; return false; }
+        if (!this.isReal || onChangeHandler(saveError)) { return _p.isRemoved = true; }
+        return true;
+      } 
   
       const get = (col, missingError, step)=>{
         const c = table.cols(col, missingError); if (!c) { return; }
@@ -33,39 +55,46 @@ export default class Row extends jet.types.Plex {
   
       const set = (update, vals, autoSave=true, saveError=true, resetOnError=true)=>{
         if (!Object.jet.is(vals, false)) { this.throwError("set/update expecting type 'object' as first argument"); }
-        if (this.removed) { if (saveError) { this.throwError("was removed"); }; return this; }
+        if (this.isRemoved) { if (saveError) { this.throwError("was removed"); }; return this; }
         
-        if (!_p.dirty) { _p.steps.unshift(seed()); }
-        _p.dirty = now().set(vals, update);
+        if (!_p.isDirty) { //new step if not isDirty
+          _p.steps.unshift(seed());
+          //limit steps count
+        } 
+        _p.isDirty = step().set(vals, update);
+
+        if (autoSave) { save(saveError, resetOnError); }
   
-        if (autoSave) { save(saveError); }
-  
-        return autoSave ? save(saveError, resetOnError) : this;
+        return this;
       }
   
-      super((col, missingError=true)=>get(col, missingError, now()));
+      super((col, missingError=true)=>get(col, missingError, step()));
   
       const enumerable = true;
       Object.defineProperties(this, {
         table:{value:table},
-        state:{enumerable, get:_=>_p.state},
-        exist:{enumerable, get:_=>_p.state === "exist" },
-        removed:{ enumerable, get:_=>_p.state === "removed"},
-        dirty:{ enumerable, get:_=>_p.dirty },
-        key:{ enumerable, get:_=>now().key },
-        label:{ enumerable, get:_=>now().get(table.cols.label) },
-        raws:{ enumerable, get:_=>[...now().raws] },
-        vals:{ enumerable, get:_=>table.cols.map(col=>now().get(col))},
+
+        isSeed:{enumerable, get:_=>_p.isSeed},
+        isDirty:{ enumerable, get:_=>_p.isDirty },
+        isRemoved:{ enumerable, get:_=>_p.isRemoved},
+        isReal:{enumerable, get:_=>table.rows.exist(this.key) },
+        key:{ enumerable, get:_=>(_p.isDirty && _p.steps.length > 1) ? _p.steps[1].key : step().key },
+        label:{ enumerable, get:_=>step().get(table.cols.label) },
+        raws:{ enumerable, get:_=>({...step().raws}) },
+        vals:{ enumerable, get:_=>table.cols.map(col=>step().get(col))},
   
         before:{ value:(col, missingError=true)=>get(col, missingError, _p.steps[1]) },
-        get:{ value:(col, missingError=true)=>get(col, missingError, now()) },
+        get:{ value:(col, missingError=true)=>get(col, missingError, step()) },
         
         set:{ value:(vals, autoSave=true, saveError=true)=>set(false, vals, autoSave, saveError) },
         update:{ value:(vals, autoSave=true, saveError=true)=>set(true, vals, autoSave, saveError) },
   
         remove:{ value:remove},
         save:{ value:save },
+        reset:{ value:reset }
       });
+
+      addTrait(this, "id", _=>_p.id, id=>{ _p.id = id; return this; });
   
     }
   

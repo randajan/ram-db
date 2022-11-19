@@ -21,13 +21,14 @@ export default class Columns extends jet.types.Plex {
       }
   
       const set = (name, schema, missingError=false, autoCreate=true)=>{
+
         const isArray = !Object.jet.is(name);
         
         jet.map(name, (value, id)=>{
           const objInArray = (isArray && Object.jet.is(value));
-          const col = String.jet.to(objInArray ? value.name : isArray ? value : id);
+          const col = String.jet.to(objInArray ? (value.name || id) : isArray ? value : id);
 
-          if (!col) { this.throwError("set failed column name missing", id); }
+          if (!col) { this.throwError("set failed column name missing", value); }
           delete value.name;
 
           let c = get(col, missingError);

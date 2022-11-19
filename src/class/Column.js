@@ -1,4 +1,5 @@
 import jet from "@randajan/jet-core";
+import { Table } from "../../dist/index.js";
 import { addTrait } from "../helpers.js";
 
 const knownTraits = new Set();
@@ -36,7 +37,8 @@ export default class Column extends jet.types.Plex {
         const enumerable = true;
         Object.defineProperties(this, {
             table:{value:table},
-            name:{enumerable, value:name}
+            name:{enumerable, value:name},
+            isReal:{enumerable, get:_=>!this.isVirtual}
         });
 
         traitRemote(this, "primary");
@@ -84,7 +86,7 @@ export default class Column extends jet.types.Plex {
     toVal(raw, row, autoCreateRef=true) {
         const { separator, ref } = this;
         const refName = (ref && row) ? ref(row) : null;
-            
+
         if (Array.jet.is(raw)) { raw = raw.join(separator); }
         if (!separator) { return !refName ? raw : Table.find(refName).rows(raw, false, autoCreateRef); }
         const list = raw ? String.jet.to(raw).split(separator) : [];
