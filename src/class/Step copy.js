@@ -2,13 +2,15 @@ import jet from "@randajan/jet-core";
 import StackControl from "./StackControl.js";
 
 
+let _nextUID = 0;
 
 const rowStack = new StackControl();
 
-export default class RowData {
+
+export default class Step {
 
   constructor(row, before, isLock) {
-    this.uid = rowStack._nextIID = (rowStack._nextIID || 0) + 1;
+    this.uid = _nextUID ++;
 
     this.row = row;
     this.before = before;
@@ -22,12 +24,11 @@ export default class RowData {
       lock:{get:_=>isLock(this)},
       keying:{get:_=>rowStack.has(this.uid, "key")},
       setting:{get:_=>rowStack.has("set")},
-      seeding:{get:_=>row.table.state === "seeding"}
     });
 
   }
 
-  get(col, autoCreateRef=true) {
+  async get(col, autoCreateRef=true) {
     const { uid, row, raws, before, keying, setting } = this;
 
     const { isVirtual, init, resetIf, formula, isReadonly } = col;
@@ -38,17 +39,17 @@ export default class RowData {
     let raw = raws[col];    
     const self = _=>col.toVal(raw, keying ? undefined : row, autoCreateRef);
 
-    if (formula && (isVirtual || setting)) { raw = formula(row, self); } //formula
+    if (formula && (isVirtual || setting)) { raw = await formula(row, self); } //formula
     else if (setting && !keying) {
       const bew = before ? before.raws[col] : undefined;
-      if (raw !== bew && isReadonly && isReadonly(row, self)) { raw = bew; } //revive value
-      if (!before ? (init && raw == null) : (resetIf && resetIf(row, self))) { raw = init ? init(row) : undefined; } //init or reset
+      if (row.rows.state !== "pending" && raw !== bew && isReadonly && isReadonly(row, self)) { raw = bew; } //revive value
+      if (!before ? (init && raw == null) : (resetIf && await resetIf(row, self))) { raw = init ? await init(row) : undefined; } //init or reset
     } //default
 
-    return release(self());
+    return release(await self());
   };
 
-  set(vals, update=false) {
+  async set(vals, update=false) {
     const { uid, row, raws, lock } = this;
 
     if (lock) { row.throwError("unexpected set/update"); }
@@ -56,29 +57,29 @@ export default class RowData {
     const release = rowStack("set");
     //if (!release.ok) { row.throwError(`set raised in loop `); }
 
-    row.table.cols.map(col=>{
+    await row.table.cols.forEach(col=>{
       if (col.isVirtual) { return; }
       const raw = col.fetch(vals);
       if (raw !== undefined) { raws[col] = raw === "" ? null : col.toRaw(raw); }
       else if (!update) { raws[col] = null; }
     });
 
-    this.setChanges();
+    await this.setChanges();
 
-    this.key = rowStack(uid, "key")(this.get(row.table.cols.primary));
+    this.key = rowStack(uid, "key")(await this.get(await row.table.cols.primary));
 
     return release(this.isDirty);
   }
 
-  setChanges() {
+  async setChanges() {
     this.changes = {};
     this.isDirty = false;
-    if (this.seeding) { return; } // no changes while seeding
+    if (this.row.rows.state !== "pending") { return; } // no changes while rows is pending
 
     const { row, before, raws, changes } = this;
-    row.table.cols.map(col=>{
+    await row.table.cols.forEach(async col=>{
       if (col.isVirtual) { return; }
-      const val = this.get(col, false);
+      const val = await this.get(col, false);
       raws[col] = col.toRaw(val);
       //is isDirty column
       const isDirtyCol = (!before || raws[col] !== this.before.raws[col]);

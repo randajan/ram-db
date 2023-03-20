@@ -11,15 +11,17 @@ export default class StackControl extends jet.types.Plex {
       const _index = {};
       let _length = 0;
   
-      getHash = Function.jet.is(getHash) ? getHash : (...a)=>a.join(":");
+      getHash = jet.isRunnable(getHash) ? getHash : (...a)=>a.join(":");
   
       const factory = f=>(...a)=>f(getHash(...a));
   
       const has = h=>!!_index[h];
       const set = h=>{
+        console.log("set", h);
         const r = (result, ifLast)=>{
           if (r.ok) { delete _index[h]; _length --; }
           if (!_length && ifLast) { ifLast(); }
+          console.log("unset", h);
           return result;
         }
   
@@ -27,6 +29,7 @@ export default class StackControl extends jet.types.Plex {
           _index[h] = true;
           r.id = _length ++;
         }
+        
         return r;
       };
   

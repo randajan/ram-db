@@ -8,10 +8,9 @@ export const addTrait = (obj, name, get, set, propertyPrefix="", setPrefix="")=>
     setPrefix = String.jet.capitalize(setPrefix);
 
     const property = propertyPrefix ? propertyPrefix + cname : name;
-    const setProperty = "set" + (setPrefix ? setPrefix : "") + cname;
 
     Object.defineProperty(obj, property, { get, set, enumerable:true });
-    Object.defineProperty(obj, setProperty, { value:set });
+    if (set && setPrefix) { Object.defineProperty(obj, setPrefix+cname, { value:set }); }
 
     return property;
 }

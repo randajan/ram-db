@@ -9,5 +9,5 @@ export default Table;
 export {
     Table,
     Row,
-    Column,
+    Column
 }

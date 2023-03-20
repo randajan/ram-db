@@ -1,89 +1,111 @@
 import jet from "@randajan/jet-core";
-import { addTrait } from "../helpers.js";
+import Collection from "./parts/Collection.js";
 import Column from "./Column.js";
 
+const columnTraits = {
+  isPrimary:Boolean,
+  isLabel:Boolean,
+  isReadonly:Function,
+  resetIf:Function,
+  init:Function,
+  formula:Function,
+  ref:Function,
+  separator:String,
+  isVirtual:Boolean
+};
 
-const traitLocal = (cols, name, getCol)=>{
-  let _p;
-  return addTrait(cols, name, _=>_p, col=>{
-    cols.isNotState("loading", "set "+name, col);
-    _p = getCol(col);
-  })
+const privateTraits = {
+  isPrimary:"primary",
+  isLabel:"label"
 }
 
+export default class Columns extends Collection {
 
-export default class Columns extends jet.types.Plex {
+    constructor(table, builder) {
+      const _p = {};
+      let _b; //bundle will be set by calling super
 
-    constructor(table) {
-      const _p = {
-        index:{},
-        list:[]
+      const setPrivateTrait = (scheme, key, trait, val)=>{
+        const prop = privateTraits[trait];
+        Object.defineProperty(scheme, trait, {enumerable:true, get:_=>_p[prop] === key});
+        if (!val) { return; }
+        if (_p[prop]) { throw Error(this.msg(`${prop} column is allready set as '${_p[prop]}'`, key)); }
+        _p[prop] = key;
       }
-  
-      const set = (name, schema, missingError=false, autoCreate=true)=>{
 
-        const isArray = !Object.jet.is(name);
-        
-        jet.map(name, (value, id)=>{
-          const objInArray = (isArray && Object.jet.is(value));
-          const col = String.jet.to(objInArray ? (value.name || id) : isArray ? value : id);
+      const createMask = (key, getScheme)=>new Column(this, key, getScheme, columnTraits);
+      const createScheme = (key, traits)=>{
+        const scheme = {};
+        traits = {...Object.jet.to(traits)};
 
-          if (!col) { this.throwError("set failed column name missing", value); }
-          delete value.name;
+        jet.forEach(columnTraits, (type, name)=>{
+          const raw = traits[name];
+          const val = (type !== Function || raw != null) ? type.jet.to(raw) : undefined;
 
-          let c = get(col, missingError);
-          if (!c && autoCreate) {
-            _p.list.push(c = _p.index[col] = new Column(table, col));
-            if (!this.primary) { this.primary = this.label = c; }
-          }
-
-          const traits = (isArray && !objInArray) ? schema : value;
-          if (c && traits) { c.set(traits); }
+          if (privateTraits[name]) { setPrivateTrait(scheme, key, name, val); }
+          else { scheme[name] = val; }
+          
+          delete traits[name];
         });
+
+        if (scheme.isVirtual && !scheme.formula) {
+          throw Error(this.msg("virtual column require formula to be set", key));
+        }
+
+        const unknownTraits = Object.keys(traits);
+
+        if (unknownTraits.length) {
+          throw Error(this.msg(`unknown trait${unknownTraits.length > 1 ? "s" : ""} '${unknownTraits.join("', '")}'`, key));
+        }
+
+        return scheme;
+      };
+
+      const onInit = (key, traits)=>{
+
+        const isArray = !Object.jet.is(key);
+        
+        jet.map(key, (value, id)=>{
+          const objInArray = (isArray && Object.jet.is(value));
+          const colKey = String.jet.to(objInArray ? (value.key || id) : isArray ? value : id);
+
+          delete value.key;
+
+          const colTraits = (isArray && !objInArray) ? traits : value;
+
+          _b.set(colKey, colTraits);
+
+        });
+
+        if (!_b.count) { throw Error(this.msg("at least one column is required")); }
+        if (!_p.primary) { _p.primary = _b.list[0].key; }
+        if (!_p.label) { _p.label = _b.list[0].key; }
 
         return this;
       };
-  
-      const get = (name, missingError=true)=>{
-        if (_p.index[name]) { return _p.index[name]; }
-        if (missingError) { this.throwError("missing!", name); }
-      }
-  
-      super(get);
-      
+
       const enumerable = true;
-      Object.defineProperties(this, {
-        table:{value:table},
-        index:{enumerable, get:_=>({..._p.index})},
-        list:{enumerable, get:_=>([..._p.list])},
-        count:{enumerable, get:_=>_p.list.length},
-        exist:{value:key=>_p.index[key] != null},
-        get:{value:get},
-        set:{value:set},
-        map:{value:(callback, sort)=>jet.map(sort ? _p.list.sort(sort) : _p.index, callback, false)},
-        forEach:{value:(callback, sort)=>jet.forEach(sort ? _p.list.sort(sort) : _p.index, callback, false)}
-      });
 
-      traitLocal(this, "primary", get);
-      traitLocal(this, "label", get);
+      super({
+        isSync:true,
+        createMask,
+        createScheme,
+        builder,
+        onInit,
+        bundleHook:bundle=>_b=bundle,
+        getErrMsg:(type, key)=>this.msg(type === "isMissing" ? "is missing!" : "columns builder couldn't be asynchronous", key),
+      },
+      {
+        table:{value:table},
+        primary:{enumerable, get:_=>{ this.init(); return this.get(_p.primary); }},
+        label:{enumerable, get:_=>{ this.init(); return this.get(_p.label); }},
+      });
       
     }
-  
-    throwError(msg, col) {
-      col = String.jet.to(col);
-      this.table.throwError((col ? "column '"+col+"' " : "") + msg);
-    }
 
-    isNotState(state, msg, col) {
-      if (this.table.state !== state) { this.throwError(`${msg} is allowed only in ${state} proces!`, col); }
-    }
-  
-    toJSON() {
-      return this.list;
-    }
-  
-    toString() {
-      return JSON.stringify(this.list);
+    msg(text, key) {
+      key = String.jet.to(key);
+      return this.table.msg((key ? " column '"+key+"' " : "") + text);
     }
   
   }
