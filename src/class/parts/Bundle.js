@@ -50,7 +50,7 @@ export default class Bundle {
 
     mapSync(byIndex, callback, sort) {
         const sorted = sort ? this.list.sort(sort) : this.list;
-        const stop = _=>stop.active=true;
+        const stop = val=>{ stop.active=true; return val; }
         const result = byIndex ? {} : [];
         let count = 0;
 

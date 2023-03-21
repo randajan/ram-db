@@ -1,14 +1,12 @@
 import jet from "@randajan/jet-core";
-import Collection from "./parts/Collection.js";
-import Row from "./Row.js";
-import Record from "./Record.js";
+import SchemaSync from "./parts/SchemaSync.js";
+
+const { solid, virtual } = jet.prop;
 
 let _nextPid = 1;
 
-export default class Rows extends Collection {
-    constructor(table, builder, onChange) {
-      return;
-      let _b; //bundle will be set by calling super
+export class RowsSync extends SchemaSync {
+    constructor(table, stream, onChange) {
 
       onChange = Function.jet.to(onChange);
 
@@ -77,31 +75,37 @@ export default class Rows extends Collection {
         //this.save();
       }
 
-      super({
-        isSync:false,
-        createMask,
-        createScheme,
-        builder,
-        onInit,
-        bundleHook:bundle=>_b=bundle,
-        getErrMsg:(type, key)=>this.msg("is missing!", key),
-      },
-      {
-        table:{value:table},
-        add:{value:(vals, autoSave=true, saveError=true)=>push(vals, true, false, autoSave, saveError)},
-        update:{value:(vals, autoSave=true, saveError=true)=>push(vals, false, true, autoSave, saveError)},
-        addOrUpdate:{value:(vals, autoSave=true, saveError=true)=>push(vals, true, true, autoSave, saveError)}
-      });
+      const loader = (rows, set, data)=>{
+        const cols = table.cols;
+
+        jet.map(data, values=>{
+          const row = cols.map(col=>col.fetch(values));
+
+          console.log(row);
+
+          set(row[cols.primary], row);
+    
+        });
+    
+      }
+
+      super(`${table.name}.rows`, stream, loader);
+
+      solid.all(this, {
+        table
+      }, false);
       
     }
 
-    seed() {
-      return new Record(this, _nextPid++);
+    get(key, autoCreate=true, missingError=true) {
+      const row = super.get(key, !autoCreate && missingError);
+      return row || {};
     }
 
-    msg(text, key) {
-      key = String.jet.to(key);
-      return this.table.msg((key ? " row '"+key+"' " : "") + text);
-    }
+    // add:{value:(vals, autoSave=true, saveError=true)=>push(vals, true, false, autoSave, saveError)},
+    // update:{value:(vals, autoSave=true, saveError=true)=>push(vals, false, true, autoSave, saveError)},
+    // addOrUpdate:{value:(vals, autoSave=true, saveError=true)=>push(vals, true, true, autoSave, saveError)}
 
   }
+
+  export default RowsSync;

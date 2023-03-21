@@ -1,8 +1,8 @@
 import jet from "@randajan/jet-core";
 
-import Table from "./class/Table";
+import Table from "./uni/class/Table";
 import Row from "./class/Row";
-import Column from "./class/Column";
+import Column from "./uni/class/Column";
 
 
 export default Table;

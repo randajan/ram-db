@@ -85,7 +85,7 @@ export default class Collection extends jet.types.Plex {
         exist:{value:isSync ? key=>{ init(); return _b.exist(key); } : async key=>{ await init(); return _b.exist(key); }},
         map:{value: (callback, sort)=>map(true, callback, sort)},
         forEach:{value: (callback, sort)=>map(false, callback, sort)},
-        find:{ value:isSync ? },
+        find:{ value:find },
         findAsync:{ value:_b.findAsync.bind(_b) }
       });
 

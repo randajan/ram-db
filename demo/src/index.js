@@ -11,16 +11,18 @@ window.jet = jet;
 window.test = new Table("test", tbl => {
 
     return {
-        columns: (cols, set)=>(set({
-            id:{isPrimary:true},
-            readonly:{ isReadonly:true },
-            free:{ isLabel:true },
-            blaghul:{init:"blaghul"},
-            virtual:{formula:(row)=>row("blaghul"), isVirtual:true},
-            separator:{separator:"; "}
-        })),
-        rows: async (rows, set) => {
-            await set(testData);
+        columns: _=>{
+            return {
+                id:{isPrimary:true},
+                readonly:{ isReadonly:true },
+                free:{ isLabel:true },
+                blaghul:{init:"blaghul"},
+                virtual:{ formula:(row)=>row("blaghul"), isVirtual:true },
+                separator:{separator:"; "}
+            }
+        },
+        rows: _=>{
+            return testData;
         },
         onChange:(...info)=>{
             console.log(...info);
