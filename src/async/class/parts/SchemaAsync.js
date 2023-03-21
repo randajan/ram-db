@@ -1,8 +1,7 @@
 import jet from "@randajan/jet-core";
+import vault from "../../../uni/helpers/vault";
 
 const { solid, virtual } = jet.prop;
-
-const vault = jet.vault("SchemaAsync");
 
 const map = async (list, byIndex, callback, sort) => {
   const sorted = sort ? list.sort(sort) : list;

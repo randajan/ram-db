@@ -19,7 +19,7 @@ export default class Column {
 
         static is(col) { return col instanceof Column; }
     
-        constructor(cols, key, traits) {
+        constructor(cols, id, key, traits) {
             const table = cols.table;
 
             solid.all(this, {
@@ -28,6 +28,7 @@ export default class Column {
             }, false);
 
             solid.all(this, {
+                id,
                 key
             });
 

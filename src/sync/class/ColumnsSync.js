@@ -1,5 +1,6 @@
 import jet from "@randajan/jet-core";
-import { loaderFactory } from "../../uni/helpers/columns.js";
+import { columnsLoader } from "../../uni/helpers/columns.js";
+import vault from "../../uni/helpers/vault.js";
 import SchemaSync from "./parts/SchemaSync.js";
 
 const { solid, virtual } = jet.prop;
@@ -8,9 +9,8 @@ export class ColumnsSync extends SchemaSync {
 
     constructor(table, stream) {
 
-      const _p = {};
-
-      super(`${table.name}.cols`, stream, loaderFactory(_p));
+      super(`${table.name}.cols`, stream, columnsLoader);
+      const _p = vault.get(this.uid);
 
       solid.all(this, {
         table

@@ -1,4 +1,6 @@
 import jet from "@randajan/jet-core";
+import Row from "../../class/Row.js";
+import vault from "../../uni/helpers/vault.js";
 import SchemaSync from "./parts/SchemaSync.js";
 
 const { solid, virtual } = jet.prop;
@@ -8,32 +10,44 @@ let _nextPid = 1;
 export class RowsSync extends SchemaSync {
     constructor(table, stream, onChange) {
 
+      const loader = (rows, set, data)=>{
+        jet.map(data, vals=>{
+          if (!jet.isMapable(vals)) { return; }
+          const row = new Row(rows, vals);
+          set(row.key, row);
+        });
+      }
+
+      super(`${table.name}.rows`, stream, loader);
+      const _p = vault.get(this.uid);
+
       onChange = Function.jet.to(onChange);
 
-      const seed = async (key, vals, autoSave=true, saveError=true)=>{
-        const row = this.get(key);
-        if (jet.isMapable(vals)) { await row.set(vals, autoSave, saveError); }
+      const seed = async (vals, autoSave=true, saveError=true)=>{
+        const row = new Row(this);
+        if (jet.isMapable(vals)) { row.set(vals, autoSave, saveError); }
         return row;
       };
 
       const push = async (vals, create=true, update=true, autoSave=true, saveError=true)=>{
-        const c = await table.cols.primary;
-        let row, key;
+        
+        let rowTo, key;
   
-        if (!c.formula && !c.resetIf) { key = c.toRaw(c.fetch(vals)); } // quick key
-        if (key == null) { row = await seed(vals, false); key = row.key; }
-  
-        if (key == null) { if (saveError) { this.throwError("missing key!", vals); } return; }
-        const tr = await prop("index")[key];
+        //const c = table.cols.primary;
+        //if (!c.formula && !c.resetIf) { key = c.toRaw(c.fetch(vals)); } // quick key
+        if (key == null) { rowTo = seed(vals, false); key = rowTo.key; }
+        if (key == null) { if (saveError) { throw Error(this.msg("push failed - missing key", vals)); } return; }
+
+        const rowFrom = this.get(key, false, false);
   
         if (update) {
-          if (tr) { return await tr.update(vals, autoSave, saveError); }
-          if (!create) { if (saveError) { this.throwError("not found. Update failed!", key); } return; }
+          if (rowFrom) { return await rowFrom.update(vals, autoSave, saveError); }
+          if (!create) { if (saveError) { throw Error(this.msg("update failed - key not found", key)); } return; }
         }
   
         if (create) {
-          if (tr) { if (saveError) { this.throwError("duplicate key. Create failed!", key); } return; }
-          return !row ? await seed(vals, autoSave, saveError) : autoSave ? await row.save(saveError) : row;
+          if (rowFrom) { if (saveError) { throw Error(this.msg("create failed - duplicate key", key)); } return; }
+          return !rowTo ? seed(vals, autoSave, saveError) : autoSave ? rowTo.save(saveError) : rowTo;
         }
   
       }
@@ -64,32 +78,6 @@ export class RowsSync extends SchemaSync {
         }
         
       }
-
-      const createMask = (key, getScheme)=>new Row(this, key, getScheme, onChange);
-      const createScheme = (key, values)=>{
-        return { };
-      }
-
-      const onInit = async rows=>{
-        await Promise.all(jet.forEach(rows, async (values, key)=>seed(key, values, true, false)));
-        //this.save();
-      }
-
-      const loader = (rows, set, data)=>{
-        const cols = table.cols;
-
-        jet.map(data, values=>{
-          const row = cols.map(col=>col.fetch(values));
-
-          console.log(row);
-
-          set(row[cols.primary], row);
-    
-        });
-    
-      }
-
-      super(`${table.name}.rows`, stream, loader);
 
       solid.all(this, {
         table
