@@ -7,7 +7,7 @@ export const privateTraits = {
     isLabel:"label"
 }
 
-export const columnsLoader = (cols, set, traits)=>{
+export const columnsLoader = (cols, traits, set)=>{
     const _p = vault.get(cols.uid);
 
     const isArray = !Object.jet.is(traits);

@@ -1,7 +1,7 @@
 import jet from "@randajan/jet-core";
 import { columnsLoader } from "../../uni/helpers/columns.js";
 import vault from "../../uni/helpers/vault.js";
-import SchemaAsync from "./parts/SchemaAsync.js";
+import SchemaAsync from "./SchemaAsync.js";
 
 const { solid, virtual } = jet.prop;
 

@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import vault from "../../../uni/helpers/vault";
+import vault from "../../uni/helpers/vault";
 
 const { solid, virtual } = jet.prop;
 
@@ -30,11 +30,8 @@ export class SchemaSync extends jet.types.Plex {
       index: {},
       list: [],
       before: {},
-      after: {}
-    });
-
-    _p.builder = _=>{
-      const set = (key, child, duplicateError=true)=>{
+      after: {},
+      set:(key, child, duplicateError=true)=>{
         key = this.formatKey(key, "set");
         if (_p.index[key] == null) {
           _p.list.push(_p.index[key] = child);
@@ -42,9 +39,12 @@ export class SchemaSync extends jet.types.Plex {
         }
         if (duplicateError) { throw Error(this.msg(`set failed - duplicate`, key)); }
       }
+    });
+
+    _p.builder = _=>{
       const data = jet.isRunnable(stream) ? stream() : stream;
       if (Promise.jet.is(data)) { throw Error(this.msg(`init failed - promise found at sync`)); }
-      loader(this, set, data);
+      loader(this, data, _p.set);
       return this;
     };
 
