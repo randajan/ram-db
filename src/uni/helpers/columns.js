@@ -9,7 +9,6 @@ export const privateTraits = {
 
 export const columnsLoader = (cols, traits, set)=>{
     const _p = vault.get(cols.uid);
-
     const isArray = !Object.jet.is(traits);
 
     jet.map(traits, (value, index)=>{
@@ -25,6 +24,8 @@ export const columnsLoader = (cols, traits, set)=>{
         if (_p[prop]) { throw Error(cols.msg(`${prop} column is allready set as '${_p[prop]}'`, col.key)); }
         _p[prop] = col;
       }
+
+      if (!col.isVirtual) { _p.reals.push(col); }
 
     });
 

@@ -71,10 +71,10 @@ export default class Column {
             return raw || null;
         }
     
-        toVal(raw, rec) {
+        toVal(raw, row) {
             const { separator, ref } = this;
 
-            const refName = (ref && rec) ? ref(rec) : null;
+            const refName = (ref && row) ? ref(row) : null;
 
             if (Array.jet.is(raw)) { raw = raw.join(separator); }
             if (!separator) { return !refName ? raw : tableFind(refName).rows(raw, false); }

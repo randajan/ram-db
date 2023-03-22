@@ -11,6 +11,7 @@ export class ColumnsAsync extends SchemaAsync {
 
       super(`${table.name}.cols`, stream, columnsLoader);
       const _p = vault.get(this.uid);
+      _p.reals = [];
 
       solid.all(this, {
         table
@@ -18,9 +19,13 @@ export class ColumnsAsync extends SchemaAsync {
 
       virtual.all(this, {
         primary: async _=>{ await this.init(); return _p.primary; },
-        label: async _=>{ await this.init(); return _p.label; }
+        label: async _=>{ await this.init(); return _p.label; },
       });
       
+    }
+
+    forEachReal(callback, sort) {
+      return SchemaAsync.map(vault.get(this.uid).reals, false, callback, sort);
     }
   
   }

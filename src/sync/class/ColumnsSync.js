@@ -11,6 +11,7 @@ export class ColumnsSync extends SchemaSync {
 
       super(`${table.name}.cols`, stream, columnsLoader);
       const _p = vault.get(this.uid);
+      _p.reals = [];
 
       solid.all(this, {
         table
@@ -18,9 +19,13 @@ export class ColumnsSync extends SchemaSync {
 
       virtual.all(this, {
         primary:_=>{ this.init(); return _p.primary; },
-        label:_=>{ this.init(); return _p.label; }
+        label:_=>{ this.init(); return _p.label; },
       });
       
+    }
+
+    forEachReal(callback, sort) {
+      return SchemaSync.map(vault.get(this.uid).reals, false, callback, sort);
     }
   
   }

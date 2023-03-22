@@ -3,26 +3,26 @@ import vault from "../../uni/helpers/vault";
 
 const { solid, virtual } = jet.prop;
 
-const map = (list, byIndex, callback, sort) => {
-  const sorted = sort ? list.sort(sort) : list;
-  const stop = val => { stop.active = true; return val; }
-  const result = byIndex ? {} : [];
-  let count = 0;
-
-  for (let i in sorted) {
-    if (stop.active) { break; }
-    const child = sorted[i];
-    const r = callback(child, i + 1, count, stop);
-    if (r === undefined) { continue; }
-    if (byIndex) { result[child.key] = r; }
-    else { result.push(r); }
-    count++;
-  }
-
-  return result;
-}
-
 export class SchemaSync extends jet.types.Plex {
+
+  static map(list, byIndex, callback, sort) {
+    const sorted = sort ? list.sort(sort) : list;
+    const stop = val => { stop.active = true; return val; }
+    const result = byIndex ? {} : [];
+    let count = 0;
+  
+    for (let i in sorted) {
+      if (stop.active) { break; }
+      const child = sorted[i];
+      const r = callback(child, i + 1, count, stop);
+      if (r === undefined) { continue; }
+      if (byIndex) { result[child.key] = r; }
+      else { result.push(r); }
+      count++;
+    }
+  
+    return result;
+  }
 
   constructor(name, stream, loader) {
     const [uid, _p] = vault.set({
@@ -131,13 +131,13 @@ export class SchemaSync extends jet.types.Plex {
   map(callback, sort) {
     const { list } = vault.get(this.uid);
     this.init();
-    return map(list, true, callback, sort);
+    return SchemaSync.map(list, true, callback, sort);
   }
 
   forEach(callback, sort) {
     const { list } = vault.get(this.uid);
     this.init();
-    return map(list, false, callback, sort);
+    return SchemaSync.map(list, false, callback, sort);
   }
 
   filter(checker, sort) {

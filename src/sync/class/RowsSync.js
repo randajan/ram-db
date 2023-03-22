@@ -17,7 +17,7 @@ export class RowsSync extends SchemaSync {
       const _p = vault.get(this.uid);
 
       _p.seed = (vals, autoSave=true, saveError=true)=>{
-        const row = new Row(this);
+        const row = new Row(this, _p.set);
         if (jet.isMapable(vals)) { row.set(vals, autoSave, saveError); }
         return row;
       };
