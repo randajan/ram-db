@@ -1,49 +1,27 @@
 import jet from "@randajan/jet-core";
-import Row from "../../class/Row.js";
 import vault from "../../uni/helpers/vault.js";
+import RowSync from "./RowSync.js";
 import SchemaSync from "./SchemaSync.js";
 
 const { solid, virtual } = jet.prop;
 
 export class RowsSync extends SchemaSync {
     constructor(table, stream, onChange) {
-
       const loader = (rows, data)=>{
-        const { seed } = vault.get(rows.uid);
-        jet.map(data, vals=>seed(vals, true, false));
+        jet.map(data, vals=>RowSync.create(this, vals, { saveError:false }));
       };
 
       super(`${table.name}.rows`, stream, loader);
       const _p = vault.get(this.uid);
 
-      _p.seed = (vals, autoSave=true, saveError=true)=>{
-        const row = new Row(this, _p.set);
-        if (jet.isMapable(vals)) { row.set(vals, autoSave, saveError); }
-        return row;
-      };
+      _p.save = (row, newKey)=>{
+        const { key, raws, changes } = row;
+        const event = !newKey ? "remove" : !key ? "add" : "update";
 
-      _p.put = ({vals, create, update, autoSave, saveError})=>{
-
-        this.init();
-
-        let rowTo, key;
-        const ck = table.cols.primary;
-        if (!ck.formula && !ck.resetIf) { key = ck.toRaw(ck.fetch(vals)); } // quick key
-        if (key == null) { rowTo = _p.seed(vals, false); key = rowTo.key; }
-        if (key == null) { if (saveError) { throw Error(this.msg("push failed - missing key", vals)); } return; }
-
-        const rowFrom = _p.index[key];
-  
-        if (update) {
-          if (rowFrom) { return rowFrom.update(vals, autoSave, saveError); }
-          if (!create) { if (saveError) { throw Error(this.msg("update failed - key not found", key)); } return; }
+        if (key !== newKey) {
+          if (key) { _p.remove(key); }
+          if (newKey) { _p.set(newKey, row); }
         }
-  
-        if (create) {
-          if (rowFrom) { if (saveError) { throw Error(this.msg("create failed - duplicate key", key)); } return; }
-          return !rowTo ? _p.seed(vals, autoSave, saveError) : autoSave ? rowTo.save(saveError) : rowTo;
-        }
-  
       }
 
       // const onChangeHandler = async (row, newKey, changes)=>{
@@ -79,22 +57,47 @@ export class RowsSync extends SchemaSync {
       
     }
 
-    get(key, autoCreate=true, missingError=true) {
-      const row = super.get(key, !autoCreate && missingError);
-      return row || vault.get(this.uid).seed();
+    get(key, opt={ autoCreate:true, missingError:true }) {
+      const row = super.get(key, !opt.autoCreate && opt.missingError);
+      if (row) { return row; } else if (opt.autoCreate) { return RowSync.create(this); }
     }
 
-    add(vals, autoSave=true, saveError=true) {
-      return vault.get(this.uid).put({vals, create:true, autoSave, saveError});
+    addOrUpdate(vals, opt={ add:true, update:true, autoSave:true, resetOnError:true, saveError:true }) {
+
+      this.init();
+    
+      let rowTo, key;
+      const ck = this.table.cols.primary;
+      if (!ck.formula && !ck.resetIf) { key = ck.toRaw(ck.fetch(vals)); } // quick key
+      if (key == null) { rowTo = RowSync.create(this, vals, { autoSave:false }); key = rowTo.key; }
+      if (key == null) { if (saveError) { throw Error(this.msg("push failed - missing key", vals)); } return; }
+    
+      const rowFrom = this.get(key, { autoCreate:false, missingError:false });
+    
+      if (opt.update !== false) {
+        if (rowFrom) { return rowFrom.update(vals, opt); }
+        if (!opt.add) { if (saveError) { throw Error(this.msg("update failed - key not found", key)); } return; }
+      }
+    
+      if (opt.add !== false) {
+        if (rowFrom) { if (saveError) { throw Error(this.msg("add failed - duplicate key", key)); } return; }
+        return !rowTo ? RowSync.create(this, vals, opt) : autoSave ? rowTo.save(opt) : rowTo;
+      }
+    
     }
 
-    update(vals, autoSave=true, saveError=true) {
-      return vault.get(this.uid).put({vals, update:true, autoSave, saveError});
+    add(vals, opt={ autoSave:true, resetOnError:true, saveError:true }) {
+      opt.add = true;
+      opt.update = false;
+      return this.addOrUpdate(vals, opt);
     }
 
-    update(vals, autoSave=true, saveError=true) {
-      return vault.get(this.uid).put({vals, create:true, update:true, autoSave, saveError});
+    update(vals, opt={ autoSave:true, resetOnError:true, saveError:true }) {
+      opt.add = false;
+      opt.update = true;
+      return this.addOrUpdate(vals, opt);
     }
+
 
   }
 

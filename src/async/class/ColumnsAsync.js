@@ -20,11 +20,13 @@ export class ColumnsAsync extends SchemaAsync {
       virtual.all(this, {
         primary: async _=>{ await this.init(); return _p.primary; },
         label: async _=>{ await this.init(); return _p.label; },
+        reals:_=>{ this.init(); return [..._p.reals]; }
       });
       
     }
 
     forEachReal(callback, sort) {
+      this.init();
       return SchemaAsync.map(vault.get(this.uid).reals, false, callback, sort);
     }
   

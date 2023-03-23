@@ -38,6 +38,18 @@ export class SchemaSync extends jet.types.Plex {
           return child;
         }
         if (duplicateError) { throw Error(this.msg(`set failed - duplicate`, key)); }
+      },
+      remove:(key, missingError=true)=>{
+        key = this.formatKey(key, "remove");
+        if (_p.index[key] != null) {
+          const child = _p.index[key];
+          const id = _p.list.indexOf(child);
+          if (id>=0) { _p.list.splice(id, 1); }
+          delete _p.index[key];
+          return true;
+        }
+        if (missingError) { throw Error(this.msg(`remove failed - missing`, key)); }
+        return false;
       }
     });
 

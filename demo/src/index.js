@@ -3,7 +3,8 @@ import jet from "@randajan/jet-core";
 
 const testData = [
     {id:"row1"},
-    {id:"row2"}
+    {id:"row2"},
+    {id:"row3"}
 ]
 
 window.jet = jet;
@@ -17,7 +18,7 @@ window.test = new Table("test", tbl => {
                 readonly:{ isReadonly:true },
                 free:{ isLabel:true },
                 blaghul:{init:"blaghul"},
-                virtual:{ formula:(row)=>row("blaghul"), isVirtual:true },
+                virtual:{ formula:(row)=>row("blaghul") },
                 separator:{separator:"; "}
             }
         },

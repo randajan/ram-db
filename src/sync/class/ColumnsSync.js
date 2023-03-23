@@ -20,11 +20,13 @@ export class ColumnsSync extends SchemaSync {
       virtual.all(this, {
         primary:_=>{ this.init(); return _p.primary; },
         label:_=>{ this.init(); return _p.label; },
+        reals:_=>{ this.init(); return [..._p.reals]; }
       });
       
     }
 
     forEachReal(callback, sort) {
+      this.init();
       return SchemaSync.map(vault.get(this.uid).reals, false, callback, sort);
     }
   
