@@ -3,7 +3,7 @@ import vault from "../../uni/helpers/vault";
 
 const { solid, virtual } = jet.prop;
 
-export class SchemaAsync extends jet.types.Plex {
+export class CollectionAsync extends jet.types.Plex {
 
   static async map(list, byIndex, callback, sort) {
     const sorted = sort ? list.sort(sort) : list;
@@ -130,13 +130,13 @@ export class SchemaAsync extends jet.types.Plex {
   async map(callback, sort) {
     const { list } = vault.get(this.uid);
     await this.init();
-    return SchemaAsync.map(list, true, callback, sort);
+    return CollectionAsync.map(list, true, callback, sort);
   }
 
   async forEach(callback, sort) {
     const { list } = vault.get(this.uid);
     await this.init();
-    return SchemaAsync.map(list, false, callback, sort);
+    return CollectionAsync.map(list, false, callback, sort);
   }
 
   async filter(checker, sort) {
@@ -153,4 +153,4 @@ export class SchemaAsync extends jet.types.Plex {
 
 }
 
-export default SchemaAsync
+export default CollectionAsync

@@ -1,11 +1,11 @@
 import jet from "@randajan/jet-core";
 import vault from "../../uni/helpers/vault.js";
 import RowSync from "./RowSync.js";
-import SchemaSync from "./SchemaSync.js";
+import CollectionSync from "./CollectionSync.js";
 
 const { solid, virtual } = jet.prop;
 
-export class RowsSync extends SchemaSync {
+export class RowsSync extends CollectionSync {
     constructor(table, stream, onChange) {
       const loader = (rows, data)=>{
         jet.map(data, vals=>RowSync.create(this, vals, { saveError:false }));

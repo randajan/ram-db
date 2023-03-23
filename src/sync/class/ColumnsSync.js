@@ -1,11 +1,11 @@
 import jet from "@randajan/jet-core";
 import { columnsLoader } from "../../uni/helpers/columns.js";
 import vault from "../../uni/helpers/vault.js";
-import SchemaSync from "./SchemaSync.js";
+import CollectionSync from "./CollectionSync.js";
 
 const { solid, virtual } = jet.prop;
 
-export class ColumnsSync extends SchemaSync {
+export class ColumnsSync extends CollectionSync {
 
     constructor(table, stream) {
 
@@ -27,7 +27,7 @@ export class ColumnsSync extends SchemaSync {
 
     forEachReal(callback, sort) {
       this.init();
-      return SchemaSync.map(vault.get(this.uid).reals, false, callback, sort);
+      return CollectionSync.map(vault.get(this.uid).reals, false, callback, sort);
     }
   
   }

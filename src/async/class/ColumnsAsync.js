@@ -1,11 +1,11 @@
 import jet from "@randajan/jet-core";
 import { columnsLoader } from "../../uni/helpers/columns.js";
 import vault from "../../uni/helpers/vault.js";
-import SchemaAsync from "./SchemaAsync.js";
+import CollectionAsync from "./CollectionAsync.js";
 
 const { solid, virtual } = jet.prop;
 
-export class ColumnsAsync extends SchemaAsync {
+export class ColumnsAsync extends CollectionAsync {
 
     constructor(table, stream) {
 
@@ -27,7 +27,7 @@ export class ColumnsAsync extends SchemaAsync {
 
     forEachReal(callback, sort) {
       this.init();
-      return SchemaAsync.map(vault.get(this.uid).reals, false, callback, sort);
+      return CollectionAsync.map(vault.get(this.uid).reals, false, callback, sort);
     }
   
   }

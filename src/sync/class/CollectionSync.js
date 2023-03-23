@@ -3,7 +3,7 @@ import vault from "../../uni/helpers/vault";
 
 const { solid, virtual } = jet.prop;
 
-export class SchemaSync extends jet.types.Plex {
+export class CollectionSync extends jet.types.Plex {
 
   static map(list, byIndex, callback, sort) {
     const sorted = sort ? list.sort(sort) : list;
@@ -143,13 +143,13 @@ export class SchemaSync extends jet.types.Plex {
   map(callback, sort) {
     const { list } = vault.get(this.uid);
     this.init();
-    return SchemaSync.map(list, true, callback, sort);
+    return CollectionSync.map(list, true, callback, sort);
   }
 
   forEach(callback, sort) {
     const { list } = vault.get(this.uid);
     this.init();
-    return SchemaSync.map(list, false, callback, sort);
+    return CollectionSync.map(list, false, callback, sort);
   }
 
   filter(checker, sort) {
@@ -166,4 +166,4 @@ export class SchemaSync extends jet.types.Plex {
 
 }
 
-export default SchemaSync;
+export default CollectionSync;
