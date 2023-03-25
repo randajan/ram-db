@@ -17,9 +17,10 @@ export class StepSync {
       }, false);
 
       virtual.all(this, {
-        isSeeding:_=>table.rows.state === "pending",
         key:_=>this.pull(table.cols.primary, false),
-        label:_=>this.pull(table.cols.label, false)
+        label:_=>this.pull(table.cols.label, false),
+        isExist:_=>!this.isRemoved && table.rows.exist(this.key),
+        isDirty:_=>!!this.changes.length || ( !this.isExist !== !before?.isExist ),
       });
 
       solid(this, "wrap", WrapSync.create(this), false);
@@ -29,7 +30,7 @@ export class StepSync {
     }
 
     pull(col) {
-      const { vals, raws, before, wrap, isSeeding } = this;
+      const { table, vals, raws, before, wrap } = this;
       const { isVirtual, init, resetIf, formula, isReadonly } = col;
 
       if (vals.hasOwnProperty(col)) { return vals[col]; } 
@@ -38,7 +39,7 @@ export class StepSync {
       const self = _=>col.toVal(raw, wrap);
 
       if (formula) { raw = formula(wrap, self); } //formula
-      else if (!isSeeding) {
+      else if (table.rows.state !== "pending") {
         const bew = before ? before.raws[col] : null;
         if (raw !== bew && isReadonly && isReadonly(wrap, self)) { raw = bew; } //revive value
         if (!before ? (init && raw == null) : (resetIf && resetIf(wrap, self))) { raw = init ? init(wrap) : undefined; } //init or reset
@@ -52,7 +53,7 @@ export class StepSync {
     };
 
     push(vals, force=true) {
-      const { table:{ cols }, raws, before, isSeeding } = this;
+      const { table:{ cols }, raws, before } = this;
 
       const changes = this.changes = [];
       this.vals = {};
@@ -75,8 +76,13 @@ export class StepSync {
       return this.pull(this.table.cols.get(col, opt.missingError !== false));
     }
 
+    remove() {
+      return this.isRemoved = true;
+    }
+
     reset() {
       const { before } = this;
+      this.isRemoved = before?.isRemoved || false;
       this.raws = before ? { ...before.raws } : {};
       this.vals = before ? { ...before.vals } : {};
       this.changes = [];

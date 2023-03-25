@@ -29,8 +29,6 @@ export class CollectionAsync extends jet.types.Plex {
       state: "waiting",
       index: {},
       list: [],
-      before: {},
-      after: {},
       set:(key, child, duplicateError=true)=>{
         key = this.formatKey(key, "set");
         if (_p.index[key] == null) {

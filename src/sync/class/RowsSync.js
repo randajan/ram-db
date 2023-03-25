@@ -20,13 +20,19 @@ export class RowsSync extends CollectionSync {
       const _p = vault.get(this.uid);
 
       _p.save = (row)=>{
-        const { live, saved } = row;
-        const keyL = live.key, keyS = saved?.key;
-        const event = !keyL ? "remove" : !keyS ? "add" : "update";
+        const isReady = this.state === "ready";
+        const { live:{ key, isRemoved }, key:keySaved, isRemoved:wasRemoved } = row;
+        const rekey = key !== keySaved;
+        const remove = isRemoved !== wasRemoved;
 
-        if (keyL !== keyS) {
-          if (keyL) { _p.set(keyL, row); }
-          if (keyS) { _p.remove(keyS); }
+        if (key && !isRemoved) {
+          if (isReady) { onChange(table, (rekey || wasRemoved) ? "add" : "update", row.live); }
+          if (rekey) { _p.set(key, row); }
+        }
+
+        if (keySaved && (rekey || remove)) {
+          if (isReady) { onChange(table, "remove", row.saved); }
+          _p.remove(keySaved);
         }
         
       }

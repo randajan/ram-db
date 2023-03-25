@@ -80,7 +80,8 @@ export default class Column {
 
         _toVal(raw, refName) {
             const { db, type } = this;
-            if (type === "datetime") { raw = raw ? new Date(raw) : null; }
+            if (type === "datetime") { raw = Date.jet.to(raw); }
+            if (type === "number") { raw = Number.jet.to(raw); }
             return refName ? db(refName).rows(raw, { autoCreate:true }) : raw;
         }
     

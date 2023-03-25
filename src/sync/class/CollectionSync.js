@@ -7,7 +7,6 @@ export class CollectionSync extends jet.types.Plex {
 
   static map(list, byIndex, callback, sort) {
     const sorted = sort ? list.sort(sort) : list;
-    if (sort) { console.log(sort, sorted); }
     const stop = val => { stop.active = true; return val; }
     const result = byIndex ? {} : [];
     let count = 0;
@@ -30,8 +29,6 @@ export class CollectionSync extends jet.types.Plex {
       state: "waiting",
       index: {},
       list: [],
-      before: {},
-      after: {},
       set:(key, child, duplicateError=true)=>{
         key = this.formatKey(key, "set");
         if (_p.index[key] == null) {

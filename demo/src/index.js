@@ -45,7 +45,8 @@ window.ramdb = ramdb.create("main", _=>{
       kin_loc_bill:{ ref:"kin_locs" } 
     },
     book_items:{
-      book_doc:{ ref:"book_docs" }
+      book_doc:{ ref:"book_docs" },
+      price_m:{ type:"number" }
     },
     book_docs:{
       book_items:{ isVirtual:true, separator:"; ", ref:"book_items", formula:r=>window.ramdb("book_items").rows.filter(m=>m("book_doc").key === r.key) }
@@ -76,7 +77,9 @@ window.ramdb = ramdb.create("main", _=>{
     return {
       columns:_=>global(name, jet.map(rows[0], _=>({}))),
       rows:_=>rows,
-      onChange:(...info)=>{ console.log(info); }
+      onChange:(table, event, data)=>{
+        console.log({ name:table.name, event, key:data.key, data:data.raws });
+      }
     }
   });
 });

@@ -9,7 +9,7 @@ export class WrapSync extends jet.types.Plex {
     static create(step) { return new WrapSync(step); }
   
     constructor(step) {
-      const { rows, cols } = step.table;
+      const { cols } = step.table;
 
       const get = (col, opt={ missingError:true })=>step.get(col, opt);
 
@@ -21,8 +21,9 @@ export class WrapSync extends jet.types.Plex {
         key:_=>step.key,
         label:_=>step.label,
         before:_=>step.before.wrap,
-        isExist:_=>rows.exist(step.key),
-        isDirty:_=>!!step.changes.length,
+        isExist:_=>step.isExist,
+        isDirty:_=>step.isDirty,
+        isRemoved:_=>step.isRemoved,
         raws:_=>({...step.raws}),
         vals:_=>cols.map(col=>step.pull(col, true)),
         changes:_=>([...step.changes])

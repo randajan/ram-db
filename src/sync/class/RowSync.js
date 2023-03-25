@@ -18,11 +18,8 @@ export class RowSync extends jet.types.Plex {
       const get = (col, opt={ missingError:true })=>_p.live.get(col, opt);
       const push = (vals, force, opt={ autoSave:true, resetOnError:true, saveError:true })=>{
         return _p.live.push(vals, force) && (opt.autoSave === false || this.save(opt));
-        //TODO:
-        //3. collecting refs
-        //4. create async
       }
-  
+
       super(get);
 
       solid.all(this, {
@@ -33,24 +30,31 @@ export class RowSync extends jet.types.Plex {
         set:(vals, opt={ autoSave:true, resetOnError:true, saveError:true })=>push(vals, true, opt),
         update:(vals, opt={ autoSave:true, resetOnError:true, saveError:true })=>push(vals, false, opt),
         reset:_=>!this.isDirty || _p.live.reset(),
+        remove:(opt={ autoSave:true, resetOnError:true, saveError:true })=>{
+          return _p.live.remove() && (opt.autoSave === false || this.save(opt));
+        },
         save:(opt={ resetOnError:true, saveError:true })=>{
           if (!this.isDirty) { return true; }
           try {
             save(this);
             _p.live = rows.nextStep(_p.saved = _p.live);
+            return true;
           } catch (err) {
             if (opt.resetOnError !== false) { this.reset(); }
             if (opt.saveError !== false) { throw err; }
+            console.warn(err);
             return false;
           }
-        }
+        },
+
       }, false);
 
       virtual.all(this, {
         key:_=>_p.saved?.key,
         label:_=>_p.saved?.label,
-        isExist:_=>rows.exist(this.key),
-        isDirty:_=>!!_p.live.changes.length,
+        isRemoved:_=>(!_p.saved || _p.saved.isRemoved),
+        isExist:_=>!!_p.saved?.isExist,
+        isDirty:_=>_p.live.isDirty,
         live:_=>_p.live.wrap,
         saved:_=>_p.saved?.wrap
       });
