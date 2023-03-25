@@ -1,150 +1,90 @@
 import jet from "@randajan/jet-core";
-import vault from "../../uni/helpers/vault.js";
+import WrapSync from "./WrapSync";
 
-const { solid, virtual } = jet.prop;
+export class StepSync {
 
-export class StepSync extends jet.types.Plex {
+    static is(any) { return any instanceof StepSync; }
 
-    static is(row) { return row instanceof StepSync; }
+    static create(row, before) { return new StepSync(row, before); }
   
-    constructor(row) {
-      const rows = row.rows, table = rows.table, cols = table.cols;
-      const [uid, _p] = vault.set({
-        raws:{},
-        updates:{},
-        changes:[]
-      });
+    constructor(table, before) {
+      this.table = table;
+      this.before = before;
 
-      _p.setDirty = col=>{
-        _p.updates[col] = _p.now.raws[col];
-        _p.changes.push(col);
-      }
+      this.raws = before ? {...before.raws} : {};
+      this.changes = [];
+      this.key = undefined;
 
-      _p.resetDirty = (ok)=>{
-        _p.updates = {};
-        _p.changes = [];
-        if (ok == null) { return true; }
-        if (!ok && !_p.saved) { return false; }
-        const from = _p[ok ? "now" : "saved"];
-        _p[ok ? "saved" : "now"] = { key:from.key, raws:{...from.raws} };
-        return true;
-      }
+      this.isSetting = false;
+      this.isKeying = false;
+      
+      this.wrap = WrapSync.create(this);
 
-      _p.get = (col, autoRef=true)=>{
-        const { now, saved } = _p;
-        const { isSetting, isKeying, isSeeding } = this;
-        const { isVirtual, init, resetIf, formula, isReadonly } = col;
-        const withTraits = isSetting && !isSeeding;
-       
-        let raw = now.raws[col];
-        const self = _=>col.toVal(raw, (autoRef && !isKeying) ? this : undefined);
-    
-        if (formula && (isVirtual || withTraits)) { raw = formula(this, self); } //formula
-        else if (!isKeying && withTraits) {
-          const bew = saved ? saved.raws[col] : undefined;
-          if (raw !== bew && isReadonly && isReadonly(this, self)) { raw = bew; } //revive value
-          if (!saved ? (init && raw == null) : (resetIf && resetIf(this, self))) { raw = init ? init(this) : undefined; } //init or reset
-        }
-    
-        return self();
-      };
-  
-      super((col, opt)=>this.get(col, opt));
-
-      solid.all(this, {
-        uid,
-        table
-      }, false);
-
-      virtual.all(this, {
-        key:_=>_p.saved?.key,
-        isExist:_=>rows.exist(this.key),
-        isDirty:_=>!!_p.changes.length,
-        isSetting:_=>_p.isSetting,
-        isKeying:_=>_p.isKeying,
-        isSeeding:_=>rows.state !== "ready",
-        raws:_=>({..._p.now.raws}), //virtual interface?
-        vals:_=>cols.map(col=> _p.get(col, true)), //virtual interface?
-        label:_=>_p.get(cols.label, true),
-        changes:_=>([..._p.changes]),
-        updates:_=>({..._p.updates})
-      });
+      this.reset();
   
     }
 
-    get(col, opt={ autoRef:true, missingError:true }) {
-      return vault.get(this.uid).get(this.table.cols.get(col, opt.missingError !== false), opt.autoRef !== false);
-    }
+    push(vals, force=true) {
+      const { table:{ cols, rows }, raws, before } = this;
+      const isSeeding = rows.state === "pending";
 
-    setOrUpdate(vals, opt={ set:true, autoSave:true, resetOnError:true, saveError:true }) {
-      const { table:{cols}, isSeeding, isDirty } = this;
-      const _p = vault.get(this.uid);
-      const { now, saved } = _p;
-
-      _p.isSetting = true;
-      _p.resetDirty();
+      this.isSetting = true;
+      const changes = this.changes = [];
 
       cols.forEachReal(col=>{ //for each non virtual
-        let raw = col.fetch(vals);
-        if (raw !== undefined) { raw = raw === "" ? null : col.toRaw(raw); }
-        else if (opt.set) { raw = null; }
-        else if (isDirty) { raw = now.raws[col]; }
-        else if (saved) { raw = saved.raws[col]; }
-        now.raws[col] = raw;
-        if (isSeeding) { _p.setDirty(col); }
+        const raw = col.fetch(vals);
+        if (raw !== undefined) { raws[col] = raw === "" ? null : col.toRaw(raw); }
+        else if (force) { raws[col] = null; }
       });
 
       if (!isSeeding) {
         cols.forEachReal(col=>{ //for each non virtual
-          const val = _p.get(col, false);
-          now.raws[col] = col.toRaw(val);
-          if (!saved || now.raws[col] !== saved.raws[col]) { _p.setDirty(col); } //is isDirty column
+          const val = this.pull(col, false);
+          raws[col] = col.toRaw(val);
+          if (!before || raws[col] !== before.raws[col]) { changes.push(col); } //is isDirty column
         });
       }
 
-      _p.isKeying = true;
-      now.key = _p.get(cols.primary, false);
-      _p.isSetting = _p.isKeying = false;
+      this.isKeying = true;
+      this.key = this.pull(cols.primary, false);
+      this.isSetting = this.isKeying = false;
 
-      return opt.autoSave !== false ? this.save(opt) : !!_p.changes.length;
+      return !!changes.length || isSeeding;
     }
 
-    set(vals, opt={ autoSave:true, resetOnError:true, saveError:true }) {
-      opt.set = true;
-      return this.setOrUpdate(vals, opt);
-    }
-    update(vals, opt={ autoSave:true, resetOnError:true, saveError:true }) {
-      opt.set = false;
-      return this.setOrUpdate(vals, opt);
+    pull(col, autoRef=true) {
+      const { table:{ rows }, raws, before, wrap, isSetting, isKeying } = this;
+      const { isVirtual, init, resetIf, formula, isReadonly } = col;
+      const isSeeding = rows.state === "pending";
+      const withTraits = isSetting && !isSeeding;
+     
+      let raw = raws[col];
+      const self = _=>col.toVal(raw, (autoRef && !isKeying) ? this : undefined);
+  
+      if (formula && (isVirtual || withTraits)) { raw = formula(wrap, self); } //formula
+      else if (!isKeying && withTraits) {
+        const bew = before ? before.raws[col] : null;
+        if (raw !== bew && isReadonly && isReadonly(wrap, self)) { raw = bew; } //revive value
+        if (!before ? (init && raw == null) : (resetIf && resetIf(wrap, self))) { raw = init ? init(wrap) : undefined; } //init or reset
+      }
+  
+      return self();
+    };
+
+    get(col, opt={ autoRef:true, missingError:true }) {
+      return this.pull(this.table.cols.get(col, opt.missingError !== false), opt.autoRef !== false);
     }
 
     reset() {
-      const _p = vault.get(this.uid);
-      return !_p.changes.length || _p.resetDirty(false);
+      const { before } = this;
+      this.key = before?.key;
+      this.raws = before ? { ...before.raws } : {};
+      this.changes = [];
+      return true;
     }
-
-    save(opt={ resetOnError:true, saveError:true }) {
-      const _p = vault.get(this.uid);
-      if (!_p.changes.length) { return true; }
-      try {
-        _p.save(this, _p.now.key);
-        return _p.resetDirty(true);
-      } catch (err) {
-        if (opt.resetOnError !== false) { this.reset(); }
-        if (opt.saveError !== false) { throw err; }
-        return false;
-      }
-    }
-  
-    toJSON() {
-      return this.key
-    }
-  
-    toString() {
-      return this.key;
-    }
+     
   
   }
   
   
-  export default RowSync;
+  export default StepSync;

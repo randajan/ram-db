@@ -1,13 +1,13 @@
 import { Table } from "../../dist/index.js";
 import jet from "@randajan/jet-core";
 
+window.jet = jet;
+
 const testData = [
     {id:"row1"},
     {id:"row2"},
     {id:"row3"}
 ]
-
-window.jet = jet;
 
 window.test = new Table("test", tbl => {
 
@@ -17,8 +17,8 @@ window.test = new Table("test", tbl => {
                 id:{isPrimary:true},
                 readonly:{ isReadonly:true },
                 free:{ isLabel:true },
-                blaghul:{init:"blaghul"},
-                virtual:{ formula:(row)=>row("blaghul") },
+                foo:{init:"bar"},
+                virtual:{ formula:(row)=>row("foo") },
                 separator:{separator:"; "}
             }
         },

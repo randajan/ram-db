@@ -2,54 +2,33 @@ import jet from "@randajan/jet-core";
 import vault from "../../uni/helpers/vault.js";
 import RowSync from "./RowSync.js";
 import CollectionSync from "./CollectionSync.js";
+import StepSync from "./StepSync.js";
 
 const { solid, virtual } = jet.prop;
 
 export class RowsSync extends CollectionSync {
     constructor(table, stream, onChange) {
+
       const loader = (rows, data)=>{
-        jet.map(data, vals=>RowSync.create(this, vals, { saveError:false }));
+        jet.map(data, vals=>{
+          if (!jet.isMapable(vals)) { return; }
+          RowSync.create(this).set(vals, { saveError:false });
+        });
       };
 
       super(`${table.name}.rows`, stream, loader);
       const _p = vault.get(this.uid);
 
-      _p.save = (row, newKey)=>{
-        const { key, raws, changes } = row;
-        const event = !newKey ? "remove" : !key ? "add" : "update";
+      _p.save = (row)=>{
+        const { live, saved } = row;
+        const keyL = live.key, keyS = saved?.key;
+        const event = !keyL ? "remove" : !keyS ? "add" : "update";
 
-        if (key !== newKey) {
-          if (key) { _p.remove(key); }
-          if (newKey) { _p.set(newKey, row); }
+        if (keyL !== keyS) {
+          if (keyL) { _p.set(keyL, row); }
+          if (keyS) { _p.remove(keyS); }
         }
       }
-
-      // const onChangeHandler = async (row, newKey, changes)=>{
-      //   const { key, isDirty } = row;
-
-      //   const event = !changes ? "remove" : !_p.index[key] ? "add" : "update";
-
-      //   if (event !== "remove") {
-      //     if (newKey == null) { throw "missing key!"; }
-      //     if (_p.index[newKey] && _p.index[newKey] !== row) { throw "duplicate key!"; } //duplicate row
-      //   }
-        
-      //   if (this.state === "ready" && (isDirty || event === "remove")) {
-      //     await onChange(event, row, newKey, changes);
-      //   }
-
-      //   if (event === "remove" || key !== newKey) {
-      //     delete _p.index[key];
-      //     const x = _p.list.indexOf(row);
-      //     if (x >=0) { _p.list.splice(x, 1); }
-      //   }
-
-      //   if (event === "add" || key !== newKey) {
-      //     _p.index[newKey] = row;
-      //     _p.list.push(row);
-      //   }
-        
-      // }
 
       solid.all(this, {
         table
@@ -57,19 +36,19 @@ export class RowsSync extends CollectionSync {
       
     }
 
-    get(key, opt={ autoCreate:true, missingError:true }) {
+    get(key, opt={ autoCreate:false, missingError:true }) {
       const row = super.get(key, !opt.autoCreate && opt.missingError);
-      if (row) { return row; } else if (opt.autoCreate) { return RowSync.create(this); }
+      if (row) { return row; } else if (opt.autoCreate === true) { return RowSync.create(this); }
     }
 
     addOrUpdate(vals, opt={ add:true, update:true, autoSave:true, resetOnError:true, saveError:true }) {
 
       this.init();
     
-      let rowTo, key;
+      let step, key;
       const ck = this.table.cols.primary;
       if (!ck.formula && !ck.resetIf) { key = ck.toRaw(ck.fetch(vals)); } // quick key
-      if (key == null) { rowTo = RowSync.create(this, vals, { autoSave:false }); key = rowTo.key; }
+      if (key == null) { step = this.initStep(vals); key = step.key; }
       if (key == null) { if (saveError) { throw Error(this.msg("push failed - missing key", vals)); } return; }
     
       const rowFrom = this.get(key, { autoCreate:false, missingError:false });
@@ -81,7 +60,9 @@ export class RowsSync extends CollectionSync {
     
       if (opt.add !== false) {
         if (rowFrom) { if (saveError) { throw Error(this.msg("add failed - duplicate key", key)); } return; }
-        return !rowTo ? RowSync.create(this, vals, opt) : autoSave ? rowTo.save(opt) : rowTo;
+        const rowTo = RowSync.create(this, step || this.initStep(vals));
+        if (autoSave !== false) { rowTo.save(opt); }
+        return rowTo;
       }
     
     }
@@ -96,6 +77,16 @@ export class RowsSync extends CollectionSync {
       opt.add = false;
       opt.update = true;
       return this.addOrUpdate(vals, opt);
+    }
+
+    nextStep(before) {
+      return StepSync.create(this.table, before);
+    }
+
+    initStep(vals) {
+      const step = StepSync.create(this.table);
+      if (jet.isMapable(vals)) { step.push(vals); }
+      return step;
     }
 
 
