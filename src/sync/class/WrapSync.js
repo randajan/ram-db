@@ -19,7 +19,7 @@ export class WrapSync extends jet.types.Plex {
 
       virtual.all(this, {
         key:_=>step.key,
-        label:_=>step.pull(cols.label, false),
+        label:_=>step.label,
         before:_=>step.before.wrap,
         isExist:_=>rows.exist(step.key),
         isDirty:_=>!!step.changes.length,

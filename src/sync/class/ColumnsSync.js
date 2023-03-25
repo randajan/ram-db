@@ -14,12 +14,13 @@ export class ColumnsSync extends CollectionSync {
       _p.reals = [];
 
       solid.all(this, {
+        db:table.db,
         table
       }, false);
 
       virtual.all(this, {
-        primary:_=>{ this.init(); return _p.primary; },
-        label:_=>{ this.init(); return _p.label; },
+        primary:_=>{ this.init(); return _p.index[_p.primary]; },
+        label:_=>{ this.init(); return _p.index[_p.label]; },
         reals:_=>{ this.init(); return [..._p.reals]; }
       });
       

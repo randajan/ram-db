@@ -31,6 +31,7 @@ export class RowsSync extends CollectionSync {
       }
 
       solid.all(this, {
+        db:table.db,
         table
       }, false);
       
@@ -54,14 +55,14 @@ export class RowsSync extends CollectionSync {
       const rowFrom = this.get(key, { autoCreate:false, missingError:false });
     
       if (opt.update !== false) {
-        if (rowFrom) { return rowFrom.update(vals, opt); }
-        if (!opt.add) { if (saveError) { throw Error(this.msg("update failed - key not found", key)); } return; }
+        if (rowFrom) { rowFrom.update(vals, opt); return rowFrom; }
+        if (!opt.add) { if (opt.saveError !== false) { throw Error(this.msg("update failed - key not found", key)); } return; }
       }
     
       if (opt.add !== false) {
-        if (rowFrom) { if (saveError) { throw Error(this.msg("add failed - duplicate key", key)); } return; }
+        if (rowFrom) { if (opt.saveError !== false) { throw Error(this.msg("add failed - duplicate key", key)); } return; }
         const rowTo = RowSync.create(this, step || this.initStep(vals));
-        if (autoSave !== false) { rowTo.save(opt); }
+        if (opt.autoSave !== false) { rowTo.save(opt); }
         return rowTo;
       }
     

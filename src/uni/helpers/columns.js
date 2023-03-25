@@ -12,18 +12,22 @@ export const columnsLoader = (cols, traits, set)=>{
     const isArray = !Object.jet.is(traits);
 
     jet.map(traits, (value, index)=>{
-      const objInArray = (isArray && Object.jet.is(value));
-      const key = String.jet.to((!objInArray && isArray) ? value : (value.key || index));
-
-      delete value.key;
-      const col = set(key, new Column(cols, _p.list.length, key, value));
-
-      for (const trait in privateTraits) {
-        if (!col[trait]) { continue; }
-        const prop = privateTraits[trait];
-        if (_p[prop]) { throw Error(cols.msg(`${prop} column is allready set as '${_p[prop]}'`, col.key)); }
-        _p[prop] = col;
+      const isObj = Object.jet.is(value);
+      const key = String.jet.to((isArray && !isObj) ? value : (value.key || index));
+      
+      if (!isObj) { value = {}; } else {
+        delete value.key;
+        for (const trait in privateTraits) {
+          const v = value[trait];
+          delete value[trait];
+          if (!v) { continue; }
+          const prop = privateTraits[trait];
+          if (_p[prop]) { throw Error(cols.msg(`${prop} column is allready set as '${_p[prop]}'`, key)); }
+          _p[prop] = key;
+        }
       }
+
+      const col = set(key, new Column(cols, _p.list.length, key, value));
 
       if (!col.isVirtual) { _p.reals.push(col); }
 

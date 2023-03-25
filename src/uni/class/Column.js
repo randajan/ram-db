@@ -1,11 +1,8 @@
 import jet from "@randajan/jet-core";
-import { tableFind } from "./Table.js";
 
 const { solid, virtual, cached } = jet.prop;
 
 const _traits = {
-    isPrimary:Boolean,
-    isLabel:Boolean,
     isReadonly:Function,
     resetIf:Function,
     init:Function,
@@ -20,9 +17,10 @@ export default class Column {
         static is(col) { return col instanceof Column; }
     
         constructor(cols, id, key, traits) {
-            const table = cols.table;
+            const { db, table } = cols;
 
             solid.all(this, {
+                db,
                 table,
                 cols,
             }, false);
@@ -33,12 +31,15 @@ export default class Column {
             });
 
             virtual.all(this, {
-                isExist:_=>cols.exist(key)
+                isExist:_=>cols.exist(key),
+                isPrimary:_=>cols.primary === this,
+                isLabel:_=>cols.label === this
             });
 
             for (const tn in _traits) {
                 const type = _traits[tn];
                 const raw = traits[tn];
+                
                 const value = (type !== Function || raw != null) ? type.jet.to(raw) : undefined;
                 solid(this, tn, value);
                 delete traits[tn];
@@ -72,18 +73,18 @@ export default class Column {
         }
     
         toVal(raw, row) {
-            const { separator, ref } = this;
+            const { db, separator, ref } = this;
 
             const refName = (ref && row) ? ref(row) : null;
 
             if (Array.jet.is(raw)) { raw = raw.join(separator); }
-            if (!separator) { return !refName ? raw : tableFind(refName).rows(raw, false); }
+            if (!separator) { return !refName ? raw : db.get(refName).rows(raw, false); }
             const list = raw ? String.jet.to(raw).split(separator) : [];
-            return (!raw || !refName) ? list : list.map(raw=>tableFind(refName).rows(raw, false));
+            return (!raw || !refName) ? list : list.map(raw=>db.get(refName).rows(raw, false));
         }
     
         fetch(vals) {
-            return jet.get(vals, this.key);
+            return Array.isArray(vals) ? vals[this.id] : jet.get(vals, this.key);
         }
     
         toJSON() {

@@ -1,6 +1,8 @@
 import jet from "@randajan/jet-core";
 import WrapSync from "./WrapSync";
 
+const { solid, virtual } = jet.prop;
+
 export class StepSync {
 
     static is(any) { return any instanceof StepSync; }
@@ -13,10 +15,15 @@ export class StepSync {
 
       this.raws = before ? {...before.raws} : {};
       this.changes = [];
-      this.key = undefined;
+      this.vals = {};
 
       this.isSetting = false;
-      this.isKeying = false;
+
+      virtual.all(this, {
+        isSeeding:_=>table.rows.state === "pending",
+        key:_=>this.pull(table.cols.primary, false),
+        label:_=>this.pull(table.cols.label, false)
+      })
       
       this.wrap = WrapSync.create(this);
 
@@ -25,11 +32,10 @@ export class StepSync {
     }
 
     push(vals, force=true) {
-      const { table:{ cols, rows }, raws, before } = this;
-      const isSeeding = rows.state === "pending";
+      const { table:{ cols }, raws, before, isSeeding } = this;
 
-      this.isSetting = true;
       const changes = this.changes = [];
+      this.vals = {};
 
       cols.forEachReal(col=>{ //for each non virtual
         const raw = col.fetch(vals);
@@ -39,36 +45,35 @@ export class StepSync {
 
       if (!isSeeding) {
         cols.forEachReal(col=>{ //for each non virtual
-          const val = this.pull(col, false);
-          raws[col] = col.toRaw(val);
+          this.pull(col, false);
           if (!before || raws[col] !== before.raws[col]) { changes.push(col); } //is isDirty column
         });
       }
-
-      this.isKeying = true;
-      this.key = this.pull(cols.primary, false);
-      this.isSetting = this.isKeying = false;
 
       return !!changes.length || isSeeding;
     }
 
     pull(col, autoRef=true) {
-      const { table:{ rows }, raws, before, wrap, isSetting, isKeying } = this;
+      const { vals, raws, before, wrap, isSeeding } = this;
       const { isVirtual, init, resetIf, formula, isReadonly } = col;
-      const isSeeding = rows.state === "pending";
-      const withTraits = isSetting && !isSeeding;
+
+      if (vals.hasOwnProperty(col)) { return vals[col]; } 
      
       let raw = raws[col];
-      const self = _=>col.toVal(raw, (autoRef && !isKeying) ? this : undefined);
-  
-      if (formula && (isVirtual || withTraits)) { raw = formula(wrap, self); } //formula
-      else if (!isKeying && withTraits) {
+      const self = _=>col.toVal(raw, autoRef ? this : undefined);
+
+      if (formula) { raw = formula(wrap, self); } //formula
+      else if (isSeeding) {
         const bew = before ? before.raws[col] : null;
         if (raw !== bew && isReadonly && isReadonly(wrap, self)) { raw = bew; } //revive value
         if (!before ? (init && raw == null) : (resetIf && resetIf(wrap, self))) { raw = init ? init(wrap) : undefined; } //init or reset
       }
+
+      if (isVirtual) { return self(); }
+
+      raws[col] = col.toRaw(vals[col] = self());
   
-      return self();
+      return vals[col];
     };
 
     get(col, opt={ autoRef:true, missingError:true }) {
@@ -77,7 +82,6 @@ export class StepSync {
 
     reset() {
       const { before } = this;
-      this.key = before?.key;
       this.raws = before ? { ...before.raws } : {};
       this.changes = [];
       return true;

@@ -18,9 +18,9 @@ export class ColumnsAsync extends CollectionAsync {
       }, false);
 
       virtual.all(this, {
-        primary: async _=>{ await this.init(); return _p.primary; },
-        label: async _=>{ await this.init(); return _p.label; },
-        reals:_=>{ this.init(); return [..._p.reals]; }
+        primary:async _=>{ await this.init(); return _p.index[_p.primary]; },
+        label:async _=>{ await this.init(); return _p.index[_p.label]; },
+        reals:async _=>{ await this.init(); return [..._p.reals]; }
       });
       
     }

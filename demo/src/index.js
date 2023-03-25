@@ -1,32 +1,73 @@
-import { Table } from "../../dist/index.js";
+import ramdb from "../../dist/index.js";
 import jet from "@randajan/jet-core";
+import testData from "./../data/TISDB_export.json";
 
 window.jet = jet;
 
-const testData = [
-    {id:"row1"},
-    {id:"row2"},
-    {id:"row3"}
-]
 
-window.test = new Table("test", tbl => {
 
-    return {
-        columns: _=>{
-            return {
-                id:{isPrimary:true},
-                readonly:{ isReadonly:true },
-                free:{ isLabel:true },
-                foo:{init:"bar"},
-                virtual:{ formula:(row)=>row("foo") },
-                separator:{separator:"; "}
-            }
-        },
-        rows: _=>{
-            return testData;
-        },
-        onChange:(...info)=>{
-            console.log(...info);
-        }
+window.ramdb = ramdb.create("main", _=>{
+  const schema = {
+    sys_apps:{
+      url:{ isVirtual:true, formula:r=>`https://www.appsheet.com/start/${r("url_id")}` }
+    },
+    sys_ents:{
+      sys_app_default:{ ref:"sys_apps" },
+      options:{ separator:"; " },
+      label:{ isVirtual:true, isLabel:true, formula:r=>r("plural") }
+    },
+    sys_views:{
+      id:{ isVirtual:true, formula:r=>jet.melt([r("sys_ent"), r("key")], "_") },
+      sys_ent:{ ref:"sys_ents" },
+      name_prefix:{ init:true },
+      label:{ isVirtual:true, isLabel:true, formula:r=>jet.melt([r("name_prefix") ? r("sys_ent")("label") : "", r("name")], " ") }
+    },
+    sys_states:{
+      sys_ent:{ ref:"sys_ents" },
+      sys_news_owner:{ separator:"; " },
+      sys_news_supervizor:{ separator:"; " },
+      code:{ isVirtual:true, formula:r=>r("x")+(r("y")<10 ? "0" : "")+r("y") },
+      label:{ isVirtual:true, isLabel:true, formula:r=>r("code") + " " + r("name") }
+    },
+    sys_rights:{
+      kin_contact:{ ref:"kin_contacts" },
+      sys_ents:{ separator:"; ", ref:"sys_ents" },
+      sys_views:{ separator:"; ", ref:"sys_views" },
+      sys_states:{ separator:"; ", ref:"sys_states" }
+    },
+    sys_apis:{
+      sys_ents_readable:{ ref:"sys_ents", separator:"; " },
+      extra_apps:{ separator:"; " },
+      owner:{ ref:_=>"kin_contacts" },
+      is_expired:{ isVirtual:true, formula:r=>r("expired_at") && (new Date() > r("expired_at")) }
     }
-})
+
+  }
+
+  const global = (name, cols)=>{
+    if (schema[name]) { cols = {...cols, ...schema[name] }; }
+
+    cols.id.isPrimary = true;
+    cols.id.init = _=>String.jet.rnd(12, 12);
+
+    const ut = cols.updated || cols.updated_at;
+    console.log(name, ut);
+    if (ut) { ut.init = _=>new Date(); ut.resetIf = true; }
+
+    const ct = cols.created || cols.created_at;
+    if (ct) { ct.init = _=>new Date(); ct.isReadonly = true; }
+
+    cols._ent = { isVirtual:true, formula:_=>name, ref:"sys_ents" };
+    cols._url = { isVirtual:true, formula:r=>`https://tis.itcan.cz/${r("_ent")("sys_app_default")("pathname")}#control=${name}_Detail&row=${r.key}` };
+
+    return cols;
+  }
+
+  return jet.map(testData, (rows, name)=>{
+    return {
+      columns:_=>global(name, jet.map(rows[0], _=>({}))),
+      rows:_=>rows,
+      onChange:(...info)=>{ console.log(info); }
+    }
+  });
+});

@@ -11,7 +11,7 @@ export class RowSync extends jet.types.Plex {
     static create(rows, iniStep) { return new RowSync(rows, iniStep); };
   
     constructor(rows, iniStep) {
-      const table = rows.table;
+      const { db, table } = rows;
       const _p = {};
       const save = vault.get(rows.uid).save;
 
@@ -19,7 +19,6 @@ export class RowSync extends jet.types.Plex {
       const push = (vals, force, opt={ autoSave:true, resetOnError:true, saveError:true })=>{
         return _p.live.push(vals, force) && (opt.autoSave === false || this.save(opt));
         //TODO:
-        //1. list of dirty rows
         //2. cached row values
         //3. collecting refs
         //4. create async
@@ -28,6 +27,7 @@ export class RowSync extends jet.types.Plex {
       super(get);
 
       solid.all(this, {
+        db,
         table,
         rows,
         get,
