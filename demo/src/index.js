@@ -40,6 +40,15 @@ window.ramdb = ramdb.create("main", _=>{
       extra_apps:{ separator:"; " },
       owner:{ ref:_=>"kin_contacts" },
       is_expired:{ isVirtual:true, formula:r=>r("expired_at") && (new Date() > r("expired_at")) }
+    },
+    kin_contacts:{
+      kin_loc_bill:{ ref:"kin_locs" } 
+    },
+    book_items:{
+      book_doc:{ ref:"book_docs" }
+    },
+    book_docs:{
+      book_items:{ isVirtual:true, separator:"; ", ref:"book_items", formula:r=>window.ramdb("book_items").rows.filter(m=>m("book_doc").key === r.key) }
     }
 
   }
@@ -48,14 +57,14 @@ window.ramdb = ramdb.create("main", _=>{
     if (schema[name]) { cols = {...cols, ...schema[name] }; }
 
     cols.id.isPrimary = true;
-    cols.id.init = _=>String.jet.rnd(12, 12);
+    cols.id.init = _=>jet.uid(12);
 
     const ut = cols.updated || cols.updated_at;
-    console.log(name, ut);
-    if (ut) { ut.init = _=>new Date(); ut.resetIf = true; }
+
+    if (ut) { ut.init = _=>new Date(); ut.resetIf = true; ut.type = "datetime"; }
 
     const ct = cols.created || cols.created_at;
-    if (ct) { ct.init = _=>new Date(); ct.isReadonly = true; }
+    if (ct) { ct.init = _=>new Date(); ct.isReadonly = true; ct.type = "datetime"; }
 
     cols._ent = { isVirtual:true, formula:_=>name, ref:"sys_ents" };
     cols._url = { isVirtual:true, formula:r=>`https://tis.itcan.cz/${r("_ent")("sys_app_default")("pathname")}#control=${name}_Detail&row=${r.key}` };

@@ -3,6 +3,7 @@ import jet from "@randajan/jet-core";
 const { solid, virtual, cached } = jet.prop;
 
 const _traits = {
+    type:String,
     isReadonly:Function,
     resetIf:Function,
     init:Function,
@@ -42,11 +43,16 @@ export default class Column {
                 
                 const value = (type !== Function || raw != null) ? type.jet.to(raw) : undefined;
                 solid(this, tn, value);
+
                 delete traits[tn];
             }
 
             if (this.isVirtual && !this.formula) {
                 throw Error(this.msg("virtual column require formula to be set"));
+            }
+
+            if (this.ref && (this.isPrimary || this.isLabel)) {
+                throw Error(this.msg("columns with ref couldn't be primary or label"));
             }
 
             const unknownTraits = Object.keys(traits);
@@ -71,16 +77,22 @@ export default class Column {
             }
             return raw || null;
         }
+
+        _toVal(raw, refName) {
+            const { db, type } = this;
+            if (type === "datetime") { raw = raw ? new Date(raw) : null; }
+            return refName ? db(refName).rows(raw, { autoCreate:true }) : raw;
+        }
     
         toVal(raw, row) {
-            const { db, separator, ref } = this;
-
+            const { separator, ref } = this;
             const refName = (ref && row) ? ref(row) : null;
 
             if (Array.jet.is(raw)) { raw = raw.join(separator); }
-            if (!separator) { return !refName ? raw : db.get(refName).rows(raw, false); }
+            if (!separator) { return this._toVal(raw, refName); }
+
             const list = raw ? String.jet.to(raw).split(separator) : [];
-            return (!raw || !refName) ? list : list.map(raw=>db.get(refName).rows(raw, false));
+            return list.length ? list.map(raw=>this._toVal(raw, refName)) : list;
         }
     
         fetch(vals) {

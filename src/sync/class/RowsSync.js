@@ -28,6 +28,7 @@ export class RowsSync extends CollectionSync {
           if (keyL) { _p.set(keyL, row); }
           if (keyS) { _p.remove(keyS); }
         }
+        
       }
 
       solid.all(this, {
@@ -37,9 +38,11 @@ export class RowsSync extends CollectionSync {
       
     }
 
+    seed() { return RowSync.create(this); }
+
     get(key, opt={ autoCreate:false, missingError:true }) {
       const row = super.get(key, !opt.autoCreate && opt.missingError);
-      if (row) { return row; } else if (opt.autoCreate === true) { return RowSync.create(this); }
+      if (row) { return row; } else if (opt.autoCreate === true) { return this.seed(); }
     }
 
     addOrUpdate(vals, opt={ add:true, update:true, autoSave:true, resetOnError:true, saveError:true }) {
@@ -50,7 +53,7 @@ export class RowsSync extends CollectionSync {
       const ck = this.table.cols.primary;
       if (!ck.formula && !ck.resetIf) { key = ck.toRaw(ck.fetch(vals)); } // quick key
       if (key == null) { step = this.initStep(vals); key = step.key; }
-      if (key == null) { if (saveError) { throw Error(this.msg("push failed - missing key", vals)); } return; }
+      if (key == null) { if (opt.saveError !== false) { throw Error(this.msg("push failed - missing key", vals)); } return; }
     
       const rowFrom = this.get(key, { autoCreate:false, missingError:false });
     

@@ -15,11 +15,10 @@ export class RowSync extends jet.types.Plex {
       const _p = {};
       const save = vault.get(rows.uid).save;
 
-      const get = (col, opt={ autoRef:true, missingError:true })=>_p.live.get(col, opt);
+      const get = (col, opt={ missingError:true })=>_p.live.get(col, opt);
       const push = (vals, force, opt={ autoSave:true, resetOnError:true, saveError:true })=>{
         return _p.live.push(vals, force) && (opt.autoSave === false || this.save(opt));
         //TODO:
-        //2. cached row values
         //3. collecting refs
         //4. create async
       }
@@ -35,7 +34,7 @@ export class RowSync extends jet.types.Plex {
         update:(vals, opt={ autoSave:true, resetOnError:true, saveError:true })=>push(vals, false, opt),
         reset:_=>!this.isDirty || _p.live.reset(),
         save:(opt={ resetOnError:true, saveError:true })=>{
-          if (!this.isDirty && rows.state !== "pending") { return true; }
+          if (!this.isDirty) { return true; }
           try {
             save(this);
             _p.live = rows.nextStep(_p.saved = _p.live);

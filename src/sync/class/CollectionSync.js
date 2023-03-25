@@ -7,6 +7,7 @@ export class CollectionSync extends jet.types.Plex {
 
   static map(list, byIndex, callback, sort) {
     const sorted = sort ? list.sort(sort) : list;
+    if (sort) { console.log(sort, sorted); }
     const stop = val => { stop.active = true; return val; }
     const result = byIndex ? {} : [];
     let count = 0;
@@ -126,19 +127,6 @@ export class CollectionSync extends jet.types.Plex {
     if (child) { return child; }
     if (missingError) { throw Error(this.msg(`get failed - missing key`, key)); }
   }
-
-  // remove(key, ...args) {
-  //   const { list, index, removeChildren } = vault.get(this.uid);
-  //   this.init();
-  //   key = this.formatKey(key, "remove");
-  //   const child = index[key];
-  //   const x = list.indexOf(child);
-  //   if (x < 0) { throw Error(this.msg(`remove failed - not found`, key)); }
-  //   if (removeChildren(child, ...args) === false) { return false; }
-  //   list.splice(x, 1);
-  //   delete index[key];
-  //   return true;
-  // }
 
   map(callback, sort) {
     const { list } = vault.get(this.uid);

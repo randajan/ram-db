@@ -11,7 +11,7 @@ export class WrapSync extends jet.types.Plex {
     constructor(step) {
       const { rows, cols } = step.table;
 
-      const get = (col, opt={ autoRef:true, missingError:true })=>step.get(col, opt);
+      const get = (col, opt={ missingError:true })=>step.get(col, opt);
 
       super(get);
 
