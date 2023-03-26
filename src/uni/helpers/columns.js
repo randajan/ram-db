@@ -27,10 +27,7 @@ export const columnsLoader = (cols, traits, set)=>{
         }
       }
 
-      const col = set(new Column(cols, _p.list.length, key, value));
-
-      if (col.ref) { _p.refs.push(col); }
-      if (!col.isVirtual) { _p.reals.push(col); }
+      set(new Column(cols, _p.list.length, key, value));
 
     });
 

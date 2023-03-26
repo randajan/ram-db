@@ -11,10 +11,19 @@ export class RowsSync extends ChopSync {
       super(`${table.name}.rows`, {
         stream,
         loader:(rows, data)=>{
+
+          // const refs = table.cols.getChop("refs");
+
+          // refs.map(false, col=>{
+          //   this.addChop(`ref:${col.key}`, r=>r)
+          // });
+
           jet.map(data, vals=>{
             if (!jet.isMapable(vals)) { return; }
             RowSync.create(this).set(vals, { saveError:false });
           });
+
+
         },
         childName:"row"
       });

@@ -27,7 +27,7 @@ export class ChopSync extends jet.types.Plex {
   }
 
   constructor(name, config={}) {
-    const { stream, loader, checker, childName } = Object.jet.to(config);
+    const { stream, loader, checker, parent, childName } = Object.jet.to(config);
     const [uid, _p] = vault.set({
       state: "waiting",
       index: {},
@@ -80,7 +80,8 @@ export class ChopSync extends jet.types.Plex {
     super((...args)=>this.get(...args));
 
     solid.all(this, {
-      uid
+      uid,
+      parent:parent instanceof ChopSync ? parent : undefined
     }, false);
 
     solid.all(this, {
@@ -143,6 +144,7 @@ export class ChopSync extends jet.types.Plex {
     name = formatKey(name);
     if (!name) { throw Error(this.msg(`addChop failed - missing name`)); }
     return _p.chops[name] = new ChopSync(name, {
+      parent:this,
       loader:(chop)=>{
         const _c = vault.get(chop.uid);
         this.map(false, (child)=>{ _c.set(child); });

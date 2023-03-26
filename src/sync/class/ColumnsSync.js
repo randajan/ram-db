@@ -15,8 +15,6 @@ export class ColumnsSync extends ChopSync {
         childName:"column"
       })
       const _p = vault.get(this.uid);
-      _p.reals = [];
-      _p.refs = [];
 
       solid.all(this, {
         db:table.db,
@@ -26,21 +24,12 @@ export class ColumnsSync extends ChopSync {
       
       virtual.all(this, {
         primary:this.afterInit(_=>_p.index[_p.primary]),
-        label:this.afterInit(_=>_p.index[_p.label]),
-        reals:this.afterInit(_=>[..._p.reals]),
-        refs:this.afterInit(_=>[..._p.refs])
+        label:this.afterInit(_=>_p.index[_p.label])
       });
+
+      this.addChop("reals", c=>!c.isVirtual);
+      this.addChop("refs", c=>!!c.ref);
       
-    }
-
-    forEachReal(callback, sort) {
-      this.init();
-      return ChopSync.map(vault.get(this.uid).reals, false, callback, sort);
-    }
-
-    forEachRef(callback, sort) {
-      this.init();
-      return ChopSync.map(vault.get(this.uid).reals, false, callback, sort);
     }
   
   }

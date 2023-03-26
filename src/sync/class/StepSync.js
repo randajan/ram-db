@@ -60,13 +60,15 @@ export class StepSync {
       const changes = this.changes = [];
       this.vals = {};
 
-      cols.forEachReal(col=>{ //for each non virtual
+      const reals = cols.getChop("reals");
+
+      reals.map(false, col=>{ //for each non virtual
         const raw = col.fetch(vals);
         if (raw !== undefined) { raws[col] = raw === "" ? null : col.toRaw(raw); }
         else if (force) { raws[col] = null; }
       });
 
-      cols.forEachReal(col=>{ //for each non virtual
+      reals.map(false, col=>{ //for each non virtual
         this.pull(col);
         if (!before || raws[col] !== before.raws[col]) { changes.push(col); } //is isDirty column
       });
