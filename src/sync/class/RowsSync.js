@@ -1,38 +1,53 @@
 import jet from "@randajan/jet-core";
 import vault from "../../uni/helpers/vault.js";
 import RowSync from "./RowSync.js";
-import CollectionSync from "./CollectionSync.js";
+import ChopSync from "./ChopSync.js";
 import StepSync from "./StepSync.js";
 
 const { solid, virtual } = jet.prop;
 
-export class RowsSync extends CollectionSync {
+export class RowsSync extends ChopSync {
     constructor(table, stream, onChange) {
+      super(`${table.name}.rows`, {
+        stream,
+        loader:(rows, data)=>{
+          jet.map(data, vals=>{
+            if (!jet.isMapable(vals)) { return; }
+            RowSync.create(this).set(vals, { saveError:false });
+          });
+        },
+        childName:"row"
+      });
 
-      const loader = (rows, data)=>{
-        jet.map(data, vals=>{
-          if (!jet.isMapable(vals)) { return; }
-          RowSync.create(this).set(vals, { saveError:false });
-        });
-      };
-
-      super(`${table.name}.rows`, stream, loader);
       const _p = vault.get(this.uid);
 
       _p.save = (row)=>{
         const isReady = this.state === "ready";
-        const { live:{ key, isRemoved }, key:keySaved, isRemoved:wasRemoved } = row;
+        const { key, isRemoved, saved } = row;
+        const keySaved = saved?.key;
+        const wasRemoved = (!saved || saved.isRemoved);
+        
         const rekey = key !== keySaved;
         const remove = isRemoved !== wasRemoved;
 
         if (key && !isRemoved) {
-          if (isReady) { onChange(table, (rekey || wasRemoved) ? "add" : "update", row.live); }
-          if (rekey) { _p.set(key, row); }
+          if (rekey) { _p.set(row); }
+          try {
+            if (isReady) { onChange(table, (rekey || wasRemoved) ? "add" : "update", row.live); }
+          } catch(err) {
+            _p.remove(row);
+            throw err;
+          }
         }
 
         if (keySaved && (rekey || remove)) {
-          if (isReady) { onChange(table, "remove", row.saved); }
-          _p.remove(keySaved);
+          _p.remove(row);
+          try {
+            if (isReady) { onChange(table, "remove", row.saved); }
+          } catch(err) {
+            _p.set(row);
+            throw err;
+          }
         }
         
       }

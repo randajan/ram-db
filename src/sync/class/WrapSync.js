@@ -25,7 +25,7 @@ export class WrapSync extends jet.types.Plex {
         isDirty:_=>step.isDirty,
         isRemoved:_=>step.isRemoved,
         raws:_=>({...step.raws}),
-        vals:_=>cols.map(col=>step.pull(col, true)),
+        vals:_=>cols.map(true, col=>step.pull(col, true)),
         changes:_=>([...step.changes])
       });
   

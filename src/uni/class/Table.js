@@ -11,13 +11,14 @@ export class Table {
 
   static is(any) { return any instanceof Table; }
 
-  static create(db, name, config) { return new Table(db, name, config); }
+  static create(db, key, config) { return new Table(db, key, config); }
 
-  constructor(db, name, config) {
+  constructor(db, key, config) {
     const _p = cached({}, {}, "config", _=>Object.jet.to(config, this)); //cache even config object
 
     solid(this, "db", db, false);
-    solid(this, "name", name);
+    solid(this, "key", key, false);
+    solid(this, "name", key);
 
     cached.all(this, _p, {
       cols:_=>new ColumnsSync(this, _p.config.columns),
@@ -26,7 +27,7 @@ export class Table {
 
   }
 
-  msg(text) { return this.msg(text, this.name); }
+  msg(text) { return this.msg(text, this.key); }
 
 }
 

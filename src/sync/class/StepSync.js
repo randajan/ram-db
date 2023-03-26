@@ -30,6 +30,8 @@ export class StepSync {
     }
 
     pull(col) {
+      if (!col) { return; }
+      
       const { table, vals, raws, before, wrap } = this;
       const { isVirtual, init, resetIf, formula, isReadonly } = col;
 
@@ -73,7 +75,15 @@ export class StepSync {
     }
 
     get(col, opt={ missingError:true }) {
-      return this.pull(this.table.cols.get(col, opt.missingError !== false));
+      const { table:{cols} } = this;
+      if (!Array.isArray(col)) { return this.pull(cols.get(col, opt.missingError !== false)); }
+      let row;
+      for (const c of col) {
+        if (c === col[0]) { row = this.pull(cols.get(c, opt.missingError !== false)); }
+        else if (row) { row = row.get(c, opt); }
+        else { break; }
+      }
+      return row;
     }
 
     remove() {
