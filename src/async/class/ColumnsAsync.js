@@ -1,35 +1,15 @@
-import jet from "@randajan/jet-core";
-import { columnsLoader } from "../../uni/helpers/columns.js";
-import vault from "../../uni/helpers/vault.js";
-import CollectionAsync from "./CollectionAsync.js";
+import { columnsExtend, columnsSuper } from "../../uni/helpers/columns.js";
+import ChopAsync from "./ChopAsync.js";
 
-const { solid, virtual } = jet.prop;
+export class ColumnsAsync extends ChopAsync {
 
-export class ColumnsAsync extends CollectionAsync {
+  constructor(table, stream) {
 
-    constructor(table, stream) {
+    super(...columnsSuper(table, stream));
+    columnsExtend(table, this);
 
-      super(`${table.name}.cols`, stream, columnsLoader);
-      const _p = vault.get(this.uid);
-      _p.reals = [];
-
-      solid.all(this, {
-        table
-      }, false);
-
-      virtual.all(this, {
-        primary:async _=>{ await this.init(); return _p.index[_p.primary]; },
-        label:async _=>{ await this.init(); return _p.index[_p.label]; },
-        reals:async _=>{ await this.init(); return [..._p.reals]; }
-      });
-      
-    }
-
-    forEachReal(callback, sort) {
-      this.init();
-      return CollectionAsync.map(vault.get(this.uid).reals, false, callback, sort);
-    }
-  
   }
 
-  export default ColumnsAsync;
+}
+
+export default ColumnsAsync;

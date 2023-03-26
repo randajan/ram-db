@@ -1,9 +1,7 @@
-import Collection from "../../class/parts/Collection";
+
 import ChopSync from "../../sync/class/ChopSync";
 import vault from "../helpers/vault";
 import Table from "./Table";
-
-
 
 export class Tables extends ChopSync {
 
@@ -24,3 +22,5 @@ export class Tables extends ChopSync {
     }
 
 }
+
+export default Tables;

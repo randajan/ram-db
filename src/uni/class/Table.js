@@ -1,9 +1,8 @@
 import jet from "@randajan/jet-core";
+
 import ColumnsAsync from "../../async/class/ColumnsAsync.js";
-import ColumnsSync from "../../sync/class/ColumnsSync.js";
-import Rows from "../../class/Rows.js";
+import RowsAsync from "../../async/class/RowsAsync.js";
 import RowsSync from "../../sync/class/RowsSync.js";
-import vault from "../helpers/vault.js";
 
 const { solid, cached } = jet.prop;
 
@@ -21,8 +20,8 @@ export class Table {
     solid(this, "name", key);
 
     cached.all(this, _p, {
-      cols:_=>new ColumnsSync(this, _p.config.columns),
-      rows:_=>new RowsSync(this, _p.config.rows, _p.config.onChange)
+      cols:_=>new ColumnsAsync(this, _p.config.columns),
+      rows:_=>new RowsAsync(this, _p.config.rows, _p.config.onChange)
     }, false);
 
   }

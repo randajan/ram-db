@@ -1,19 +1,19 @@
 import jet from "@randajan/jet-core";
 import vault from "../../uni/helpers/vault.js";
-import ChopSync from "./ChopSync.js";
-import RowSync from "./RowSync.js";
-import StepSync from "./StepSync.js";
+import ChopAsync from "./ChopAsync.js";
+import RowAsync from "./RowAsync.js";
+import StepAsync from "./StepAsync.js";
 
 const { solid, virtual } = jet.prop;
 
-export class RowsSync extends ChopSync {
+export class RowsAsync extends ChopAsync {
     constructor(table, stream, onChange) {
       super(`${table.name}.rows`, {
         stream,
         loader:(rows, data)=>{
           jet.map(data, vals=>{
             if (!jet.isMapable(vals)) { return; }
-            RowSync.create(this).set(vals, { saveError:false });
+            RowAsync.create(this).set(vals, { saveError:false });
           });
         },
         childName:"row"
@@ -59,7 +59,7 @@ export class RowsSync extends ChopSync {
       
     }
 
-    seed() { return RowSync.create(this); }
+    seed() { return RowAsync.create(this); }
 
     get(key, opt={ autoCreate:false, missingError:true }) {
       const row = super.get(key, !opt.autoCreate && opt.missingError);
@@ -85,7 +85,7 @@ export class RowsSync extends ChopSync {
     
       if (opt.add !== false) {
         if (rowFrom) { if (opt.saveError !== false) { throw Error(this.msg("add failed - duplicate key", key)); } return; }
-        const rowTo = RowSync.create(this, step || this.initStep(vals));
+        const rowTo = RowAsync.create(this, step || this.initStep(vals));
         if (opt.autoSave !== false) { rowTo.save(opt); }
         return rowTo;
       }
@@ -105,11 +105,11 @@ export class RowsSync extends ChopSync {
     }
 
     nextStep(before) {
-      return StepSync.create(this.table, before);
+      return StepAsync.create(this.table, before);
     }
 
     initStep(vals) {
-      const step = StepSync.create(this.table);
+      const step = StepAsync.create(this.table);
       if (jet.isMapable(vals)) { step.push(vals); }
       return step;
     }
@@ -117,4 +117,4 @@ export class RowsSync extends ChopSync {
 
   }
 
-  export default RowsSync;
+  export default RowsAsync;
