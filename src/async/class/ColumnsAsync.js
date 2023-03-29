@@ -2,6 +2,7 @@ import jet from "@randajan/jet-core";
 import vault from "../../uni/helpers/vault.js";
 import { colsTraits } from "../../uni/helpers/consts.js";
 import ChopAsync from "./ChopAsync.js";
+import ColumnAsync from "./ColumnAsync";
 
 
 const { solid, virtual } = jet.prop;
@@ -27,7 +28,7 @@ const loader = async (cols, traits, set) => {
       }
     }
 
-    await set(new ColumnsAsync(cols, _p.list.length, key, value));
+    await set(new ColumnAsync(cols, _p.list.length, key, value));
   }
 
   if (!cols.count) { throw Error(cols.msg("at least one column is required")); }

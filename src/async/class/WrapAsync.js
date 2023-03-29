@@ -11,21 +11,21 @@ export class WrapAsync extends jet.types.Plex {
     constructor(step) {
       const { cols } = step.table;
 
-      const get = (col, opt={ missingError:true })=>step.get(col, opt);
+      const get = async (col, opt={ missingError:true })=>step.get(col, opt);
 
       super(get);
 
       solid.all(this, { get }, false);
 
       virtual.all(this, {
-        key:_=>step.key,
-        label:_=>step.label,
+        key:async _=>step.key,
+        label:async _=>step.label,
         before:_=>step.before.wrap,
-        isExist:_=>step.isExist,
-        isDirty:_=>step.isDirty,
+        isExist:async _=>step.isExist,
+        isDirty:async _=>step.isDirty,
         isRemoved:_=>step.isRemoved,
         raws:_=>({...step.raws}),
-        vals:_=>cols.map(true, col=>step.pull(col, true)),
+        vals:async _=>cols.map(true, async col=>await step.pull(col, true)),
         changes:_=>([...step.changes])
       });
   

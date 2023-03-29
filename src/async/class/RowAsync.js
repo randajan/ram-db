@@ -1,23 +1,22 @@
 import jet from "@randajan/jet-core";
 import vault from "../../uni/helpers/vault.js";
-import StepSync from "./StepSync.js";
 
 const { solid, virtual } = jet.prop;
 
-export class RowSync extends jet.types.Plex {
+export class RowAsync extends jet.types.Plex {
 
-    static is(row) { return row instanceof RowSync; }
+    static is(row) { return row instanceof RowAsync; }
 
-    static create(rows, iniStep) { return new RowSync(rows, iniStep); };
+    static create(rows, iniStep) { return new RowAsync(rows, iniStep); };
   
     constructor(rows, iniStep) {
       const { db, table } = rows;
       const _p = {};
       const save = vault.get(rows.uid).save;
 
-      const get = (col, opt={ missingError:true })=>_p.live.get(col, opt);
-      const push = (vals, force, opt={ autoSave:true, resetOnError:true, saveError:true })=>{
-        return _p.live.push(vals, force) && (opt.autoSave === false || this.save(opt));
+      const get = async (col, opt={ missingError:true })=>_p.live.get(col, opt);
+      const push = async (vals, force, opt={ autoSave:true, resetOnError:true, saveError:true })=>{
+        return (await _p.live.push(vals, force)) && (opt.autoSave === false || await this.save(opt));
       }
 
       super(get);
@@ -27,20 +26,21 @@ export class RowSync extends jet.types.Plex {
         table,
         rows,
         get,
-        set:(vals, opt={ autoSave:true, resetOnError:true, saveError:true })=>push(vals, true, opt),
-        update:(vals, opt={ autoSave:true, resetOnError:true, saveError:true })=>push(vals, false, opt),
-        reset:_=>!this.isDirty || _p.live.reset(),
-        remove:(opt={ autoSave:true, resetOnError:true, saveError:true })=>{
-          return _p.live.remove() && (opt.autoSave === false || this.save(opt));
+        set:async (vals, opt={ autoSave:true, resetOnError:true, saveError:true })=>await push(vals, true, opt),
+        update:async (vals, opt={ autoSave:true, resetOnError:true, saveError:true })=>await push(vals, false, opt),
+        reset:async _=>!(await this.isDirty) || _p.live.reset(),
+        remove:async (opt={ autoSave:true, resetOnError:true, saveError:true })=>{
+          return _p.live.remove() && (opt.autoSave === false || await this.save(opt));
         },
-        save:(opt={ resetOnError:true, saveError:true })=>{
-          if (!this.isDirty) { return true; }
+        save:async (opt={ resetOnError:true, saveError:true })=>{
+          if (!(await this.isDirty)) { return true; }
+          
           try {
-            save(this);
+            await save(this);
             _p.live = rows.nextStep(_p.saved = _p.live);
             return true;
           } catch (err) {
-            if (opt.resetOnError !== false) { this.reset(); }
+            if (opt.resetOnError !== false) { await this.reset(); }
             if (opt.saveError !== false) { throw err; }
             console.warn(err);
             return false;
@@ -50,11 +50,11 @@ export class RowSync extends jet.types.Plex {
       }, false);
 
       virtual.all(this, {
-        key:_=>_p.saved?.key,
-        label:_=>_p.saved?.key,
+        key:async _=>_p.saved?.key,
+        label:async _=>_p.saved?.label,
         isRemoved:_=>!_p.saved || _p.saved.isRemoved,
-        isExist:_=>!!_p.saved?.isExist,
-        isDirty:_=>_p.live.isDirty,
+        isExist:async _=>!!(await _p.saved?.isExist),
+        isDirty:async _=>_p.live.isDirty,
         live:_=>_p.live.wrap,
         saved:_=>_p.saved?.wrap
       });
@@ -78,4 +78,4 @@ export class RowSync extends jet.types.Plex {
   }
   
   
-  export default RowSync;
+  export default RowAsync;

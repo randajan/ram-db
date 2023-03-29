@@ -1,5 +1,6 @@
 import jet from "@randajan/jet-core";
 import { colTraits } from "../../uni/helpers/consts";
+import { RowSync } from "./RowSync";
 
 const { solid, virtual, cached } = jet.prop;
 
@@ -57,13 +58,16 @@ export default class ColumnSync {
         return this.cols.msg(text, this.key);
     }
 
+    _toRaw(val) {
+        return RowSync.is(val) ? val.key : (String.jet.to(val) || null);
+    }
+
     toRaw(val) {
         const { separator } = this;
-        if (!(separator && Array.jet.is(val))) { return String.jet.to(val) || null; }
+        if (!(separator && Array.jet.is(val))) { return this._toRaw(val); }
         let raw = "";
-        for (let i in val) {
-            const v = val[i];
-            if (jet.isFull(v)) { raw += (raw ? separator : "") + String.jet.to(v); }
+        for (let v of val) {
+            if (jet.isFull(v)) { raw += (raw ? separator : "") + this._toRaw(v); }
         }
         return raw || null;
     }

@@ -9,7 +9,7 @@ window.jet = jet;
 window.ramdb = ramdb.create("main", _=>{
   const schema = {
     sys_apps:{
-      url:{ isVirtual:true, formula:r=>`https://www.appsheet.com/start/${r("url_id")}` }
+      url:{ isVirtual:true, formula:async r=>`https://www.appsheet.com/start/${await r("url_id")}` }
     },
     sys_ents:{
       sys_app_default:{ ref:"sys_apps" },
@@ -68,7 +68,7 @@ window.ramdb = ramdb.create("main", _=>{
     if (ct) { ct.init = _=>new Date(); ct.isReadonly = true; ct.type = "datetime"; }
 
     cols._ent = { isVirtual:true, formula:_=>name, ref:"sys_ents" };
-    cols._url = { isVirtual:true, formula:r=>`https://tis.itcan.cz/${r("_ent")("sys_app_default")("pathname")}#control=${name}_Detail&row=${r.key}` };
+    cols._url = { isVirtual:true, formula:async r=>`https://tis.itcan.cz/${await r(["_ent","sys_app_default", "pathname"])}#control=${name}_Detail&row=${await r.key}` };
 
     return cols;
   }

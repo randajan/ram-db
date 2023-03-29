@@ -1,6 +1,5 @@
 import jet from "@randajan/jet-core";
 import vault from "../../uni/helpers/vault.js";
-import StepSync from "./StepSync.js";
 
 const { solid, virtual } = jet.prop;
 
@@ -51,7 +50,7 @@ export class RowSync extends jet.types.Plex {
 
       virtual.all(this, {
         key:_=>_p.saved?.key,
-        label:_=>_p.saved?.key,
+        label:_=>_p.saved?.label,
         isRemoved:_=>!_p.saved || _p.saved.isRemoved,
         isExist:_=>!!_p.saved?.isExist,
         isDirty:_=>_p.live.isDirty,

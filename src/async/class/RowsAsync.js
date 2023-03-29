@@ -11,9 +11,12 @@ export class RowsAsync extends ChopAsync {
       super(`${table.name}.rows`, {
         stream,
         loader:async (rows, data)=>{
-          for (let index of data) {
+
+          for (let index in data) {
+
             const vals = data[index];
             if (!jet.isMapable(vals)) { return; }
+            
             await RowAsync.create(rows).set(vals, { saveError:false });
           }
 
@@ -27,12 +30,18 @@ export class RowsAsync extends ChopAsync {
       const _p = vault.get(this.uid);
 
       _p.save = async (row)=>{
-        const { live:{ key, isRemoved }, key:keySaved, isRemoved:wasRemoved } = row;
-        
+        const keySaved = await row.key;
+        const wasRemoved = await row.isRemoved;
+        const key = await row.live.key;
+        const isRemoved = await row.live.isRemoved;
+
         const rekey = key !== keySaved;
         const remove = isRemoved !== wasRemoved;
 
-        if (key && !isRemoved) { if (rekey) { await _p.set(row, key); } }
+        if (key && !isRemoved) {
+          if (rekey) { await _p.set(row, key); }
+          else { onChange(table, "update", row.live); }
+        }
         if (keySaved && (rekey || remove)) { await _p.remove(row); }
 
       }
@@ -56,8 +65,8 @@ export class RowsAsync extends ChopAsync {
       await this.init();
     
       let step, key;
-      const ck = this.table.cols.primary;
-      if (!ck.formula && !ck.resetIf) { key = ck.toRaw(ck.fetch(vals)); } // quick key
+      const ck = await this.table.cols.primary;
+      if (!ck.formula && !ck.resetIf) { key = await ck.toRaw(ck.fetch(vals)); } // quick key
       if (key == null) { step = await this.initStep(vals); key = step.key; }
       if (key == null) { if (opt.saveError !== false) { throw Error(this.msg("push failed - missing key", vals)); } return; }
     

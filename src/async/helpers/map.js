@@ -9,7 +9,7 @@ export const asyncMap = async (list, byIndex, callback, sort)=>{
         const child = sorted[i];
         const r = await callback(child, i + 1, count, stop);
         if (r === undefined) { continue; }
-        if (byIndex) { result[child.key] = r; }
+        if (byIndex) { result[await child.key] = r; }
         else { result.push(r); }
         count++;
     }

@@ -121,7 +121,8 @@ export class ChopSync extends jet.types.Plex {
 
   init(streamError = true) {
     const _p = vault.get(this.uid);
-    if (_p.state === "waiting") {
+    if (_p.state === "error" && streamError) { throw _p.error; }
+    else if (_p.state === "waiting") {
       _p.build = (_=>{
         _p.state = "pending";
         try {
@@ -133,14 +134,12 @@ export class ChopSync extends jet.types.Plex {
           _p.state = "ready";
         } catch(error) {
           _p.errorAt = new Date();
-          _p.error = error;
           _p.state = "error";
+          if (streamError) { throw (_p.error = error); }
         }
         return this;
       })();
     }
-    if (_p.state === "error") { throw _p.error; }
-
     return _p.build;
   }
 

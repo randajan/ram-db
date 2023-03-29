@@ -1,5 +1,6 @@
 import jet from "@randajan/jet-core";
 import ColumnsAsync from "../../async/class/ColumnsAsync.js";
+import RowsAsync from "../../async/class/RowsAsync.js";
 
 import ColumnsSync from "../../sync/class/ColumnsSync.js";
 import RowsSync from "../../sync/class/RowsSync.js";
@@ -21,7 +22,7 @@ export class Table {
 
     cached.all(this, _p, {
       cols:_=>new ColumnsAsync(this, _p.config.columns),
-      rows:_=>new RowsSync(this, _p.config.rows, _p.config.onChange)
+      rows:_=>new RowsAsync(this, _p.config.rows, _p.config.onChange)
     }, false);
 
   }

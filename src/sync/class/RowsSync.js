@@ -11,7 +11,7 @@ export class RowsSync extends ChopSync {
       super(`${table.name}.rows`, {
         stream,
         loader:(rows, data)=>{
-          for (let index of data) {
+          for (let index in data) {
             const vals = data[index];
             if (!jet.isMapable(vals)) { return; }
             RowSync.create(rows).set(vals, { saveError:false });

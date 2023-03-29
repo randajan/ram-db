@@ -1,5 +1,6 @@
 import jet from "@randajan/jet-core";
 import { colTraits } from "../../uni/helpers/consts";
+import RowAsync from "./RowAsync";
 
 const { solid, virtual, cached } = jet.prop;
 
@@ -57,13 +58,16 @@ export default class ColumnAsync {
         return this.cols.msg(text, this.key);
     }
 
-    toRaw(val) {
+    async _toRaw(val) {
+        return RowAsync.is(val) ? await val.key : (String.jet.to(val) || null);
+    }
+
+    async toRaw(val) {
         const { separator } = this;
-        if (!(separator && Array.jet.is(val))) { return String.jet.to(val) || null; }
+        if (!separator || !Array.isArray(val)) { return this._toRaw(val); }
         let raw = "";
-        for (let i in val) {
-            const v = val[i];
-            if (jet.isFull(v)) { raw += (raw ? separator : "") + String.jet.to(v); }
+        for (let v of val) {
+            if (jet.isFull(v)) { raw += (raw ? separator : "") + await this._toRaw(v); }
         }
         return raw || null;
     }
@@ -83,7 +87,7 @@ export default class ColumnAsync {
         if (!separator) { return this._toVal(raw, refName); }
 
         const list = raw ? String.jet.to(raw).split(separator) : [];
-        return list.length ? Promise.all(list.map(raw => this._toVal(raw, refName))) : list;
+        return list.length ? Promise.all(list.map(v => this._toVal(v, refName))) : list;
     }
 
     fetch(vals) {
