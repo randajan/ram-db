@@ -10,46 +10,31 @@ export class RowsAsync extends ChopAsync {
     constructor(table, stream, onChange) {
       super(`${table.name}.rows`, {
         stream,
-        loader:(rows, data)=>{
-          jet.map(data, vals=>{
+        loader:async (rows, data)=>{
+          for (let index of data) {
+            const vals = data[index];
             if (!jet.isMapable(vals)) { return; }
-            RowAsync.create(this).set(vals, { saveError:false });
-          });
+            await RowAsync.create(rows).set(vals, { saveError:false });
+          }
+
+          rows.on("afterSet", async (self, row)=>onChange(table, "set", row.live));
+          rows.on("afterRemove", async (self, row)=>onChange(table, "remove", row.saved));
+
         },
         childName:"row"
       });
 
       const _p = vault.get(this.uid);
 
-      _p.save = (row)=>{
-        const isReady = this.state === "ready";
-        const { key, isRemoved, saved } = row;
-        const keySaved = saved?.key;
-        const wasRemoved = (!saved || saved.isRemoved);
+      _p.save = async (row)=>{
+        const { live:{ key, isRemoved }, key:keySaved, isRemoved:wasRemoved } = row;
         
         const rekey = key !== keySaved;
         const remove = isRemoved !== wasRemoved;
 
-        if (key && !isRemoved) {
-          if (rekey) { _p.set(row); }
-          try {
-            if (isReady) { onChange(table, (rekey || wasRemoved) ? "add" : "update", row.live); }
-          } catch(err) {
-            _p.remove(row);
-            throw err;
-          }
-        }
+        if (key && !isRemoved) { if (rekey) { await _p.set(row, key); } }
+        if (keySaved && (rekey || remove)) { await _p.remove(row); }
 
-        if (keySaved && (rekey || remove)) {
-          _p.remove(row);
-          try {
-            if (isReady) { onChange(table, "remove", row.saved); }
-          } catch(err) {
-            _p.set(row);
-            throw err;
-          }
-        }
-        
       }
 
       solid.all(this, {
@@ -61,44 +46,44 @@ export class RowsAsync extends ChopAsync {
 
     seed() { return RowAsync.create(this); }
 
-    get(key, opt={ autoCreate:false, missingError:true }) {
+    async get(key, opt={ autoCreate:false, missingError:true }) {
       const row = super.get(key, !opt.autoCreate && opt.missingError);
       if (row) { return row; } else if (opt.autoCreate === true) { return this.seed(); }
     }
 
-    addOrUpdate(vals, opt={ add:true, update:true, autoSave:true, resetOnError:true, saveError:true }) {
+    async addOrUpdate(vals, opt={ add:true, update:true, autoSave:true, resetOnError:true, saveError:true }) {
 
-      this.init();
+      await this.init();
     
       let step, key;
       const ck = this.table.cols.primary;
       if (!ck.formula && !ck.resetIf) { key = ck.toRaw(ck.fetch(vals)); } // quick key
-      if (key == null) { step = this.initStep(vals); key = step.key; }
+      if (key == null) { step = await this.initStep(vals); key = step.key; }
       if (key == null) { if (opt.saveError !== false) { throw Error(this.msg("push failed - missing key", vals)); } return; }
     
-      const rowFrom = this.get(key, { autoCreate:false, missingError:false });
+      const rowFrom = await this.get(key, { autoCreate:false, missingError:false });
     
       if (opt.update !== false) {
-        if (rowFrom) { rowFrom.update(vals, opt); return rowFrom; }
+        if (rowFrom) { await rowFrom.update(vals, opt); return rowFrom; }
         if (!opt.add) { if (opt.saveError !== false) { throw Error(this.msg("update failed - key not found", key)); } return; }
       }
     
       if (opt.add !== false) {
         if (rowFrom) { if (opt.saveError !== false) { throw Error(this.msg("add failed - duplicate key", key)); } return; }
-        const rowTo = RowAsync.create(this, step || this.initStep(vals));
-        if (opt.autoSave !== false) { rowTo.save(opt); }
+        const rowTo = RowAsync.create(this, step || await this.initStep(vals));
+        if (opt.autoSave !== false) { await rowTo.save(opt); }
         return rowTo;
       }
     
     }
 
-    add(vals, opt={ autoSave:true, resetOnError:true, saveError:true }) {
+    async add(vals, opt={ autoSave:true, resetOnError:true, saveError:true }) {
       opt.add = true;
       opt.update = false;
       return this.addOrUpdate(vals, opt);
     }
 
-    update(vals, opt={ autoSave:true, resetOnError:true, saveError:true }) {
+    async update(vals, opt={ autoSave:true, resetOnError:true, saveError:true }) {
       opt.add = false;
       opt.update = true;
       return this.addOrUpdate(vals, opt);
@@ -108,9 +93,9 @@ export class RowsAsync extends ChopAsync {
       return StepAsync.create(this.table, before);
     }
 
-    initStep(vals) {
+    async initStep(vals) {
       const step = StepAsync.create(this.table);
-      if (jet.isMapable(vals)) { step.push(vals); }
+      if (jet.isMapable(vals)) { await step.push(vals); }
       return step;
     }
 

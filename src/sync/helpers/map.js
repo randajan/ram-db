@@ -1,3 +1,5 @@
+
+
 export const syncMap = (list, byIndex, callback, sort)=>{
     const sorted = sort ? list.sort(sort) : list;
     const stop = val => { stop.active = true; return val; }

@@ -55,12 +55,10 @@ export class StepSync {
     };
 
     push(vals, force=true) {
-      const { table:{ cols }, raws, before } = this;
+      const { table:{ cols:{ reals } }, raws, before } = this;
 
       const changes = this.changes = [];
       this.vals = {};
-
-      const reals = cols.getChop("reals");
 
       reals.map(false, col=>{ //for each non virtual
         const raw = col.fetch(vals);

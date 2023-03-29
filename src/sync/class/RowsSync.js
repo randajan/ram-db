@@ -11,10 +11,15 @@ export class RowsSync extends ChopSync {
       super(`${table.name}.rows`, {
         stream,
         loader:(rows, data)=>{
-          jet.map(data, vals=>{
+          for (let index of data) {
+            const vals = data[index];
             if (!jet.isMapable(vals)) { return; }
-            RowSync.create(this).set(vals, { saveError:false });
-          });
+            RowSync.create(rows).set(vals, { saveError:false });
+          }
+
+          rows.on("afterSet", (self, row)=>onChange(table, "set", row.live));
+          rows.on("afterRemove", (self, row)=>onChange(table, "remove", row.saved));
+
         },
         childName:"row"
       });
@@ -22,34 +27,14 @@ export class RowsSync extends ChopSync {
       const _p = vault.get(this.uid);
 
       _p.save = (row)=>{
-        const isReady = this.state === "ready";
-        const { key, isRemoved, saved } = row;
-        const keySaved = saved?.key;
-        const wasRemoved = (!saved || saved.isRemoved);
+        const { live:{ key, isRemoved }, key:keySaved, isRemoved:wasRemoved } = row;
         
         const rekey = key !== keySaved;
         const remove = isRemoved !== wasRemoved;
 
-        if (key && !isRemoved) {
-          if (rekey) { _p.set(row); }
-          try {
-            if (isReady) { onChange(table, (rekey || wasRemoved) ? "add" : "update", row.live); }
-          } catch(err) {
-            _p.remove(row);
-            throw err;
-          }
-        }
+        if (key && !isRemoved) { if (rekey) { _p.set(row, key); } }
+        if (keySaved && (rekey || remove)) { _p.remove(row); }
 
-        if (keySaved && (rekey || remove)) {
-          _p.remove(row);
-          try {
-            if (isReady) { onChange(table, "remove", row.saved); }
-          } catch(err) {
-            _p.set(row);
-            throw err;
-          }
-        }
-        
       }
 
       solid.all(this, {

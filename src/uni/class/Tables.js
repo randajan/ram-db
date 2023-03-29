@@ -1,5 +1,6 @@
 
 import ChopSync from "../../sync/class/ChopSync";
+import ColumnsSync from "../../sync/class/ColumnsSync";
 import vault from "../helpers/vault";
 import Table from "./Table";
 
