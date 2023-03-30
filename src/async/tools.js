@@ -1,3 +1,10 @@
+export const asyncRun = async (handlers, ...args) => {
+    if (!handlers) { return; }
+    for (const cb of handlers) {
+        await cb(...args);
+    }
+}
+
 export const asyncMap = async (list, byIndex, callback, sort)=>{
     const sorted = sort ? list.sort(sort) : list;
     const stop = val => { stop.active = true; return val; }

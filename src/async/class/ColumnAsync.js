@@ -1,5 +1,6 @@
 import jet from "@randajan/jet-core";
-import { colTraits } from "../../uni/helpers/consts";
+import { colTraits } from "../../uni/consts";
+import vault from "../../uni/vault";
 import RowAsync from "./RowAsync";
 
 const { solid, virtual, cached } = jet.prop;
@@ -10,6 +11,7 @@ export default class ColumnAsync {
 
     constructor(cols, id, key, traits) {
         const { db, table } = cols;
+        const _c = vault.get(cols.uid);
 
         solid.all(this, {
             db,
@@ -23,9 +25,8 @@ export default class ColumnAsync {
         });
 
         virtual.all(this, {
-            isExist: _ => cols.exist(key),
-            isPrimary: _ => cols.primary === this,
-            isLabel: _ => cols.label === this
+            isPrimary: _ => _c.primary === this.key,
+            isLabel: _ => _c.label === this.key
         });
 
         for (const tn in colTraits) {

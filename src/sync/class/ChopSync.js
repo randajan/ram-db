@@ -1,17 +1,9 @@
 import jet from "@randajan/jet-core";
-import { chopEvents } from "../../uni/helpers/consts";
-import { formatKey } from "../../uni/helpers/tools";
-import vault from "../../uni/helpers/vault";
-import { syncMap } from "../helpers/map";
+import { formatKey } from "../../uni/tools";
+import vault from "../../uni/vault";
+import { syncMap, syncRun } from "../tools";
 
 const { solid, virtual } = jet.prop;
-
-const run = (handlers, ...args) => {
-  if (!handlers) { return; }
-  for (const cb of handlers) {
-    cb(...args);
-  }
-}
 
 export class ChopSync extends jet.types.Plex {
 
@@ -35,18 +27,10 @@ export class ChopSync extends jet.types.Plex {
         return;
       }
 
-      run(_p.handlers.beforeSet, this, child, key, throwError);
+      syncRun(_p.handlers.beforeSet, this, child, key, throwError);
       _p.list.push(_p.index[key] = child);
 
-      try { run(_p.handlers.afterSet, this, child, key, throwError); }
-      catch (err) {
-        const id = _p.list.indexOf(child);
-        if (id >= 0) {
-          _p.list.splice(id, 1);
-          delete _p.index[key];
-          throw err;
-        }
-      }
+      try { syncRun(_p.handlers.afterSet, this, child, key, throwError); } catch (err) {}
 
       return child;
     }
@@ -60,13 +44,10 @@ export class ChopSync extends jet.types.Plex {
         return false;
       }
 
-      run(_p.handlers.beforeRemove, this, child, throwError);
+      syncRun(_p.handlers.beforeRemove, this, child, throwError);
       _p.list.splice(id, 1);
       delete _p.index[key];
-      try { run(_p.handlers.afterRemove, this, child, throwError); } catch (err) {
-        _p.list.push(_p.index[key] = child);
-        throw err;
-      }
+      try { syncRun(_p.handlers.afterRemove, this, child, throwError); } catch (err) {}
 
       return true;
     }
@@ -106,7 +87,6 @@ export class ChopSync extends jet.types.Plex {
   }
 
   on(event, callback) {
-    if (!chopEvents.includes(event)) { throw Error(this.msg(`on(...) require one of event '${chopEvents.join(", ")}' but '${event}' provided`)); }
     if (!jet.isRunnable(callback)) { throw Error(this.msg(`on(...) require callback`)); }
 
     const { handlers } = vault.get(this.uid);
@@ -126,11 +106,11 @@ export class ChopSync extends jet.types.Plex {
       _p.build = (_=>{
         _p.state = "pending";
         try {
-          run(_p.handlers.beforeInit, this, streamError);
+          syncRun(_p.handlers.beforeInit, this, streamError);
           const data = _p.stream();
           if (Promise.jet.is(data)) { throw Error(this.msg(`init failed - promise found at sync`)); }
           _p.loader(this, data, _p.set);
-          run(_p.handlers.afterInit, this, streamError);
+          syncRun(_p.handlers.afterInit, this, streamError);
           _p.state = "ready";
         } catch(error) {
           _p.errorAt = new Date();

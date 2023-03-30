@@ -1,6 +1,6 @@
 import jet from "@randajan/jet-core";
-import vault from "../../uni/helpers/vault.js";
-import { colsTraits } from "../../uni/helpers/consts.js";
+import vault from "../../uni/vault.js";
+import { colsTraits } from "../../uni/consts.js";
 import ChopSync from "./ChopSync.js";
 
 

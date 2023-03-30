@@ -1,13 +1,14 @@
 import jet from "@randajan/jet-core";
-import vault from "../../uni/helpers/vault.js";
+import vault from "../../uni/vault.js";
+import { syncRun } from "../tools";
 import ChopSync from "./ChopSync.js";
 import RowSync from "./RowSync.js";
 import StepSync from "./StepSync.js";
 
-const { solid, virtual } = jet.prop;
+const { solid } = jet.prop;
 
 export class RowsSync extends ChopSync {
-    constructor(table, stream, onChange) {
+    constructor(table, stream) {
       super(`${table.name}.rows`, {
         stream,
         loader:(rows, data)=>{
@@ -16,10 +17,6 @@ export class RowsSync extends ChopSync {
             if (!jet.isMapable(vals)) { return; }
             RowSync.create(rows).set(vals, { saveError:false });
           }
-
-          rows.on("afterSet", (self, row)=>onChange(table, "set", row.live));
-          rows.on("afterRemove", (self, row)=>onChange(table, "remove", row.saved));
-
         },
         childName:"row"
       });
@@ -32,7 +29,13 @@ export class RowsSync extends ChopSync {
         const rekey = key !== keySaved;
         const remove = isRemoved !== wasRemoved;
 
-        if (key && !isRemoved) { if (rekey) { _p.set(row, key); } }
+        if (key && !isRemoved) {
+          if (rekey) { _p.set(row, key); }
+          else {
+            syncRun(_p.handlers.beforeUpdate, this, row, throwError);
+            syncRun(_p.handlers.afterUpdate, this, row, throwError);
+          }
+        }
         if (keySaved && (rekey || remove)) { _p.remove(row); }
 
       }

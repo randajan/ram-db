@@ -1,6 +1,6 @@
 import jet from "@randajan/jet-core";
-import vault from "../../uni/helpers/vault.js";
-import { colsTraits } from "../../uni/helpers/consts.js";
+import vault from "../../uni/vault.js";
+import { colsTraits } from "../../uni/consts.js";
 import ChopAsync from "./ChopAsync.js";
 import ColumnAsync from "./ColumnAsync";
 
@@ -33,7 +33,7 @@ const loader = async (cols, traits, set) => {
 
   if (!cols.count) { throw Error(cols.msg("at least one column is required")); }
 
-  if (!_p.primary) { _p.primary = _p.list[0]; }
+  if (!_p.primary) { _p.primary = _p.list[0].key; }
   if (!_p.label) { _p.label = _p.primary; }
 
 }

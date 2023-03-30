@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import vault from "../../uni/helpers/vault.js";
+import vault from "../../uni/vault.js";
 
 const { solid, virtual } = jet.prop;
 

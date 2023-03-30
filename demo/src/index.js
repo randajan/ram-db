@@ -1,12 +1,11 @@
-import ramdb from "../../dist/index.js";
+import ramdb from "../../dist/async.js";
 import jet from "@randajan/jet-core";
 import testData from "./../data/TISDB_export.json";
 
 window.jet = jet;
 
 
-
-window.ramdb = ramdb.create("main", _=>{
+window.ramdb = ramdb("main", _=>{
   const schema = {
     sys_apps:{
       url:{ isVirtual:true, formula:async r=>`https://www.appsheet.com/start/${await r("url_id")}` }
@@ -17,10 +16,10 @@ window.ramdb = ramdb.create("main", _=>{
       label:{ isVirtual:true, isLabel:true, formula:r=>r("plural") }
     },
     sys_views:{
-      id:{ isVirtual:true, formula:r=>jet.melt([r("sys_ent"), r("key")], "_") },
+      id:{ isVirtual:true, formula:async r=>jet.melt([await r(["sys_ent", "id"]), await r("key")], "_") },
       sys_ent:{ ref:"sys_ents" },
       name_prefix:{ init:true },
-      label:{ isVirtual:true, isLabel:true, formula:r=>jet.melt([r("name_prefix") ? r("sys_ent")("label") : "", r("name")], " ") }
+      label:{ isVirtual:true, isLabel:true, formula:async r=>jet.melt([await r("name_prefix") ? await r(["sys_ent", "label"]) : "", await r("name")], " ") }
     },
     sys_states:{
       sys_ent:{ ref:"sys_ents" },
@@ -50,6 +49,11 @@ window.ramdb = ramdb.create("main", _=>{
     },
     book_docs:{
       book_items:{ isVirtual:true, separator:"; ", ref:"book_items", formula:r=>window.ramdb("book_items").rows.filter(m=>m("book_doc").key === r.key) }
+    },
+    history_contacts:{
+      kin_contact:{ ref:"kin_contacts" },
+      version:{ type:"number" },
+      id:{ isVirtual:true, isPrimary:true, formula:async r=>jet.melt([await r(["kin_contact", "id"]), await r("version")], "_") }
     }
 
   }
@@ -57,8 +61,12 @@ window.ramdb = ramdb.create("main", _=>{
   const global = (name, cols)=>{
     if (schema[name]) { cols = {...cols, ...schema[name] }; }
 
-    cols.id.isPrimary = true;
-    cols.id.init = _=>jet.uid(12);
+    if (cols.id) {
+      cols.id.isPrimary = true;
+      cols.id.init = _=>jet.uid(12);
+    } else {
+      console.log(name);
+    }
 
     const ut = cols.updated || cols.updated_at;
 
@@ -75,7 +83,7 @@ window.ramdb = ramdb.create("main", _=>{
 
   return jet.map(testData, (rows, name)=>{
     return {
-      columns:_=>global(name, jet.map(rows[0], _=>({}))),
+      cols:_=>global(name, jet.map(rows[0], _=>({}))),
       rows:_=>rows,
       onChange:(table, event, data)=>{
         console.log({ name:table.name, event, key:data.key, data:data.raws });

@@ -1,4 +1,9 @@
-
+export const syncRun = (handlers, ...args) => {
+    if (!handlers) { return; }
+    for (const cb of handlers) {
+        cb(...args);
+    }
+}
 
 export const syncMap = (list, byIndex, callback, sort)=>{
     const sorted = sort ? list.sort(sort) : list;
@@ -18,3 +23,4 @@ export const syncMap = (list, byIndex, callback, sort)=>{
 
     return result;
 }
+

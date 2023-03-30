@@ -1,28 +1,22 @@
 import jet from "@randajan/jet-core";
-import vault from "../../uni/helpers/vault.js";
+import vault from "../../uni/vault.js";
+import { asyncRun } from "../tools.js";
 import ChopAsync from "./ChopAsync.js";
 import RowAsync from "./RowAsync.js";
 import StepAsync from "./StepAsync.js";
 
-const { solid, virtual } = jet.prop;
+const { solid } = jet.prop;
 
 export class RowsAsync extends ChopAsync {
     constructor(table, stream, onChange) {
       super(`${table.name}.rows`, {
         stream,
         loader:async (rows, data)=>{
-
           for (let index in data) {
-
             const vals = data[index];
             if (!jet.isMapable(vals)) { return; }
-            
             await RowAsync.create(rows).set(vals, { saveError:false });
           }
-
-          rows.on("afterSet", async (self, row)=>onChange(table, "set", row.live));
-          rows.on("afterRemove", async (self, row)=>onChange(table, "remove", row.saved));
-
         },
         childName:"row"
       });
@@ -40,7 +34,10 @@ export class RowsAsync extends ChopAsync {
 
         if (key && !isRemoved) {
           if (rekey) { await _p.set(row, key); }
-          else { onChange(table, "update", row.live); }
+          else {
+            await asyncRun(_p.handlers.beforeUpdate, this, row, throwError);
+            await asyncRun(_p.handlers.afterUpdate, this, row, throwError);
+          }
         }
         if (keySaved && (rekey || remove)) { await _p.remove(row); }
 

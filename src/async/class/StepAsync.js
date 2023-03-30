@@ -80,7 +80,7 @@ export class StepAsync {
       let row;
       for (const c of col) {
         if (c === col[0]) { row = await this.pull(await cols.get(c, opt.missingError !== false)); }
-        else if (RowAsync.is(row)) { console.log(row); row = await row.get(c, opt); }
+        else if (RowAsync.is(row)) { row = await row.get(c, opt); }
         else { break; }
       }
       return row;

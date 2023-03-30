@@ -1,8 +1,6 @@
 
 
 
-export const chopEvents = ["beforeInit", "afterInit", "beforeSet", "afterSet", "beforeRemove", "afterRemove"];
-
 export const colsTraits = {
     isPrimary: "primary",
     isLabel: "label"
