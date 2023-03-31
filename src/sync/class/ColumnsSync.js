@@ -2,6 +2,7 @@ import jet from "@randajan/jet-core";
 import vault from "../../uni/vault.js";
 import { colsTraits } from "../../uni/consts.js";
 import ChopSync from "./ChopSync.js";
+import ColumnSync from "./ColumnSync";
 
 
 const { solid, virtual } = jet.prop;
@@ -27,7 +28,7 @@ const loader = (cols, traits, set) => {
       }
     }
 
-    set(new ColumnsSync(cols, _p.list.length, key, value));
+    set(new ColumnSync(cols, _p.list.length, key, value));
   }
 
   if (!cols.count) { throw Error(cols.msg("at least one column is required")); }
