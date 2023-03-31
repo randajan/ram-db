@@ -1,6 +1,6 @@
 {
   "name": "@randajan/ram-db",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "Realtime database",
   "repository": "randajan/ram-db",
   "type": "module",
