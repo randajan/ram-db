@@ -1,6 +1,6 @@
 import { ChopSync } from "./sync/class/ChopSync";
 import { ColumnsSync } from "./sync/class/ColumnsSync";
-import RowsSync from "./sync/class/RowsSync";
+import { RowsSync } from "./sync/class/RowsSync";
 import { Table } from "./uni/Table";
 
 export class DBSync extends ChopSync {

@@ -117,10 +117,12 @@ export class ChopSync extends jet.types.Plex {
   }
 
   chop(name, getContext, defaultContext) {
+    const { bundle } = vault.get(this.uid);
+    
     const chop = new ChopSync(name, {
       parent: this,
-      childName:this.childName,
-      getKey:this.getKey,
+      childName:bundle.childName,
+      getKey:bundle.getKey,
       getContext,
       defaultContext,
       loader: (chop, data, bundle) => {

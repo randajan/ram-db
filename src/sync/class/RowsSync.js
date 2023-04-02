@@ -1,8 +1,8 @@
 import jet from "@randajan/jet-core";
 import vault from "../../uni/vault.js";
 import { ChopSync } from "./ChopSync.js";
-import RowSync from "./RowSync.js";
-import StepSync from "./StepSync.js";
+import { RowSync } from "./RowSync.js";
+import { StepSync } from "./StepSync.js";
 import { formatKey } from "../../uni/tools.js";
 
 const { solid } = jet.prop;
@@ -188,5 +188,3 @@ export class RowsSync extends ChopSync {
     }
 
   }
-
-  export default RowsSync;

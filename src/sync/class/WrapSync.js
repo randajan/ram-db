@@ -4,50 +4,47 @@ const { solid, virtual } = jet.prop;
 
 export class WrapSync extends jet.types.Plex {
 
-    static is(any) { return any instanceof WrapSync; }
+  static is(any) { return any instanceof WrapSync; }
 
-    static create(step) { return new WrapSync(step); }
-  
-    constructor(step) {
-      const { table } = step, { db, cols } = table;
+  static create(step) { return new WrapSync(step); }
 
-      const get = (col, opt={ throwError:true })=>step.get(col, opt);
+  constructor(step) {
+    const { table } = step, { db, cols } = table;
 
-      super(get);
+    const get = (col, opt = { throwError: true }) => step.get(col, opt);
 
-      solid.all(this, {
-        db,
-        table,
-        get
-      }, false);
+    super(get);
 
-      virtual.all(this, {
-        key:_=>step.key,
-        label:_=>step.label,
-        before:_=>step.before.wrap,
-        isExist:_=>step.isExist,
-        isDirty:_=>step.isDirty,
-        isRemoved:_=>step.isRemoved,
-        raws:_=>({...step.raws}),
-        vals:_=>cols.map(col=>step.pull(col, true), {byKey:true}),
-        changes:_=>([...step.changes])
-      });
-  
-    }
+    solid.all(this, {
+      db,
+      table,
+      get
+    }, false);
 
-    refList(tableName, colKey) {
-      return this.db.get(tableName).rows.refs(colKey).getList(this.key, false);
-    }
-  
-    toJSON() {
-      return this.key;
-    }
-  
-    toString() {
-      return this.key;
-    }
-  
+    virtual.all(this, {
+      key: _ => step.key,
+      label: _ => step.label,
+      before: _ => step.before.wrap,
+      isExist: _ => step.isExist,
+      isDirty: _ => step.isDirty,
+      isRemoved: _ => step.isRemoved,
+      raws: _ => ({ ...step.raws }),
+      vals: _ => cols.map(col => step.pull(col, true), { byKey: true }),
+      changes: _ => ([...step.changes])
+    });
+
   }
-  
-  
-  export default WrapSync;
+
+  refList(tableName, colKey) {
+    return this.db.get(tableName).rows.refs(colKey).getList(this.key, false);
+  }
+
+  toJSON() {
+    return this.key;
+  }
+
+  toString() {
+    return this.key;
+  }
+
+}
