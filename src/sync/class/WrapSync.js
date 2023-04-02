@@ -9,13 +9,17 @@ export class WrapSync extends jet.types.Plex {
     static create(step) { return new WrapSync(step); }
   
     constructor(step) {
-      const { cols } = step.table;
+      const { table } = step, { db, cols } = table;
 
-      const get = (col, opt={ missingError:true })=>step.get(col, opt);
+      const get = (col, opt={ throwError:true })=>step.get(col, opt);
 
       super(get);
 
-      solid.all(this, { get }, false);
+      solid.all(this, {
+        db,
+        table,
+        get
+      }, false);
 
       virtual.all(this, {
         key:_=>step.key,
@@ -25,10 +29,14 @@ export class WrapSync extends jet.types.Plex {
         isDirty:_=>step.isDirty,
         isRemoved:_=>step.isRemoved,
         raws:_=>({...step.raws}),
-        vals:_=>cols.map(true, col=>step.pull(col, true)),
+        vals:_=>cols.map(col=>step.pull(col, true), {byKey:true}),
         changes:_=>([...step.changes])
       });
   
+    }
+
+    refList(tableName, colKey) {
+      return this.db.get(tableName).rows.refs(colKey).getList(this.key, false);
     }
   
     toJSON() {

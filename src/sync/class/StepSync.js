@@ -13,6 +13,7 @@ export class StepSync {
     constructor(table, before) {
 
       solid.all(this, {
+        db:table.db,
         table,
         before,
       }, false);
@@ -61,26 +62,29 @@ export class StepSync {
       const changes = this.changes = [];
       this.vals = {};
 
-      reals.map(false, col=>{ //for each non virtual
+      reals.map(col=>{ //for each non virtual
         const raw = col.fetch(vals);
         if (raw !== undefined) { raws[col] = raw === "" ? null : col.toRaw(raw); }
         else if (force) { raws[col] = null; }
+        if (!before) { changes.push(col); }
       });
 
-      reals.map(false, col=>{ //for each non virtual
-        this.pull(col);
-        if (!before || raws[col] !== before.raws[col]) { changes.push(col); } //is isDirty column
-      });
+      if (before) {
+        reals.map(col=>{ //for each non virtual
+          this.pull(col);
+          if (raws[col] !== before.raws[col]) { changes.push(col); } //is isDirty column
+        });
+      }
 
       return !!changes.length;
     }
 
-    get(col, opt={ missingError:true }) {
+    get(col, opt={ throwError:true }) {
       const { table:{cols} } = this;
-      if (!Array.isArray(col)) { return this.pull(cols.get(col, opt.missingError !== false)); }
+      if (!Array.isArray(col)) { return this.pull(cols.get(col, opt.throwError !== false)); }
       let row;
       for (const c of col) {
-        if (c === col[0]) { row = this.pull(cols.get(c, opt.missingError !== false)); }
+        if (c === col[0]) { row = this.pull(cols.get(c, opt.throwError !== false)); }
         else if (RowSync.is(row)) { row = row.get(c, opt); }
         else { break; }
       }

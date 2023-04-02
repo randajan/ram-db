@@ -1,3 +1,3 @@
 
 
-export const formatKey = key=>jet.isMapable(key) ? JSON.stringify(key) : String.jet.to(key);
+export const formatKey = (key, def)=>key != null ? String(key) : def;

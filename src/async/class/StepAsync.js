@@ -13,6 +13,7 @@ export class StepAsync {
     constructor(table, before) {
 
       solid.all(this, {
+        db:table.db,
         table,
         before,
       }, false);

@@ -5,7 +5,7 @@ import { RowSync } from "./RowSync";
 
 const { solid, virtual, cached } = jet.prop;
 
-export default class ColumnSync {
+export class ColumnSync {
 
     static is(col) { return col instanceof Column; }
 

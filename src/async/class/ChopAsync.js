@@ -78,7 +78,7 @@ export class ChopAsync extends jet.types.Plex {
 
   msg(text, key) {
     key = formatKey(key);
-    return this.name + (key ? ` ${this.childName} '${key}' ` : " ") + text;
+    return `'${this.name}'` + (key ? ` ${this.childName} '${key}' ` : "") + (text ? " "+text : "");
   }
 
   validateKey(key, action = "format") {

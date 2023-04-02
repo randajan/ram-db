@@ -1,4 +1,4 @@
-import ChopSync from "./sync/class/ChopSync";
+import { ChopSync } from "./sync/class/ChopSync";
 import ColumnsAsync from "./async/class/ColumnsAsync";
 import RowsAsync from "./async/class/RowsAsync";
 import { Table } from "./uni/Table";
@@ -8,7 +8,7 @@ import vault from "./uni/vault";
 export class DBAsync extends ChopSync {
 
     constructor(name, stream) {
-        super(`ram-db '${name}'`, {
+        super(name, {
             stream,
             loader:(self, tables, set)=>jet.map(tables, (stream, key)=>set(new Table(this, key, stream))),
             childName:"table"
@@ -26,6 +26,10 @@ export class DBAsync extends ChopSync {
     mapAsync(byIndex, callback, sort) {
         this.init();
         return asyncMap(vault.get(this.uid).list, byIndex, callback, sort);
+    }
+
+    msg(text, key) {
+        return "ram-db async " + super.msg(text, key);
     }
 
 }

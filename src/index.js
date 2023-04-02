@@ -1,14 +1,16 @@
-import ChopSync from "./sync/class/ChopSync";
-import ColumnsSync from "./sync/class/ColumnsSync";
+import { ChopSync } from "./sync/class/ChopSync";
+import { ColumnsSync } from "./sync/class/ColumnsSync";
 import RowsSync from "./sync/class/RowsSync";
 import { Table } from "./uni/Table";
 
 export class DBSync extends ChopSync {
 
     constructor(name, stream) {
-        super(`ram-db '${name}'`, {
+        super(name, {
             stream,
-            loader:(self, tables, set)=>jet.map(tables, (stream, key)=>set(new Table(this, key, stream))),
+            loader:(self, tables, bundle)=>{
+                jet.map(tables, (stream, key)=>bundle.set(new Table(this, key, stream)));
+            },
             childName:"table"
         });
     }
@@ -19,6 +21,10 @@ export class DBSync extends ChopSync {
 
     seedRows(table, stream) {
         return new RowsSync(table, stream);
+    }
+
+    msg(text, key) {
+        return "ram-db sync " + super.msg(text, key);
     }
 
 }

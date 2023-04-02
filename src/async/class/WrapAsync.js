@@ -9,13 +9,17 @@ export class WrapAsync extends jet.types.Plex {
     static create(step) { return new WrapAsync(step); }
   
     constructor(step) {
-      const { cols } = step.table;
+      const { table } = step, { db, cols } = table;
 
-      const get = async (col, opt={ missingError:true })=>step.get(col, opt);
+      const get = (col, opt={ missingError:true })=>step.get(col, opt);
 
       super(get);
 
-      solid.all(this, { get }, false);
+      solid.all(this, {
+        db,
+        table,
+        get
+      }, false);
 
       virtual.all(this, {
         key:async _=>step.key,

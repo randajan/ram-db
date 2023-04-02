@@ -14,7 +14,7 @@ export class RowSync extends jet.types.Plex {
       const _p = {};
       const save = vault.get(rows.uid).save;
 
-      const get = (col, opt={ missingError:true })=>_p.live.get(col, opt);
+      const get = (col, opt={ throwError:true })=>_p.live.get(col, opt);
       const push = (vals, force, opt={ autoSave:true, resetOnError:true, saveError:true })=>{
         return _p.live.push(vals, force) && (opt.autoSave === false || this.save(opt));
       }
