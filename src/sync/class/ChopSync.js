@@ -138,15 +138,12 @@ export class ChopSync extends jet.types.Plex {
       childName:bundle.childName,
       getContext,
       defaultContext,
-      loader: (chop, data, bundle) => {
-        this.map(child =>bundle.set(child));
-        const cu1 = this.on("afterSet", child=>bundle.set(child));
-        const cu2 = this.on("afterRemove", child=>bundle.remove(child));
-      }
+      loader: (chop, data, bundle) => this.map(child =>bundle.set(child))
     });
 
-    //TODO: TAKE RESETS INTO A COUNT AND MAKE CLEANUPS
-    
+    this.on("afterSet", child=>{if (chop.state === "ready") { bundle.set(child); }});
+    this.on("afterRemove", child=>{if (chop.state === "ready") { bundle.remove(child); }});
+    this.on("afterReset", _=>chop.reset());    
 
     return chop;
   }

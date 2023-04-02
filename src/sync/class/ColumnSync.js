@@ -1,9 +1,8 @@
 import jet from "@randajan/jet-core";
 import { colTraits } from "../../uni/consts";
 import vault from "../../uni/vault";
-import { RowSync } from "./RowSync";
 
-const { solid, virtual, cached } = jet.prop;
+const { solid, virtual } = jet.prop;
 
 export class ColumnSync {
 

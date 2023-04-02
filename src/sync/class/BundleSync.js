@@ -95,7 +95,7 @@ export class BundleSync {
       return false;
     }
 
-    if (!this.runHard("beforeSet", [child, ctx], throwError)) { return false; }
+    if (!this.runHard("beforeSet", [child, ctx], throwError)) { console.log("b"); return false; }
     
     list.push(index[key] = child);
 
@@ -131,7 +131,7 @@ export class BundleSync {
   }
 
   remove(child, throwError = true) {
-    const context = this.getContext(child, true);
+    const context = this.getContext(child, false);
     const key = this.validateKey(child.getKey(false), "remove", throwError);
     if (!Array.isArray(context)) { return this._remove(context, key, child, throwError); }
     let ok = true;

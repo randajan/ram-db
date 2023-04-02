@@ -123,14 +123,15 @@ export class RowsSync extends ChopSync {
 
     chop(name, getContext, defaultContext) {
       const chop = super.chop(name, getContext, defaultContext);
+      const _p = vault.get(chop.uid);
 
       if (chop) {
-        chop.on("afterUpdate", row=>{
-          if (_p.bundle.set(row, undefined, false)) { _p.bundle.remove(row); }
+        this.on("afterUpdate", row=>{
+          if (chop.state !== "ready") { return; }
+          if (!_p.bundle.set(row, false)) { return; }
+          _p.bundle.remove(row);
         });
       }
-
-      //TODO: TAKE RESETS INTO A COUNT AND MAKE CLEANUPS
 
       return chop;
     }

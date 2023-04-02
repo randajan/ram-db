@@ -3,24 +3,30 @@ import vault from "../../uni/vault.js";
 import { colsTraits } from "../../uni/consts.js";
 import { ChopSync } from "./ChopSync.js";
 import { ColumnSync } from "./ColumnSync";
+import { formatKey } from "../../uni/tools.js";
 
 const { solid, virtual } = jet.prop;
 
-const loader = (cols, traits, bundle) => {
+const loader = (cols, data, bundle) => {
   const _p = vault.get(cols.uid);
-  const list = _p.bundle.getData().list;
-  const isArray = Array.isArray(traits);
+  const isArray = Array.isArray(data);
+  const { list } = _p.bundle.getData();
 
-  for (const index in traits) {
-    let value = traits[index];
+  delete _p.primary;
+  delete _p.label;
+
+  for (const index in data) {
+    let value = data[index];
     const isObj = Object.jet.is(value);
-    const name = String.jet.to((isArray && !isObj) ? value : (value.name || index));
 
-    if (!isObj) { value = {}; } else {
-      delete value.name;
+    const name = formatKey((isArray && !isObj) ? value : value.name, index);
+    const traits = isObj ? {...value} : {};
+
+    if (isObj) {
+      delete traits.name;
       for (const trait in colsTraits) {
-        const v = value[trait];
-        delete value[trait];
+        const v = traits[trait];
+        delete traits[trait];
         if (!v) { continue; }
         const prop = colsTraits[trait];
         if (_p[prop]) { throw Error(cols.msg(`${prop} column is allready set as '${_p[prop]}'`, name)); }
@@ -28,7 +34,7 @@ const loader = (cols, traits, bundle) => {
       }
     }
     
-    bundle.set(new ColumnSync(cols, list.length, name, value));
+    bundle.set(new ColumnSync(cols, list.length, name, traits));
   }
 
   if (!list.length) { throw Error(cols.msg("at least one column is required")); }
