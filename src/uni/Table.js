@@ -10,7 +10,6 @@ export class Table {
     const _p = cached({}, {}, "config", _=>Object.jet.to(config, this)); //cache even config object
 
     solid(this, "db", db, false);
-    solid(this, "key", name, false);
     solid(this, "name", name);
 
     cached.all(this, _p, {
@@ -21,6 +20,10 @@ export class Table {
   }
 
   msg(text) { return this.db.msg(text, this.key); }
+
+  getKey() {
+    return this.name;
+  }
 
 }
   

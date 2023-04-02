@@ -73,10 +73,15 @@ export default ramdb("main", _=>{
       console.log(name);
     }
 
+    const up = cols.updater;
+    if (up) { up.ref ="kin_contacts"; up.resetIf = true; }
+    const cp = cols.creator;
+    if (cp) { cp.ref = "kin_contacts"; cp.isReadonly = true; }
+    const op = cols.owner;
+    if (op) { op.ref = "kin_contacts"; }
+
     const ut = cols.updated || cols.updated_at;
-
     if (ut) { ut.init = _=>new Date(); ut.resetIf = true; ut.type = "datetime"; }
-
     const ct = cols.created || cols.created_at;
     if (ct) { ct.init = _=>new Date(); ct.isReadonly = true; ct.type = "datetime"; }
 

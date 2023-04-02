@@ -31,6 +31,8 @@ export class StepSync {
 
   }
 
+  getKey() { return this.key; }
+
   pull(col) {
     if (!col) { return; }
 
@@ -57,23 +59,25 @@ export class StepSync {
   };
 
   push(vals, force = true) {
-    const { table: { cols: { reals } }, raws, before } = this;
+    const { table: { cols }, raws, before } = this;
 
+    const reals = cols.getList(false);
     const changes = this.changes = [];
     this.vals = {};
 
-    reals.map(col => { //for each non virtual
+
+    for (const col of reals) {
       const raw = col.fetch(vals);
       if (raw !== undefined) { raws[col] = raw === "" ? null : col.toRaw(raw); }
       else if (force) { raws[col] = null; }
       if (!before) { changes.push(col); }
-    });
+    }
 
     if (before) {
-      reals.map(col => { //for each non virtual
+      for (const col of reals) {
         this.pull(col);
         if (raws[col] !== before.raws[col]) { changes.push(col); } //is isDirty column
-      });
+      };
     }
 
     return !!changes.length;

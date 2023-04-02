@@ -1,5 +1,4 @@
 import jet from "@randajan/jet-core";
-import { formatKey } from "../../uni/tools";
 import vault from "../../uni/vault";
 import { BundleSync } from "./BundleSync";
 
@@ -8,7 +7,7 @@ const { solid, virtual } = jet.prop;
 export class ChopSync extends jet.types.Plex {
 
   constructor(name, config = {}) {
-    const { stream, loader, parent, childName, getKey, getContext, defaultContext } = Object.jet.to(config);
+    const { stream, loader, parent, childName, getContext, defaultContext } = Object.jet.to(config);
     const [uid, _p] = vault.set({
       state: "waiting",
       loader,
@@ -16,7 +15,6 @@ export class ChopSync extends jet.types.Plex {
       bundle:new BundleSync(
         name,
         childName,
-        getKey,
         getContext,
         defaultContext
       )
@@ -57,17 +55,22 @@ export class ChopSync extends jet.types.Plex {
 
   count(context, throwError=true) {
     this.init();
-    return vault.get(this.uid).bundle.fetch(context, throwError).list.length;
+    return vault.get(this.uid).bundle.getData(context, throwError).list.length;
   }
 
   getList(context, throwError=true) {
     this.init();
-    return [...vault.get(this.uid).bundle.fetch(context, throwError).list];
+    return [...vault.get(this.uid).bundle.getData(context, throwError).list];
   }
 
   getIndex(context, throwError=true) {
     this.init();
-    return {...vault.get(this.uid).bundle.fetch(context, throwError).index};
+    return {...vault.get(this.uid).bundle.getData(context, throwError).index};
+  }
+
+  getContextList() {
+    this.init();
+    return Object.keys(vault.get(this.uid).bundle.data);
   }
 
   map(callback, opt={}) {
@@ -119,10 +122,9 @@ export class ChopSync extends jet.types.Plex {
   chop(name, getContext, defaultContext) {
     const { bundle } = vault.get(this.uid);
     
-    const chop = new ChopSync(name, {
+    const chop = new ChopSync(this.name+"."+name, {
       parent: this,
       childName:bundle.childName,
-      getKey:bundle.getKey,
       getContext,
       defaultContext,
       loader: (chop, data, bundle) => {

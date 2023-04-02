@@ -41,7 +41,7 @@ export class RowSync extends jet.types.Plex {
         } catch (err) {
           if (opt.resetOnError !== false) { this.reset(); }
           if (opt.saveError !== false) { throw err; }
-          console.warn(err);
+          console.warn(this.msg(err.message), err.stack);
           return false;
         }
       },
@@ -63,8 +63,10 @@ export class RowSync extends jet.types.Plex {
   }
 
   msg(text) {
-    return this.rows.msg(text, this.key || this.raws);
+    return this.rows.msg(text, this.key || JSON.stringify(this.raws));
   }
+
+  getKey(isSet) { return isSet ? this.live.key : this.key; }
 
   toJSON() {
     return this.key

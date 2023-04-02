@@ -9,7 +9,7 @@ export class ColumnSync {
 
     static is(col) { return col instanceof Column; }
 
-    constructor(cols, id, key, traits) {
+    constructor(cols, id, name, traits) {
         const { db, table } = cols;
         const _c = vault.get(cols.uid);
 
@@ -21,12 +21,12 @@ export class ColumnSync {
 
         solid.all(this, {
             id,
-            key
+            name
         });
 
         virtual.all(this, {
-            isPrimary: _ => _c.primary === key,
-            isLabel: _ => _c.label === key
+            isPrimary: _ => _c.primary === name,
+            isLabel: _ => _c.label === name
         });
 
         for (const tn in colTraits) {
@@ -56,11 +56,13 @@ export class ColumnSync {
     }
 
     msg(text) {
-        return this.cols.msg(text, this.key);
+        return this.cols.msg(text, this.name);
     }
 
+    getKey() { return this.name; }
+
     _toRaw(val) {
-        return RowSync.is(val) ? val.key : (String.jet.to(val) || null);
+        return val?.getKey ? val.getKey() : (String.jet.to(val) || null);
     }
 
     toRaw(val) {
@@ -92,15 +94,15 @@ export class ColumnSync {
     }
 
     fetch(vals) {
-        return Array.isArray(vals) ? vals[this.id] : jet.get(vals, this.key);
+        return Array.isArray(vals) ? vals[this.id] : jet.get(vals, this.name);
     }
 
     toJSON() {
-        return this.key;
+        return this.name;
     }
 
     toString() {
-        return this.key;
+        return this.name;
     }
 
 }

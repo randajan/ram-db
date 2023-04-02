@@ -11,6 +11,7 @@ export class RowsSync extends ChopSync {
     constructor(table, stream) {
       super(`${table.name}.rows`, {
         childName:"row",
+        defaultContext:"all",
         stream,
         loader:(rows, data)=>{
           for (let index in data) {
@@ -18,8 +19,7 @@ export class RowsSync extends ChopSync {
             if (!jet.isMapable(vals)) { return; }
             RowSync.create(rows).set(vals, { saveError:false });
           }
-        },
-        getKey:(row, isSet)=>row[isSet?"live":"saved"].key
+        }
       });
 
       const _p = vault.get(this.uid);
@@ -80,7 +80,7 @@ export class RowsSync extends ChopSync {
       let step, key;
       const ck = this.table.cols.primary;
       if (!ck.formula && !ck.resetIf) { key = ck.toRaw(ck.fetch(vals)); } // quick key
-      if (key == null) { step = this.initStep(vals); key = step.key; }
+      if (key == null) { step = this.initStep(vals); key = step.getKey(); }
       if (key == null) { if (opt.saveError !== false) { throw Error(this.msg("push failed - missing key", vals)); } return; }
     
       const rowFrom = this.get(key, { autoCreate:false, throwError:false });
@@ -150,41 +150,6 @@ export class RowsSync extends ChopSync {
         }
       );
   
-    }
-
-    _refList(colKey, rowKey) {
-      const { refs } = vault.get(this.uid);
-
-      if (refs[colKey]) {
-        const list = refs[colKey][rowKey];
-        return list ? [...list] : [];
-      }
-
-      const c = this.table.cols(colKey);
-      if (!c.ref) { throw Error(this.msg(`refList('${colKey}') failed - column is not ref`)); }
-
-      const rows = refs[colKey] = {};
-      const _list = ref=>rows[ref.key] || (rows[ref.key] = new Set());
-      const _put = (row, ref)=>_list(ref).add(row);
-      const _rem = (row, ref)=>_list(ref).delete(row);
-      const put = c.separator ? (row, val)=>val.forEach(ref=>_put(row, ref)) : _put;
-      const rem = c.separator ? (row, val)=>val.forEach(ref=>_rem(row, ref)) : _rem;
-      const opt = { throwError:false };
-
-      const update = (self, row)=>{
-        const liveRef = row.live?.get(colKey, opt);
-        const savedRef = row.saved?.get(colKey, opt);
-        if (liveRef) { put(row, liveRef); }
-        if (savedRef) { rem(row, savedRef); }
-      }
-
-      this.map(row=>put(row, row.saved?.get(colKey)));
-
-      this.on("afterSet", update);
-      this.on("afterUpdate", update);
-      this.on("afterRemove", (self, row)=>rem(row, row.saved?.get(colKey, opt)));
-
-      return rows[rowKey];
     }
 
   }
