@@ -88,25 +88,36 @@ export class ChopSync extends jet.types.Plex {
     return vault.get(this.uid).bundle.find(checker, opt);
   }
 
-  init(streamError = true) {
+  reset(throwError=true) {
     const _p = vault.get(this.uid);
-    if (_p.state === "error" && streamError) { throw _p.error; }
+    if (!_p.bundle.reset(throwError)) { return false; }
+    _p.state = "waiting";
+    delete _p.errorAt;
+    delete _p.error;
+    return true;
+  }
+
+  init(throwError = true) {
+    const _p = vault.get(this.uid);
+    if (_p.state === "error" && throwError) { throw _p.error; }
     else if (_p.state === "waiting") {
       _p.build = (_=>{
         _p.state = "pending";
         try {
-          _p.bundle.run("beforeInit", this);
+          _p.bundle.runHard("beforeInit");
           const data = _p.stream();
           if (Promise.jet.is(data)) { throw Error(this.msg(`init failed - promise found at sync`)); }
           _p.loader(this, data, _p.bundle);
-          _p.bundle.run("afterInit", this);
+          _p.bundle.runSoft("afterInit");
           _p.state = "ready";
         } catch(error) {
-          _p.errorAt = new Date();
           _p.state = "error";
-          if (streamError) { throw (_p.error = error); }
+          _p.errorAt = new Date();
+          _p.error = error;
+          if (throwError) { throw error; }
+          return false;
         }
-        return this;
+        return true;
       })();
     }
     return _p.build;
@@ -129,10 +140,13 @@ export class ChopSync extends jet.types.Plex {
       defaultContext,
       loader: (chop, data, bundle) => {
         this.map(child =>bundle.set(child));
-        this.on("afterSet", child=>bundle.set(child));
-        this.on("afterRemove", child=>bundle.remove(child));
+        const cu1 = this.on("afterSet", child=>bundle.set(child));
+        const cu2 = this.on("afterRemove", child=>bundle.remove(child));
       }
     });
+
+    //TODO: TAKE RESETS INTO A COUNT AND MAKE CLEANUPS
+    
 
     return chop;
   }

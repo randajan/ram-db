@@ -56,10 +56,35 @@ export class BundleSync {
     }
   }
 
-  run(event, ...args) {
+  run(hard, event, args=[], throwError=true) {
     const handlers = this.handlers[event];
-    if (!handlers) { return; }
-    for (const cb of handlers) { cb(...args); }
+    if (!handlers) { return true; }
+    try {
+      for (const cb of handlers) {
+        try { cb(...args); } catch(err) {
+          if (hard) { throw err; }
+          else if (throwError) { console.warn(this.msg(err.message), err.stack); }
+        }
+      }
+      return true;
+    } catch(err) {
+      if (throwError) { throw err; }
+      return false;
+    }
+  }
+
+  runSoft(event, args=[], throwError=true) {
+    return this.run(false, event, args, throwError);
+  }
+
+  runHard(event, args=[], throwError=true) {
+    return this.run(true, event, args, throwError);
+  }
+
+  reset(throwError=true) {
+    if (!this.runHard("beforeReset", [], throwError)) { return false; }
+    for (let i in this.data) { delete this.data[i]; }
+    return this.runSoft("afterReset", [], throwError);
   }
 
   _set(context, key, child, throwError = true) {
@@ -70,18 +95,11 @@ export class BundleSync {
       return false;
     }
 
-    try { this.run("beforeSet", child, ctx); } catch (err) {
-      if (throwError) { throw err; }
-      return false;
-    }
+    if (!this.runHard("beforeSet", [child, ctx], throwError)) { return false; }
     
     list.push(index[key] = child);
 
-    try { this.run("afterSet", child, ctx); } catch (err) {
-      console.warn(this.msg(err.message), err.stack);
-    }
-
-    return true;
+    return this.runSoft("afterSet", [child, ctx], throwError);
   }
 
   set(child, throwError = true) {
@@ -101,21 +119,15 @@ export class BundleSync {
       if (throwError) { throw Error(this.msg(`remove(...) failed - missing`, key, ctx)); }
       return false;
     }
-    try { this.run("beforeRemove", child, ctx); } catch (err) {
-      if (throwError) { throw err; }
-      return false;
-    }
+
+    if (!this.runHard("beforeRemove", [child, ctx], throwError)) { return false; }
 
     if (list.length === 1) { delete this.data[ctx]; } else {
       list.splice(id, 1);
       delete index[key];
     }
     
-    try { this.run("afterRemove", child, ctx); } catch (err) {
-      console.warn(this.msg(err.message), err.stack);
-    }
-
-    return true;
+    return this.runSoft("afterRemove", [child, ctx], throwError);
   }
 
   remove(child, throwError = true) {

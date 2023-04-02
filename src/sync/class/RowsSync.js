@@ -35,8 +35,8 @@ export class RowsSync extends ChopSync {
         if (key && !isRemoved) {
           if (rekey) { _p.bundle.set(row); }
           else {
-            _p.bundle.run("beforeUpdate", row);
-            try { _p.bundle.run("afterUpdate", row); } catch(err) {}
+            _p.bundle.runHard("beforeUpdate", [row]);
+            _p.bundle.runSoft("afterUpdate", [row]);
           }
         }
         if (keySaved && (rekey || remove)) { _p.bundle.remove(row); }
@@ -129,6 +129,8 @@ export class RowsSync extends ChopSync {
           if (_p.bundle.set(row, undefined, false)) { _p.bundle.remove(row); }
         });
       }
+
+      //TODO: TAKE RESETS INTO A COUNT AND MAKE CLEANUPS
 
       return chop;
     }
