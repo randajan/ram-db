@@ -43,22 +43,20 @@ export class BundleSync {
     if (throwError) { throw Error(this.msg(`${action}(...) failed - key undefined`));}
   }
 
-  on(event, callback) {
+  on(event, callback, repeat=true) {
     if (!jet.isRunnable(callback)) { throw Error(this.msg(`on(...) require callback`)); }
 
     const { handlers } = this;
-    const list = (handlers[event] || (handlers[event] = []));
-    list.push(callback);
+    const list = (handlers[event] || (handlers[event] = new Set()));
+    const cb = repeat ? callback : (...args)=>{ callback(...args); list.delete(cb); }
+    list.add(cb);
 
-    return _ => {
-      const x = list.indexOf(callback);
-      if (x >= 0) { list.splice(x, 1); };
-    }
+    return _ => { list.delete(cb); return callback; }
   }
 
   run(hard, event, args=[], throwError=true) {
     const handlers = this.handlers[event];
-    if (!handlers) { return true; }
+    if (!handlers?.size) { return true; }
     try {
       for (const cb of handlers) {
         try { cb(...args); } catch(err) {

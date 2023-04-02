@@ -56,6 +56,7 @@ export class ColumnsSync extends ChopSync {
     });
 
     const _p = vault.get(this.uid);
+    table.db.on("afterReset", _p.recycle, false);
 
     solid.all(this, {
       db:table.db,

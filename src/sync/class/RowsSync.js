@@ -23,6 +23,7 @@ export class RowsSync extends ChopSync {
       });
 
       const _p = vault.get(this.uid);
+      table.db.on("afterReset", _p.recycle, false);
 
       _p.refs = {};
 

@@ -8,14 +8,16 @@ const { solid } = jet.prop;
 
 export class DBSync extends ChopSync {
 
-    constructor(name, stream) {
+    constructor(name, stream, maxAge=0, maxAgeError=0) {
         super(name, {
             stream,
             loader:(self, tables, bundle)=>{
                 jet.map(tables, (stream, key)=>bundle.set(new Table(this, key, stream)));
             },
             childName:"table",
-            defaultContext:"all"
+            defaultContext:"all",
+            maxAge,
+            maxAgeError
         });
 
         solid(this, "epics", this.chop("epics", tbl=>tbl.name.split("_")[0], "sys"));
@@ -28,10 +30,6 @@ export class DBSync extends ChopSync {
 
     seedRows(table, stream) {
         return new RowsSync(table, stream);
-    }
-
-    msg(text, key) {
-        return "ram-db sync " + super.msg(text, key);
     }
 
 }
