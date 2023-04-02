@@ -66,8 +66,8 @@ export class ColumnsSync extends ChopSync {
     }, false);
   
     virtual.all(this, {
-      primary:this.afterInit(_=>_p.bundle.get(_p.primary)),
-      label:this.afterInit(_=>_p.bundle.get(_p.label))
+      primary:this.withInit(_=>_p.bundle.get(_p.primary)),
+      label:this.withInit(_=>_p.bundle.get(_p.label))
     });
 
   }

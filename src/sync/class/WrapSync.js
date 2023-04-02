@@ -38,15 +38,7 @@ export class WrapSync extends jet.types.Plex {
   getKey() { return this.key; }
 
   refList(tableName, col) {
-    return this.db.get(tableName).rows.refs(col).getList(this.key, false);
-  }
-
-  toJSON() {
-    return this.key;
-  }
-
-  toString() {
-    return this.key;
+    return this.db.get(tableName).rows.refs(col).getList(this.getKey(), false);
   }
 
 }

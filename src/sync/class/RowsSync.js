@@ -130,7 +130,7 @@ export class RowsSync extends ChopSync {
         this.on("afterUpdate", row=>{
           if (chop.state !== "ready") { return; }
           if (!_p.bundle.set(row, false)) { return; }
-          _p.bundle.remove(row);
+          return _p.bundle.remove(row);
         });
       }
 

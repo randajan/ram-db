@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import ramdb from "./sync";
+import ramdb from "./async";
 
 window.jet = jet;
 

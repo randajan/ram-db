@@ -1,6 +1,5 @@
 import jet from "@randajan/jet-core";
 import { WrapSync } from "./WrapSync";
-import { RowSync } from "./RowSync";
 
 const { solid, virtual } = jet.prop;
 
@@ -61,7 +60,7 @@ export class StepSync {
   push(vals, force = true) {
     const { table: { cols }, raws, before } = this;
 
-    const reals = cols.getList(false);
+    const reals = cols.virtuals.getList(false);
     const changes = this.changes = [];
     this.vals = {};
 
@@ -89,7 +88,7 @@ export class StepSync {
     let row;
     for (const c of col) {
       if (c === col[0]) { row = this.pull(cols.get(c, opt.throwError !== false)); }
-      else if (RowSync.is(row)) { row = row.get(c, opt); }
+      else if (row.get) { row = row.get(c, opt); }
       else { break; }
     }
     return row;

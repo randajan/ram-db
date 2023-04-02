@@ -6,7 +6,11 @@ import testData from "../data/TISDB_export.json";
 export default ramdb("main", _=>{
   const schema = {
     sys_apps:{
-      url:{ isVirtual:true, formula:async r=>`https://www.appsheet.com/start/${await r("url_id")}` }
+      url:{ isVirtual:true, formula:async r=>`https://www.appsheet.com/start/${await r("url_id")}` },
+      sys_ents:{
+        isVirtual:true, separator:"; ", ref:"sys_ents",
+        formula:r=>r.refList("sys_ents", "sys_app_default")
+      }
     },
     sys_ents:{
       sys_app_default:{ ref:"sys_apps" },

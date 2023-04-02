@@ -4,46 +4,41 @@ const { solid, virtual } = jet.prop;
 
 export class WrapAsync extends jet.types.Plex {
 
-    static is(any) { return any instanceof WrapAsync; }
+  static is(any) { return any instanceof WrapAsync; }
 
-    static create(step) { return new WrapAsync(step); }
-  
-    constructor(step) {
-      const { table } = step, { db, cols } = table;
+  static create(step) { return new WrapAsync(step); }
 
-      const get = (col, opt={ missingError:true })=>step.get(col, opt);
+  constructor(step) {
+    const { table } = step, { db, cols } = table;
 
-      super(get);
+    const get = (col, opt = { throwError: true }) => step.get(col, opt);
 
-      solid.all(this, {
-        db,
-        table,
-        get
-      }, false);
+    super(get);
 
-      virtual.all(this, {
-        key:async _=>step.key,
-        label:async _=>step.label,
-        before:_=>step.before.wrap,
-        isExist:async _=>step.isExist,
-        isDirty:async _=>step.isDirty,
-        isRemoved:_=>step.isRemoved,
-        raws:_=>({...step.raws}),
-        vals:async _=>cols.map(true, async col=>await step.pull(col, true)),
-        changes:_=>([...step.changes])
-      });
-  
-    }
-  
-    toJSON() {
-      return this.key;
-    }
-  
-    toString() {
-      return this.key;
-    }
-  
+    solid.all(this, {
+      db,
+      table,
+      get
+    }, false);
+
+    virtual.all(this, {
+      key:async _=>step.key,
+      label:async _=>step.label,
+      before:_=>step.before.wrap,
+      isExist:async _=>step.isExist,
+      isDirty:async _=>step.isDirty,
+      isRemoved:_=>step.isRemoved,
+      raws:_=>({...step.raws}),
+      vals:async _=>cols.map(async col=>await step.pull(col, true), { byKey:true }),
+      changes:_=>([...step.changes])
+    });
+
   }
-  
-  
-  export default WrapAsync;
+
+  async getKey() { return this.key; }
+
+  async refList(tableName, col) {
+    return (await this.db.get(tableName).rows.refs(col)).getList(await this.getKey(), false);
+  }
+
+}

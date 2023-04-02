@@ -1,39 +1,45 @@
 import jet from "@randajan/jet-core";
 import vault from "../../uni/vault.js";
 import { colsTraits } from "../../uni/consts.js";
-import ChopAsync from "./ChopAsync.js";
-import ColumnAsync from "./ColumnAsync";
-
+import { ChopAsync } from "./ChopAsync.js";
+import { ColumnAsync } from "./ColumnAsync.js";
+import { formatKey } from "../../uni/tools.js";
 
 const { solid, virtual } = jet.prop;
 
-const loader = async (cols, traits, set) => {
+const loader = async (cols, data, bundle) => {
   const _p = vault.get(cols.uid);
-  const isArray = Array.isArray(traits);
+  const isArray = Array.isArray(data);
+  const { list } = _p.bundle.getData();
 
-  for (const index in traits) {
-    let value = traits[index];
+  delete _p.primary;
+  delete _p.label;
+
+  for (const index in data) {
+    let value = data[index];
     const isObj = Object.jet.is(value);
-    const key = String.jet.to((isArray && !isObj) ? value : (value.key || index));
 
-    if (!isObj) { value = {}; } else {
-      delete value.key;
+    const name = formatKey((isArray && !isObj) ? value : value.name, index);
+    const traits = isObj ? {...value} : {};
+
+    if (isObj) {
+      delete traits.name;
       for (const trait in colsTraits) {
-        const v = value[trait];
-        delete value[trait];
+        const v = traits[trait];
+        delete traits[trait];
         if (!v) { continue; }
         const prop = colsTraits[trait];
-        if (_p[prop]) { throw Error(cols.msg(`${prop} column is allready set as '${_p[prop]}'`, key)); }
-        _p[prop] = key;
+        if (_p[prop]) { throw Error(cols.msg(`${prop} column is allready set as '${_p[prop]}'`, name)); }
+        _p[prop] = name;
       }
     }
-
-    await set(new ColumnAsync(cols, _p.list.length, key, value));
+    
+    await bundle.set(new ColumnAsync(cols, list.length, name, traits));
   }
 
-  if (!cols.count) { throw Error(cols.msg("at least one column is required")); }
+  if (!list.length) { throw Error(cols.msg("at least one column is required")); }
 
-  if (!_p.primary) { _p.primary = _p.list[0].key; }
+  if (!_p.primary) { _p.primary = _p.list[0]; }
   if (!_p.label) { _p.label = _p.primary; }
 
 }
@@ -42,29 +48,48 @@ export class ColumnsAsync extends ChopAsync {
 
   constructor(table, stream) {
 
-
     super(`${table.name}.cols`, {
+      childName:"column",
+      defaultContext:"all",
       stream,
-      loader,
-      childName:"column"
+      loader
     });
 
     const _p = vault.get(this.uid);
+    table.db.on("afterReset", _p.recycle, false);
 
     solid.all(this, {
       db:table.db,
       table,
-      reals:this.addChop("reals", c=>!c.isVirtual),
-      refs:this.addChop("refs", c=>!!c.ref)
+      virtuals:this.chop("virtuals", c=>c.isVirtual, true),
+      refs:this.chop("refs", c=>!!c.ref, true)
     }, false);
   
     virtual.all(this, {
-      primary:this.afterInit(_=>_p.index[_p.primary]),
-      label:this.afterInit(_=>_p.index[_p.label])
+      primary:this.withInit(_=>_p.bundle.get(_p.primary)),
+      label:this.withInit(_=>_p.bundle.get(_p.label))
     });
 
   }
 
-}
+  async exist(name, throwError = false) {
+    return super.exist(name, undefined, throwError);
+  }
 
-export default ColumnsAsync;
+  async get(name, throwError = true) {
+    return super.get(name, undefined, throwError);
+  }
+
+  async count(throwError=true) {
+    return super.count(undefined, throwError);
+  }
+
+  async getList(throwError=true) {
+    return super.getList(undefined, throwError);
+  }
+
+  async getIndex(throwError=true) {
+    return super.getIndex(undefined, throwError);
+  }
+
+}

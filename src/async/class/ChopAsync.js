@@ -1,194 +1,156 @@
 import jet from "@randajan/jet-core";
-import { formatKey } from "../../uni/tools";
 import vault from "../../uni/vault";
-import { asyncMap, asyncRun } from "../tools";
+import { BundleAsync } from "./BundleAsync";
 
 const { solid, virtual } = jet.prop;
 
 export class ChopAsync extends jet.types.Plex {
 
   constructor(name, config = {}) {
-    const { stream, loader, parent, childName } = Object.jet.to(config);
+    const { stream, loader, parent, childName, getContext, defaultContext, maxAge, maxAgeError } = Object.jet.to(config);
     const [uid, _p] = vault.set({
       state: "waiting",
-      index: {},
-      list: [],
       loader,
       stream: jet.isRunnable(stream) ? stream : _ => stream,
-      handlers: {},
-      chops: {}
+      bundle:new BundleAsync(
+        name,
+        childName,
+        getContext,
+        defaultContext
+      ),
+      recycle:async _=>{ if (await _p.bundle.runHard("beforeRecycle")) { console.warn(this.msg("recycled")); vault.end(uid); }}
     });
 
-    _p.set = async (child, key, throwError = true) => {
-      key = this.validateKey(key || child?.key, "set");
-
-      if (_p.index.hasOwnProperty(key)) {
-        if (throwError) { throw Error(this.msg(`set(...) failed - duplicate`, key)); }
-        return;
-      }
-
-      await asyncRun(_p.handlers.beforeSet, this, child, key, throwError);
-      _p.list.push(_p.index[key] = child);
-
-      try { await asyncRun(_p.handlers.afterSet, this, child, key, throwError); } catch (err) {}
-
-      return child;
-    }
-
-    _p.remove = async (child, throwError = true) => {
-      const key = this.validateKey(child?.key, "remove");
-      const id = _p.list.indexOf(child);
-
-      if (id < 0) {
-        if (throwError) { throw Error(this.msg(`remove(...) failed - missing`, key)); }
-        return false;
-      }
-
-      await asyncRun(_p.handlers.beforeRemove, this, child, throwError);
-      _p.list.splice(id, 1);
-      delete _p.index[key];
-      try { await asyncRun(_p.handlers.afterRemove, this, child, throwError); } catch (err) {}
-
-      return true;
-    }
-
     super((...args) => this.get(...args));
+    if (parent) { parent.on("beforeRecycle", _p.recycle, false); }
 
     solid.all(this, {
       uid,
-      parent
+      parent,
+      maxAge: Math.max(0, Number.jet.to(maxAge)),
+      maxAgeError: Math.max(0, Number.jet.to(maxAgeError)),
     }, false);
 
-    solid.all(this, {
-      name,
-      childName: String.jet.to(childName) || String.jet.to(parent?.childName) || "key"
-    })
-
     virtual.all(this, {
-      state: _ => _p.state,
-      count: this.afterInit(_ => _p.list.length)
+      state:_=>_p.state,
+      name:_=>_p.bundle.name,
+      childName:_=>_p.bundle.childName
     });
 
-    virtual.all(this, {
-      index: this.afterInit(_ => ({ ..._p.index })),
-      list: this.afterInit(_ => ([..._p.list])),
-    }, false);
+    _p.bundle.on("beforeReset", _=>{
+      _p.state = "waiting";
+      delete _p.error;
+    });
 
   }
 
-  msg(text, key) {
-    key = formatKey(key);
-    return `'${this.name}'` + (key ? ` ${this.childName} '${key}' ` : "") + (text ? " "+text : "");
+  async on(event, callback, repeat=true) {
+    return vault.get(this.uid).bundle.on(event, callback, repeat);
   }
 
-  validateKey(key, action = "format") {
-    if (key = formatKey(key)) { return key; }
-    throw Error(this.msg(`${action}(...) failed - key undefined`));
+  msg(text, key, context) {
+    return vault.get(this.uid).bundle.msg(text, key, context);
   }
 
-  on(event, callback) {
-    if (!jet.isRunnable(callback)) { throw Error(this.msg(`on(...) require callback`)); }
-
-    const { handlers } = vault.get(this.uid);
-    const list = (handlers[event] || (handlers[event] = []));
-    list.push(callback);
-
-    return _ => {
-      const x = list.indexOf(callback);
-      if (x >= 0) { list.splice(x, 1); };
-    }
+  async exist(key, context, throwError = false) {
+    await this.init();
+    return vault.get(this.uid).bundle.exist(key, context, throwError);
   }
 
-  async init(streamError = true) {
+  async get(key, context, throwError = true) {
+    await this.init();
+    return vault.get(this.uid).bundle.get(key, context, throwError);
+  }
+
+  async count(context, throwError=true) {
+    await this.init();
+    return vault.get(this.uid).bundle.getData(context, throwError).list.length;
+  }
+
+  async getList(context, throwError=true) {
+    await this.init();
+    return [...vault.get(this.uid).bundle.getData(context, throwError).list];
+  }
+
+  async getIndex(context, throwError=true) {
+    await this.init();
+    return {...vault.get(this.uid).bundle.getData(context, throwError).index};
+  }
+
+  async getContextList() {
+    await this.init();
+    return Object.keys(vault.get(this.uid).bundle.data);
+  }
+
+  async map(callback, opt={}) {
+    await this.init();
+    return vault.get(this.uid).bundle.map(callback, opt);
+  }
+
+  async filter(checker, opt={}) {
+    await this.init();
+    return vault.get(this.uid).bundle.filter(checker, opt);
+  }
+
+  async find(checker, opt={}) {
+    await this.init();
+    return vault.get(this.uid).bundle.find(checker, opt);
+  }
+
+  async reset(throwError=true) {
+    return vault.get(this.uid).bundle.reset(throwError);
+  }
+
+  async init(throwError = true) {
     const _p = vault.get(this.uid);
-    if (_p.state === "error" && streamError) { throw _p.error; }
-    else if (_p.state === "waiting") {
+    if (_p.state === "waiting") {
       _p.build = (async _=>{
         _p.state = "pending";
         try {
-          await asyncRun(_p.handlers.beforeInit, this, streamError);
+          await _p.bundle.runHard("beforeInit");
           const data = await _p.stream();
           //if (Promise.jet.is(data)) { throw Error(this.msg(`init failed - promise found at sync`)); }
-          await _p.loader(this, data, _p.set);
-          await asyncRun(_p.handlers.afterInit, this, streamError);
+          await _p.loader(this, data, _p.bundle);
+          await _p.bundle.runSoft("afterInit");
           _p.state = "ready";
+          if (this.maxAge) { setTimeout(_=>this.reset(), this.maxAge); }
         } catch(error) {
-          _p.errorAt = new Date();
+          _p.error = error;
           _p.state = "error";
-          if (streamError) { throw (_p.error = error); }
+          if (this.maxAgeError) { setTimeout(_=>this.reset(), this.maxAgeError); }
+          if (throwError) { throw error; }
         }
-        return this;
+        return _p.state === "ready";
       })();
     }
+    else if (_p.state === "error" && throwError) { throw _p.error; }
     return _p.build;
   }
 
-  afterInit(execute) {
+  withInit(execute) {
     return async (...args) => {
       await this.init();
       return execute(...args);
     }
   }
 
-  async exist(key, missingError = false) {
-    await this.init();
-    key = formatKey(key);
-    const { index } = vault.get(this.uid);
-    if (index.hasOwnProperty(key)) { return true; }
-    if (missingError) { throw Error(this.msg(`exist failed - missing key`, key)); }
-    return false;
-  }
-
-  async get(key, missingError = true) {
-    await this.init();
-    key = formatKey(key);
-    const { index } = vault.get(this.uid);
-    const child = index[key];
-    if (child) { return child; }
-    if (missingError) { throw Error(this.msg(`get failed - missing key`, key)); }
-  }
-
-  addChop(name, checker) {
-    const _p = vault.get(this.uid);
-    name = formatKey(name);
-    if (!name) { throw Error(this.msg(`addChop(...) failed - missing name`)); }
-
-    return _p.chops[name] = new ChopAsync(name, {
+  chop(name, getContext, defaultContext) {
+    const chop = new ChopAsync(this.name+"."+name, {
       parent: this,
-      loader: async (chop, data, set) => {
-        await this.map(false, async child => await checker(child) && await set(child));
-        this.on("afterSet", async (self, child, key, throwError) => await checker(child) && await set(child, key, throwError));
-      }
+      childName:this.childName,
+      maxAge:this.maxAge,
+      maxAgeError:this.maxAgeError,
+      getContext,
+      defaultContext,
+      loader: async (chop, data, bundle) => this.map(child =>bundle.set(child))
     });
 
-  }
+    const { bundle } = vault.get(chop.uid);
+    this.on("afterSet", async child=>{if (chop.state === "ready") { await bundle.set(child); }});
+    this.on("afterRemove", async child=>{if (chop.state === "ready") { await bundle.remove(child); }});
+    this.on("afterReset", async _=>chop.reset());
 
-  getChop(name, missingError = true) {
-    name = formatKey(name);
-    if (!name) { throw Error(this.msg(`getChop(...) failed - missing name`)); }
-    const { chops } = vault.get(this.uid);
-    const chop = chops[name];
-    if (chop) { return chop; }
-    if (missingError) { throw Error(this.msg(`getChop('${name}') failed - not found`)); }
-  }
-
-  async map(byIndex, callback, sort) {
-    await this.init();
-    return asyncMap(vault.get(this.uid).list, byIndex, callback, sort);
-  }
-
-  async filter(byIndex, checker, sort) {
-    return this.map(byIndex, (child, i, count, stop) => {
-      if (checker(child, i, count, stop)) { return child; }
-    }, sort);
-  }
-
-  async find(checker, sort) {
-    return this.map(false, (child, i, count, stop) => {
-      if (checker(child, i, count, stop)) { return stop(child); }
-    }, sort)[0];
+    return chop;
   }
 
 }
-
-export default ChopAsync;

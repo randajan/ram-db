@@ -1,18 +1,27 @@
+import jet from "@randajan/jet-core";
 import { ChopSync } from "./sync/class/ChopSync";
-import ColumnsAsync from "./async/class/ColumnsAsync";
-import RowsAsync from "./async/class/RowsAsync";
+import { ColumnsAsync } from "./async/class/ColumnsAsync";
+import { RowsAsync } from "./async/class/RowsAsync";
 import { Table } from "./uni/Table";
-import { asyncMap } from "./async/tools";
-import vault from "./uni/vault";
+
+const { solid } = jet.prop;
 
 export class DBAsync extends ChopSync {
 
-    constructor(name, stream) {
+    constructor(name, stream, maxAge=0, maxAgeError=0) {
         super(name, {
             stream,
-            loader:(self, tables, set)=>jet.map(tables, (stream, key)=>set(new Table(this, key, stream))),
-            childName:"table"
+            loader:(self, tables, bundle)=>{
+                jet.map(tables, (stream, key)=>bundle.set(new Table(this, key, stream)));
+            },
+            childName:"table",
+            defaultContext:"all",
+            maxAge,
+            maxAgeError
         });
+
+        solid(this, "epics", this.chop("epics", tbl=>tbl.name.split("_")[0], "sys"));
+        
     }
 
     seedCols(table, stream) {
@@ -21,15 +30,6 @@ export class DBAsync extends ChopSync {
 
     seedRows(table, stream) {
         return new RowsAsync(table, stream);
-    }
-
-    mapAsync(byIndex, callback, sort) {
-        this.init();
-        return asyncMap(vault.get(this.uid).list, byIndex, callback, sort);
-    }
-
-    msg(text, key) {
-        return "ram-db async " + super.msg(text, key);
     }
 
 }

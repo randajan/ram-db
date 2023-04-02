@@ -1,15 +1,12 @@
 import jet from "@randajan/jet-core";
 import { colTraits } from "../../uni/consts";
 import vault from "../../uni/vault";
-import RowAsync from "./RowAsync";
 
-const { solid, virtual, cached } = jet.prop;
+const { solid, virtual } = jet.prop;
 
-export default class ColumnAsync {
+export class ColumnAsync {
 
-    static is(col) { return col instanceof Column; }
-
-    constructor(cols, id, key, traits) {
+    constructor(cols, id, name, traits) {
         const { db, table } = cols;
         const _c = vault.get(cols.uid);
 
@@ -21,12 +18,12 @@ export default class ColumnAsync {
 
         solid.all(this, {
             id,
-            key
+            name
         });
 
         virtual.all(this, {
-            isPrimary: _ => _c.primary === this.key,
-            isLabel: _ => _c.label === this.key
+            isPrimary: _ => _c.primary === name,
+            isLabel: _ => _c.label === name
         });
 
         for (const tn in colTraits) {
@@ -56,19 +53,21 @@ export default class ColumnAsync {
     }
 
     msg(text) {
-        return this.cols.msg(text, this.key);
+        return this.cols.msg(text, this.name);
     }
 
+    getKey() { return this.name; }
+
     async _toRaw(val) {
-        return RowAsync.is(val) ? await val.key : (String.jet.to(val) || null);
+        return val?.getKey ? await val.getKey() : (String.jet.to(val) || null);
     }
 
     async toRaw(val) {
         const { separator } = this;
-        if (!separator || !Array.isArray(val)) { return this._toRaw(val); }
+        if (!(separator && Array.jet.is(val))) { return this._toRaw(val); }
         let raw = "";
         for (let v of val) {
-            if (jet.isFull(v)) { raw += (raw ? separator : "") + await this._toRaw(v); }
+            if (jet.isFull(v)) { raw += (raw ? separator : "") + (await this._toRaw(v)); }
         }
         return raw || null;
     }
@@ -77,30 +76,30 @@ export default class ColumnAsync {
         const { db, type } = this;
         if (type === "datetime") { raw = Date.jet.to(raw); }
         if (type === "number") { raw = Number.jet.to(raw); }
-        return refName ? await db(refName).rows(raw, { autoCreate: true }) : raw;
+        return refName ? db(refName).rows(raw, { autoCreate: true }) : raw;
     }
 
     async toVal(raw, row) {
         const { separator, ref } = this;
-        const refName = (ref && row) ? ref(row) : null;
+        const refName = (ref && row) ? await ref(row) : null;
 
         if (Array.jet.is(raw)) { raw = raw.join(separator); }
         if (!separator) { return this._toVal(raw, refName); }
 
         const list = raw ? String.jet.to(raw).split(separator) : [];
-        return list.length ? Promise.all(list.map(v => this._toVal(v, refName))) : list;
+        return list.length ? Promise.all(list.map(raw => this._toVal(raw, refName))) : list;
     }
 
     fetch(vals) {
-        return Array.isArray(vals) ? vals[this.id] : jet.get(vals, this.key);
+        return Array.isArray(vals) ? vals[this.id] : jet.get(vals, this.name);
     }
 
     toJSON() {
-        return this.key;
+        return this.name;
     }
 
     toString() {
-        return this.key;
+        return this.name;
     }
 
 }

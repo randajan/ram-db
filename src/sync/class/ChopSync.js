@@ -37,6 +37,11 @@ export class ChopSync extends jet.types.Plex {
       childName:_=>_p.bundle.childName
     });
 
+    _p.bundle.on("beforeReset", _=>{
+      _p.state = "waiting";
+      delete _p.error;
+    });
+
   }
 
   on(event, callback, repeat=true) {
@@ -93,12 +98,7 @@ export class ChopSync extends jet.types.Plex {
   }
 
   reset(throwError=true) {
-    const _p = vault.get(this.uid);
-    if (!_p.bundle.reset(throwError)) { return false; }
-    _p.state = "waiting";
-    delete _p.buildAt;
-    delete _p.error;
-    return true;
+    return vault.get(this.uid).bundle.reset(throwError);
   }
 
   init(throwError = true) {
@@ -120,7 +120,6 @@ export class ChopSync extends jet.types.Plex {
           if (this.maxAgeError) { setTimeout(_=>this.reset(), this.maxAgeError); }
           if (throwError) { throw error; }
         }
-        _p.buildAt = new Date();
         return _p.state === "ready";
       })();
     }
@@ -128,7 +127,7 @@ export class ChopSync extends jet.types.Plex {
     return _p.build;
   }
 
-  afterInit(execute) {
+  withInit(execute) {
     return (...args) => {
       this.init();
       return execute(...args);

@@ -5,8 +5,6 @@ const { solid, virtual } = jet.prop;
 
 export class RowSync extends jet.types.Plex {
 
-  static is(row) { return row instanceof RowSync; }
-
   static create(rows, iniStep) { return new RowSync(rows, iniStep); };
 
   constructor(rows, iniStep) {
@@ -67,13 +65,5 @@ export class RowSync extends jet.types.Plex {
   }
 
   getKey(isSet) { return isSet ? this.live.key : this.key; }
-
-  toJSON() {
-    return this.key
-  }
-
-  toString() {
-    return this.key;
-  }
 
 }

@@ -6,8 +6,6 @@ const { solid, virtual } = jet.prop;
 
 export class ColumnSync {
 
-    static is(col) { return col instanceof Column; }
-
     constructor(cols, id, name, traits) {
         const { db, table } = cols;
         const _c = vault.get(cols.uid);
