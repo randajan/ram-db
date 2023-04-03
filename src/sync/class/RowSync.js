@@ -13,7 +13,7 @@ export class RowSync extends jet.types.Plex {
     const save = vault.get(rows.uid).save;
 
     const get = (col, opt = { throwError: true }) => _p.live.get(col, opt);
-    const push = (vals, force, opt = { autoSave: true, resetOnError: true, saveError: true }) => {
+    const push = (vals, force, opt = { autoSave: true, resetOnError: true, throwError: true }) => {
       return _p.live.push(vals, force) && (opt.autoSave === false || this.save(opt));
     }
 
@@ -24,13 +24,13 @@ export class RowSync extends jet.types.Plex {
       table,
       rows,
       get,
-      set: (vals, opt = { autoSave: true, resetOnError: true, saveError: true }) => push(vals, true, opt),
-      update: (vals, opt = { autoSave: true, resetOnError: true, saveError: true }) => push(vals, false, opt),
+      set: (vals, opt = { autoSave: true, resetOnError: true, throwError: true }) => push(vals, true, opt),
+      update: (vals, opt = { autoSave: true, resetOnError: true, throwError: true }) => push(vals, false, opt),
       reset: _ => !this.isDirty || _p.live.reset(),
-      remove: (opt = { autoSave: true, resetOnError: true, saveError: true }) => {
+      remove: (opt = { autoSave: true, resetOnError: true, throwError: true }) => {
         return _p.live.remove() && (opt.autoSave === false || this.save(opt));
       },
-      save: (opt = { resetOnError: true, saveError: true }) => {
+      save: (opt = { resetOnError: true, throwError: true }) => {
         if (!this.isDirty) { return true; }
         try {
           save(this);
@@ -38,8 +38,8 @@ export class RowSync extends jet.types.Plex {
           return true;
         } catch (err) {
           if (opt.resetOnError !== false) { this.reset(); }
-          if (opt.saveError !== false) { throw err; }
-          console.warn(this.msg(err.message), err.stack);
+          if (opt.throwError !== false) { throw err; }
+          console.warn(this.msg(err?.message || "unknown error"), err?.stack);
           return false;
         }
       },

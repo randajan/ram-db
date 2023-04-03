@@ -14,7 +14,7 @@ export class Table {
 
     cached.all(this, _p, {
       cols:_=>db.seedCols(this, _p.config.cols),
-      rows:_=>db.seedRows(this, _p.config.rows, _p.config.onChange)
+      rows:_=>db.seedRows(this, _p.config.rows, _p.config.onSave)
     }, false);
 
   }

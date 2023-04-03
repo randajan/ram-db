@@ -13,11 +13,11 @@ export class RowsSync extends ChopSync {
         childName:"row",
         defaultContext:"all",
         stream,
-        loader:(rows, data)=>{
+        loader:(rows, bundle, data)=>{
           for (let index in data) {
             const vals = data[index];
             if (!jet.isMapable(vals)) { return; }
-            RowSync.create(rows).set(vals, { saveError:false });
+            RowSync.create(rows).set(vals, { throwError:false });
           }
         }
       });
@@ -36,8 +36,8 @@ export class RowsSync extends ChopSync {
         if (key && !isRemoved) {
           if (rekey) { _p.bundle.set(row); }
           else {
-            _p.bundle.runHard("beforeUpdate", [row]);
-            _p.bundle.runSoft("afterUpdate", [row]);
+            _p.bundle.run("beforeUpdate", [row]);
+            _p.bundle.run("afterUpdate", [row]);
           }
         }
         if (keySaved && (rekey || remove)) { _p.bundle.remove(row); }
@@ -74,7 +74,7 @@ export class RowsSync extends ChopSync {
 
     seed() { return RowSync.create(this); }
 
-    addOrUpdate(vals, opt={ add:true, update:true, autoSave:true, resetOnError:true, saveError:true }) {
+    addOrUpdate(vals, opt={ add:true, update:true, autoSave:true, resetOnError:true, throwError:true }) {
 
       this.init();
     
@@ -82,17 +82,17 @@ export class RowsSync extends ChopSync {
       const ck = this.table.cols.primary;
       if (!ck.formula && !ck.resetIf) { key = ck.toRaw(ck.fetch(vals)); } // quick key
       if (key == null) { step = this.initStep(vals); key = step.getKey(); }
-      if (key == null) { if (opt.saveError !== false) { throw Error(this.msg("push failed - missing key", vals)); } return; }
+      if (key == null) { if (opt.throwError !== false) { throw Error(this.msg("push failed - missing key", vals)); } return; }
     
       const rowFrom = this.get(key, { autoCreate:false, throwError:false });
     
       if (opt.update !== false) {
         if (rowFrom) { rowFrom.update(vals, opt); return rowFrom; }
-        if (!opt.add) { if (opt.saveError !== false) { throw Error(this.msg("update failed - key not found", key)); } return; }
+        if (!opt.add) { if (opt.throwError !== false) { throw Error(this.msg("update failed - key not found", key)); } return; }
       }
     
       if (opt.add !== false) {
-        if (rowFrom) { if (opt.saveError !== false) { throw Error(this.msg("add failed - duplicate key", key)); } return; }
+        if (rowFrom) { if (opt.throwError !== false) { throw Error(this.msg("add failed - duplicate key", key)); } return; }
         const rowTo = RowSync.create(this, step || this.initStep(vals));
         if (opt.autoSave !== false) { rowTo.save(opt); }
         return rowTo;
@@ -100,13 +100,13 @@ export class RowsSync extends ChopSync {
     
     }
 
-    add(vals, opt={ autoSave:true, resetOnError:true, saveError:true }) {
+    add(vals, opt={ autoSave:true, resetOnError:true, throwError:true }) {
       opt.add = true;
       opt.update = false;
       return this.addOrUpdate(vals, opt);
     }
 
-    update(vals, opt={ autoSave:true, resetOnError:true, saveError:true }) {
+    update(vals, opt={ autoSave:true, resetOnError:true, throwError:true }) {
       opt.add = false;
       opt.update = true;
       return this.addOrUpdate(vals, opt);
@@ -124,15 +124,11 @@ export class RowsSync extends ChopSync {
 
     chop(name, getContext, defaultContext) {
       const chop = super.chop(name, getContext, defaultContext);
-      const _p = vault.get(chop.uid);
 
-      if (chop) {
-        this.on("afterUpdate", row=>{
-          if (chop.state !== "ready") { return; }
-          if (!_p.bundle.set(row, false)) { return; }
-          return _p.bundle.remove(row);
-        });
-      }
+      chop.on("afterInit", bundle=>{
+        const cleanUp = this.on("afterUpdate", row=>{ if (bundle.set(row, false)) { bundle.remove(row); }});
+        chop.on("beforeReset", cleanUp, false);
+      });
 
       return chop;
     }

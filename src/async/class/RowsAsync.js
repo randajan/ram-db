@@ -8,22 +8,25 @@ import { formatKey } from "../../uni/tools.js";
 const { solid } = jet.prop;
 
 export class RowsAsync extends ChopAsync {
-    constructor(table, stream) {
+    constructor(table, stream, onSave) {
       super(`${table.name}.rows`, {
         childName:"row",
         defaultContext:"all",
         stream,
-        loader:async (rows, data)=>{
+        loader:async (rows, bundle, data)=>{
           for (let index in data) {
             const vals = data[index];
             if (!jet.isMapable(vals)) { return; }
-            await RowAsync.create(rows).set(vals, { saveError:false });
+            await RowAsync.create(rows).set(vals, { throwError:false });
           }
+
+          this.on("beforeReset", this.on("beforeSet", async row=>onSave(table, "set", row.live)), false);
+          this.on("beforeReset", this.on("beforeUpdate", async row=>onSave(table, "update", row.live)), false);
+          this.on("beforeReset", this.on("beforeRemove", async row=>onSave(table, "remove", row.saved)), false);
         }
       });
 
       const _p = vault.get(this.uid);
-      table.db.on("afterReset", _p.recycle, false);
 
       _p.refs = {};
 
@@ -39,8 +42,8 @@ export class RowsAsync extends ChopAsync {
         if (key && !isRemoved) {
           if (rekey) { await _p.bundle.set(row); }
           else {
-            await _p.bundle.runHard("beforeUpdate", [row]);
-            await _p.bundle.runSoft("afterUpdate", [row]);
+            await _p.bundle.run("beforeUpdate", [row]);
+            await _p.bundle.run("afterUpdate", [row]);
           }
         }
         if (keySaved && (rekey || remove)) { await _p.bundle.remove(row); }
@@ -51,6 +54,10 @@ export class RowsAsync extends ChopAsync {
         db:table.db,
         table
       }, false);
+
+
+      table.db.on("afterReset", _p.recycle, false);
+
       
     }
 
@@ -77,7 +84,7 @@ export class RowsAsync extends ChopAsync {
 
     seed() { return RowAsync.create(this); }
 
-    async addOrUpdate(vals, opt={ add:true, update:true, autoSave:true, resetOnError:true, saveError:true }) {
+    async addOrUpdate(vals, opt={ add:true, update:true, autoSave:true, resetOnError:true, throwError:true }) {
 
       await this.init();
     
@@ -85,17 +92,17 @@ export class RowsAsync extends ChopAsync {
       const ck = await this.table.cols.primary;
       if (!ck.formula && !ck.resetIf) { key = await ck.toRaw(ck.fetch(vals)); } // quick key
       if (key == null) { step = await this.initStep(vals); key = step.getKey(); }
-      if (key == null) { if (opt.saveError !== false) { throw Error(this.msg("push failed - missing key", vals)); } return; }
+      if (key == null) { if (opt.throwError !== false) { throw Error(this.msg("push failed - missing key", vals)); } return; }
     
       const rowFrom = await this.get(key, { autoCreate:false, throwError:false });
     
       if (opt.update !== false) {
         if (rowFrom) { await rowFrom.update(vals, opt); return rowFrom; }
-        if (!opt.add) { if (opt.saveError !== false) { throw Error(this.msg("update failed - key not found", key)); } return; }
+        if (!opt.add) { if (opt.throwError !== false) { throw Error(this.msg("update failed - key not found", key)); } return; }
       }
     
       if (opt.add !== false) {
-        if (rowFrom) { if (opt.saveError !== false) { throw Error(this.msg("add failed - duplicate key", key)); } return; }
+        if (rowFrom) { if (opt.throwError !== false) { throw Error(this.msg("add failed - duplicate key", key)); } return; }
         const rowTo = RowAsync.create(this, step || await this.initStep(vals));
         if (opt.autoSave !== false) { await rowTo.save(opt); }
         return rowTo;
@@ -103,13 +110,13 @@ export class RowsAsync extends ChopAsync {
     
     }
 
-    async add(vals, opt={ autoSave:true, resetOnError:true, saveError:true }) {
+    async add(vals, opt={ autoSave:true, resetOnError:true, throwError:true }) {
       opt.add = true;
       opt.update = false;
       return this.addOrUpdate(vals, opt);
     }
 
-    async update(vals, opt={ autoSave:true, resetOnError:true, saveError:true }) {
+    async update(vals, opt={ autoSave:true, resetOnError:true, throwError:true }) {
       opt.add = false;
       opt.update = true;
       return this.addOrUpdate(vals, opt);
@@ -127,15 +134,11 @@ export class RowsAsync extends ChopAsync {
 
     chop(name, getContext, defaultContext) {
       const chop = super.chop(name, getContext, defaultContext);
-      const _p = vault.get(chop.uid);
 
-      if (chop) {
-        this.on("afterUpdate", async row=>{
-          if (chop.state !== "ready") { return; }
-          if (!(await _p.bundle.set(row, false))) { return; }
-          return _p.bundle.remove(row);
-        });
-      }
+      chop.on("afterInit", bundle=>{
+        const cleanUp = this.on("afterUpdate", async row=>{ if (await bundle.set(row, false)) { bundle.remove(row); }});
+        chop.on("beforeReset", cleanUp, false);
+      });
 
       return chop;
     }

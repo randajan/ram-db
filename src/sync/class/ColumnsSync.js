@@ -7,7 +7,7 @@ import { formatKey } from "../../uni/tools.js";
 
 const { solid, virtual } = jet.prop;
 
-const loader = (cols, data, bundle) => {
+const loader = (cols, bundle, data) => {
   const _p = vault.get(cols.uid);
   const isArray = Array.isArray(data);
   const { list } = _p.bundle.getData();

@@ -11,7 +11,7 @@ export class DBSync extends ChopSync {
     constructor(name, stream, maxAge=0, maxAgeError=0) {
         super(name, {
             stream,
-            loader:(self, tables, bundle)=>{
+            loader:(self, bundle, tables)=>{
                 jet.map(tables, (stream, key)=>bundle.set(new Table(this, key, stream)));
             },
             childName:"table",
@@ -28,8 +28,8 @@ export class DBSync extends ChopSync {
         return new ColumnsSync(table, stream);
     }
 
-    seedRows(table, stream) {
-        return new RowsSync(table, stream);
+    seedRows(table, stream, onSave) {
+        return new RowsSync(table, stream, onSave);
     }
 
 }

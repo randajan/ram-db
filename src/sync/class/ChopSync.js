@@ -18,7 +18,7 @@ export class ChopSync extends jet.types.Plex {
         getContext,
         defaultContext
       ),
-      recycle:_=>{ if (_p.bundle.runHard("beforeRecycle")) { console.warn(this.msg("recycled")); vault.end(uid); }}
+      recycle:_=>{ if (_p.bundle.run("beforeRecycle")) { console.warn(this.msg("recycled")); vault.end(uid); }}
     });
 
     super((...args) => this.get(...args));
@@ -107,11 +107,11 @@ export class ChopSync extends jet.types.Plex {
       _p.build = (_=>{
         _p.state = "pending";
         try {
-          _p.bundle.runHard("beforeInit");
+          _p.bundle.run("beforeInit", [_p.bundle]);
           const data = _p.stream();
           if (Promise.jet.is(data)) { throw Error(this.msg(`init failed - promise found at sync`)); }
-          _p.loader(this, data, _p.bundle);
-          _p.bundle.runSoft("afterInit");
+          _p.loader(this, _p.bundle, data);
+          _p.bundle.run("afterInit", [_p.bundle]);
           _p.state = "ready";
           if (this.maxAge) { setTimeout(_=>this.reset(), this.maxAge); }
         } catch(error) {
@@ -135,22 +135,20 @@ export class ChopSync extends jet.types.Plex {
   }
 
   chop(name, getContext, defaultContext) {
-    const chop = new ChopSync(this.name+"."+name, {
+    return new ChopSync(this.name+"."+name, {
       parent: this,
       childName:this.childName,
       maxAge:this.maxAge,
       maxAgeError:this.maxAgeError,
       getContext,
       defaultContext,
-      loader: (chop, data, bundle) => this.map(child =>bundle.set(child))
+      loader: (chop, bundle) =>{
+        this.map(child =>bundle.set(child));
+        chop.on("beforeReset", this.on("afterSet", async child=>bundle.set(child)), false);
+        chop.on("beforeReset", this.on("afterRemove", async child=>bundle.remove(child)), false);
+        this.on("beforeReset", _=>chop.reset(), false);
+      }
     });
-
-    const { bundle } = vault.get(chop.uid);
-    this.on("afterSet", child=>{if (chop.state === "ready") { bundle.set(child); }});
-    this.on("afterRemove", child=>{if (chop.state === "ready") { bundle.remove(child); }});
-    this.on("afterReset", _=>chop.reset());
-
-    return chop;
   }
 
 }

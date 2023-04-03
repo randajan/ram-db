@@ -18,7 +18,7 @@ export class ChopAsync extends jet.types.Plex {
         getContext,
         defaultContext
       ),
-      recycle:async _=>{ if (await _p.bundle.runHard("beforeRecycle")) { console.warn(this.msg("recycled")); vault.end(uid); }}
+      recycle:async _=>{ if (await _p.bundle.run("beforeRecycle")) { console.warn(this.msg("recycled")); vault.end(uid); }}
     });
 
     super((...args) => this.get(...args));
@@ -44,7 +44,7 @@ export class ChopAsync extends jet.types.Plex {
 
   }
 
-  async on(event, callback, repeat=true) {
+  on(event, callback, repeat=true) {
     return vault.get(this.uid).bundle.on(event, callback, repeat);
   }
 
@@ -107,11 +107,11 @@ export class ChopAsync extends jet.types.Plex {
       _p.build = (async _=>{
         _p.state = "pending";
         try {
-          await _p.bundle.runHard("beforeInit");
+          await _p.bundle.run("beforeInit", [_p.bundle]);
           const data = await _p.stream();
           //if (Promise.jet.is(data)) { throw Error(this.msg(`init failed - promise found at sync`)); }
-          await _p.loader(this, data, _p.bundle);
-          await _p.bundle.runSoft("afterInit");
+          await _p.loader(this, _p.bundle, data);
+          await _p.bundle.run("afterInit", [_p.bundle]);
           _p.state = "ready";
           if (this.maxAge) { setTimeout(_=>this.reset(), this.maxAge); }
         } catch(error) {
@@ -135,22 +135,20 @@ export class ChopAsync extends jet.types.Plex {
   }
 
   chop(name, getContext, defaultContext) {
-    const chop = new ChopAsync(this.name+"."+name, {
+    return new ChopAsync(this.name+"."+name, {
       parent: this,
       childName:this.childName,
       maxAge:this.maxAge,
       maxAgeError:this.maxAgeError,
       getContext,
       defaultContext,
-      loader: async (chop, data, bundle) => this.map(child =>bundle.set(child))
+      loader: async (chop, bundle) =>{
+        await this.map(child =>bundle.set(child));
+        chop.on("beforeReset", this.on("afterSet", async child=>bundle.set(child)), false);
+        chop.on("beforeReset", this.on("afterRemove", async child=>bundle.remove(child)), false);
+        this.on("beforeReset", _=>chop.reset(), false);
+      }
     });
-
-    const { bundle } = vault.get(chop.uid);
-    this.on("afterSet", async child=>{if (chop.state === "ready") { await bundle.set(child); }});
-    this.on("afterRemove", async child=>{if (chop.state === "ready") { await bundle.remove(child); }});
-    this.on("afterReset", async _=>chop.reset());
-
-    return chop;
   }
 
 }

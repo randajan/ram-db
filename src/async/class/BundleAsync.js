@@ -13,7 +13,7 @@ export class BundleAsync {
       data:{},
       handlers: {},
       getContext: jet.isRunnable(getContext) ? getContext : _=>null,
-      def:formatKey(def, "null")
+      def:formatKey(def, "undefined")
     });
 
   }
@@ -47,21 +47,29 @@ export class BundleAsync {
     if (!jet.isRunnable(callback)) { throw Error(this.msg(`on(...) require callback`)); }
 
     const { handlers } = this;
-    const list = (handlers[event] || (handlers[event] = new Set()));
-    const cb = repeat ? callback : async (...args)=>{ await callback(...args); list.delete(cb); }
-    list.add(cb);
+    const list = (handlers[event] || (handlers[event] = []));
 
-    return _ => { list.delete(cb); return callback; }
+    let remove;
+    const cb = repeat ? callback : async (...args)=>{ await callback(...args); remove(); }
+    if (event.startsWith("before")) { list.push(cb); } else { list.unshift(cb) }
+
+    return remove = _ => {
+      const id = list.indexOf(cb);
+      if (id >= 0) { list.splice(id, 1); }
+      return callback;
+    }
   }
 
-  async run(hard, event, args=[], throwError=true) {
+  async run(event, args=[], throwError=true) {
     const handlers = this.handlers[event];
-    if (!handlers?.size) { return true; }
+    if (!handlers?.length) { return true; }
+    const isBefore = event.startsWith("before");
     try {
-      for (const cb of handlers) {
-        try { await cb(...args); } catch(err) {
-          if (hard) { throw err; }
-          else if (throwError) { console.warn(this.msg(err.message), err.stack); }
+      for (let i=handlers.length; i>=0; i--) {
+        const cb = handlers[i];
+        try { if (cb) { await cb(...args); } } catch(err) {
+          if (isBefore) { throw err; }
+          else if (throwError) { console.warn(this.msg(err?.message || "unknown error"), err?.stack); }
         }
       }
       return true;
@@ -71,18 +79,10 @@ export class BundleAsync {
     }
   }
 
-  async runSoft(event, args=[], throwError=true) {
-    return this.run(false, event, args, throwError);
-  }
-
-  async runHard(event, args=[], throwError=true) {
-    return this.run(true, event, args, throwError);
-  }
-
   async reset(throwError=true) {
-    if (!await this.runHard("beforeReset", [], throwError)) { return false; }
+    if (!await this.run("beforeReset", [], throwError)) { return false; }
     for (let i in this.data) { delete this.data[i]; }
-    return this.runSoft("afterReset", [], throwError);
+    return this.run("afterReset", [], throwError);
   }
 
   async _set(context, key, child, throwError = true) {
@@ -93,11 +93,11 @@ export class BundleAsync {
       return false;
     }
 
-    if (!(await this.runHard("beforeSet", [child, ctx], throwError))) { return false; }
+    if (!(await this.run("beforeSet", [child, ctx], throwError))) { return false; }
     
     list.push(index[key] = child);
 
-    return this.runSoft("afterSet", [child, ctx], throwError);
+    return this.run("afterSet", [child, ctx], throwError);
   }
 
   async set(child, throwError = true) {
@@ -118,14 +118,14 @@ export class BundleAsync {
       return false;
     }
 
-    if (!(await this.runHard("beforeRemove", [child, ctx], throwError))) { return false; }
+    if (!(await this.run("beforeRemove", [child, ctx], throwError))) { return false; }
 
     if (list.length === 1) { delete this.data[ctx]; } else {
       list.splice(id, 1);
       delete index[key];
     }
     
-    return this.runSoft("afterRemove", [child, ctx], throwError);
+    return this.run("afterRemove", [child, ctx], throwError);
   }
 
   async remove(child, throwError = true) {

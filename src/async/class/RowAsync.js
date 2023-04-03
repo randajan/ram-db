@@ -13,7 +13,7 @@ export class RowAsync extends jet.types.Plex {
     const save = vault.get(rows.uid).save;
 
     const get = (col, opt = { throwError: true }) => _p.live.get(col, opt);
-    const push = async (vals, force, opt={ autoSave:true, resetOnError:true, saveError:true })=>{
+    const push = async (vals, force, opt={ autoSave:true, resetOnError:true, throwError:true })=>{
       return (await _p.live.push(vals, force)) && (opt.autoSave === false || await this.save(opt));
     }
 
@@ -24,13 +24,13 @@ export class RowAsync extends jet.types.Plex {
       table,
       rows,
       get,
-      set: async (vals, opt = { autoSave: true, resetOnError: true, saveError: true }) => push(vals, true, opt),
-      update: async (vals, opt = { autoSave: true, resetOnError: true, saveError: true }) => push(vals, false, opt),
+      set: async (vals, opt = { autoSave: true, resetOnError: true, throwError: true }) => push(vals, true, opt),
+      update: async (vals, opt = { autoSave: true, resetOnError: true, throwError: true }) => push(vals, false, opt),
       reset: async _ => !(await this.isDirty) || _p.live.reset(),
-      remove: async (opt = { autoSave: true, resetOnError: true, saveError: true }) => {
+      remove: async (opt = { autoSave: true, resetOnError: true, throwError: true }) => {
         return _p.live.remove() && (opt.autoSave === false || await this.save(opt));
       },
-      save: async (opt = { resetOnError: true, saveError: true }) => {
+      save: async (opt = { resetOnError: true, throwError: true }) => {
         if (!(await this.isDirty)) { return true; }
         try {
           await save(this);
@@ -38,8 +38,8 @@ export class RowAsync extends jet.types.Plex {
           return true;
         } catch (err) {
           if (opt.resetOnError !== false) { await this.reset(); }
-          if (opt.saveError !== false) { throw err; }
-          console.warn(this.msg(err.message), err.stack);
+          if (opt.throwError !== false) { throw err; }
+          console.warn(await this.msg(err?.message || "unknown error"), err?.stack);
           return false;
         }
       },
@@ -60,8 +60,8 @@ export class RowAsync extends jet.types.Plex {
 
   }
 
-  msg(text) {
-    return this.rows.msg(text, this.key || JSON.stringify(this.raws));
+  async msg(text) {
+    return this.rows.msg(text, await this.key || JSON.stringify(this.raws));
   }
 
   async getKey(isSet) { return isSet ? this.live.key : this.key; }

@@ -87,8 +87,11 @@ export default ramdb("main", _=>{
     return {
       cols:_=>global(name, jet.map(rows[0], _=>({}))),
       rows:_=>rows,
-      onChange:(table, event, data)=>{
-        console.log({ name:table.name, event, key:data.key, data:data.raws });
+      onSave:async (table, event, row)=>{
+        console.log({ table:table.name, event, row:await row.key });
+        const x = new Promise((res, rej)=>setTimeout(rej, 5000));
+        await x;
+        console.log("ready");
       }
     }
   });
