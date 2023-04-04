@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { colTraits, colTypize } from "../../uni/consts";
+import { colTraits, colTypize } from "../../uni/tools";
 import vault from "../../uni/vault";
 
 const { solid, virtual } = jet.prop;

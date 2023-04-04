@@ -1,6 +1,6 @@
 import jet from "@randajan/jet-core";
 import vault from "../../uni/vault.js";
-import { colsTraits } from "../../uni/consts.js";
+import { colsTraits } from "../../uni/tools.js";
 import { ChopSync } from "./ChopSync.js";
 import { ColumnSync } from "./ColumnSync";
 import { formatKey } from "../../uni/tools.js";
