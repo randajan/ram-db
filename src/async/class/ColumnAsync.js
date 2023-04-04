@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { colTraits } from "../../uni/consts";
+import { colTraits, colTypize } from "../../uni/consts";
 import vault from "../../uni/vault";
 
 const { solid, virtual } = jet.prop;
@@ -27,12 +27,7 @@ export class ColumnAsync {
         });
 
         for (const tn in colTraits) {
-            const type = colTraits[tn];
-            const raw = traits[tn];
-
-            const value = (type !== Function || raw != null) ? type.jet.to(raw) : undefined;
-            solid(this, tn, value);
-
+            solid(this, tn, colTraits[tn](traits[tn], traits));
             delete traits[tn];
         }
 
@@ -73,10 +68,8 @@ export class ColumnAsync {
     }
 
     async _toVal(raw, refName) {
-        const { db, type } = this;
-        if (type === "datetime") { raw = Date.jet.to(raw); }
-        if (type === "number") { raw = Number.jet.to(raw); }
-        return refName ? db(refName).rows(raw, { autoCreate: true }) : raw;
+        raw = colTypize[this.type](raw);
+        return refName ? this.db(refName).rows.get(raw, { autoCreate:true }) : raw;
     }
 
     async toVal(raw, row) {

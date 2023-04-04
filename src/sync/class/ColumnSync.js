@@ -25,14 +25,8 @@ export class ColumnSync {
             isPrimary: _ => _c.primary === name,
             isLabel: _ => _c.label === name
         });
-
         for (const tn in colTraits) {
-            const type = colTraits[tn];
-            const raw = traits[tn];
-
-            const value = (type !== Function || raw != null) ? type.jet.to(raw) : undefined;
-            solid(this, tn, value);
-
+            solid(this, tn, colTraits[tn](traits[tn], traits));
             delete traits[tn];
         }
 
@@ -40,8 +34,9 @@ export class ColumnSync {
             throw Error(this.msg("virtual column require formula to be set"));
         }
 
-        if (this.ref && (this.isPrimary || this.isLabel)) {
-            throw Error(this.msg("columns with ref couldn't be primary or label"));
+        if (this.ref) {
+            if (this.isPrimary || this.isLabel) { throw Error(this.msg("columns with ref couldn't be primary or label")); }
+            if (this.type !== "ref") { throw Error(this.msg(`columns with ref require type 'ref' or null provided:'${this.type}'`)); }
         }
 
         const unknownTraits = Object.keys(traits);

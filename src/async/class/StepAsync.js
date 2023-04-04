@@ -38,7 +38,9 @@ export class StepAsync {
     const { table, vals, raws, before, wrap } = this;
     const { isVirtual, init, resetIf, formula, isReadonly } = col;
 
+    //if (isVirtual) { return formula(wrap); }
     if (vals.hasOwnProperty(col)) { return vals[col]; }
+    
 
     let raw = raws[col];
     const self = _ => col.toVal(raw, wrap);

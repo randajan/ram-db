@@ -39,7 +39,7 @@ const loader = (cols, bundle, data) => {
 
   if (!list.length) { throw Error(cols.msg("at least one column is required")); }
 
-  if (!_p.primary) { _p.primary = _p.list[0]; }
+  if (!_p.primary) { _p.primary = list[0]; }
   if (!_p.label) { _p.label = _p.primary; }
 
 }

@@ -50,12 +50,20 @@ export default ramdb("main", _=>{
       price_m:{ type:"number" }
     },
     book_docs:{
-      book_items:{ isVirtual:true, separator:"; ", ref:"book_items", formula:r=>window.ramdb("book_items").rows.filter(m=>m("book_doc").key === r.key) }
+      book_items:{ isVirtual:true, separator:"; ", ref:"book_items", formula:r=>r.refList("book_items", "book_doc") },
+      is_our:{type:"boolean"},
+      is_anonym:{type:"boolean"},
+      book_serie:{ ref:"book_series" },
+      bank_acc:{ ref:"book_accs" },
+      case_order:{ ref:"case_orders" }
     },
     history_contacts:{
       kin_contact:{ ref:"kin_contacts" },
       version:{ type:"number" },
       id:{ isVirtual:true, isPrimary:true, formula:async r=>jet.melt([await r(["kin_contact", "id"]), await r("version")], "_") }
+    },
+    book_accs:{
+      id:{ isVirtual:true, isPrimary:true, formula:async r=>(await r("account_id"))+"/"+(await r("bank_id")) }
     }
 
   }
