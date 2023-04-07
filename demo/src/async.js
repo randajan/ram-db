@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import ramdb from "../../dist/async.js";
+import ramdb, { nref } from "../../dist/async.js";
 import testData from "../data/TISDB_export.json";
 
 
@@ -7,10 +7,7 @@ export default ramdb("main", _=>{
   const schema = {
     sys_apps:{
       url:{ isVirtual:true, formula:async r=>`https://www.appsheet.com/start/${await r("url_id")}` },
-      sys_ents:{
-        isVirtual:true, separator:"; ", ref:"sys_ents",
-        formula:r=>r.refList("sys_ents", "sys_app_default")
-      }
+      sys_ents:nref("sys_ents", "sys_app_default")
     },
     sys_ents:{
       sys_app_default:{ ref:"sys_apps" },
@@ -49,8 +46,11 @@ export default ramdb("main", _=>{
       book_doc:{ ref:"book_docs" },
       price_m:{ type:"number" }
     },
+    book_series:{
+      book_docs:nref("book_docs", "book_serie")
+    },
     book_docs:{
-      book_items:{ isVirtual:true, separator:"; ", ref:"book_items", formula:r=>r.refList("book_items", "book_doc") },
+      book_items:nref("book_items", "book_doc"),
       is_our:{type:"boolean"},
       is_anonym:{type:"boolean"},
       book_serie:{ ref:"book_series" },
@@ -78,10 +78,15 @@ export default ramdb("main", _=>{
       console.log(name);
     }
 
+    const up = cols.updater;
+    if (up) { up.ref ="kin_contacts"; up.resetIf = true; }
+    const cp = cols.creator;
+    if (cp) { cp.ref = "kin_contacts"; cp.isReadonly = true; }
+    const op = cols.owner;
+    if (op) { op.ref = "kin_contacts"; }
+
     const ut = cols.updated || cols.updated_at;
-
     if (ut) { ut.init = _=>new Date(); ut.resetIf = true; ut.type = "datetime"; }
-
     const ct = cols.created || cols.created_at;
     if (ct) { ct.init = _=>new Date(); ct.isReadonly = true; ct.type = "datetime"; }
 
@@ -97,9 +102,9 @@ export default ramdb("main", _=>{
       rows:_=>rows,
       onSave:async (table, event, row)=>{
         console.log({ table:table.name, event, row:await row.key });
-        const x = new Promise((res, rej)=>setTimeout(rej, 5000));
-        await x;
-        console.log("ready");
+        //const x = new Promise((res, rej)=>setTimeout(rej, 5000));
+        //await x;
+        //console.log("ready");
       }
     }
   });

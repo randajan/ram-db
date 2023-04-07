@@ -1,38 +1,17 @@
-import jet from "@randajan/jet-core";
-import { ChopSync } from "./sync/class/ChopSync";
-import { ColumnsSync } from "./sync/class/ColumnsSync";
-import { RowsSync } from "./sync/class/RowsSync";
-import { Table } from "./uni/Table";
+import { nref } from "./tools";
+import { RamDB } from "./uni/RamDB";
+import { Rows } from "./sync/Rows";
+import { Cols } from "./sync/Cols";
 
-const { solid } = jet.prop;
 
-export class DBSync extends ChopSync {
+export default (name, stream, maxAge=0, maxAgeError=0) => new RamDB(name, {
+    stream,
+    maxAge,
+    maxAgeError,
+    Rows,
+    Cols
+});
 
-    constructor(name, stream, maxAge=0, maxAgeError=0) {
-        super(name, {
-            stream,
-            loader:(self, bundle, tables)=>{
-                jet.map(tables, (stream, key)=>bundle.set(new Table(this, key, stream)));
-            },
-            childName:"table",
-            defaultContext:"all",
-            maxAge,
-            maxAgeError
-        });
-
-        solid(this, "epics", this.chop("epics", tbl=>tbl.name.split("_")[0], "sys"));
-        
-    }
-
-    seedCols(table, stream) {
-        return new ColumnsSync(table, stream);
-    }
-
-    seedRows(table, stream, onSave) {
-        return new RowsSync(table, stream, onSave);
-    }
-
+export {
+    nref
 }
-
-
-export default (name, stream)=>new DBSync(name, stream);

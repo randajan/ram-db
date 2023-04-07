@@ -1,13 +1,13 @@
 import jet from "@randajan/jet-core";
-import vault from "../../uni/vault.js";
-import { ChopAsync } from "./ChopAsync.js";
-import { RowAsync } from "./RowAsync.js";
-import { StepAsync } from "./StepAsync.js";
-import { formatKey } from "../../uni/tools.js";
+import { vault } from "../tools.js";
+import { Chop } from "./Chop.js";
+import { Row } from "./Row.js";
+import { Step } from "./Step.js";
+import { formatKey } from "../tools.js";
 
-const { solid } = jet.prop;
+const { solid, virtual } = jet.prop;
 
-export class RowsAsync extends ChopAsync {
+export class Rows extends Chop {
     constructor(table, stream, onSave) {
       super(`${table.name}.rows`, {
         childName:"row",
@@ -17,7 +17,7 @@ export class RowsAsync extends ChopAsync {
           for (let index in data) {
             const vals = data[index];
             if (!jet.isMapable(vals)) { return; }
-            await RowAsync.create(rows).set(vals, { throwError:false });
+            await Row.create(rows).set(vals, { throwError:false });
           }
 
           this.on("beforeReset", this.on("beforeSet", async row=>onSave(table, "set", row.live)), false);
@@ -52,22 +52,19 @@ export class RowsAsync extends ChopAsync {
 
       solid.all(this, {
         db:table.db,
-        table
+        table,
       }, false);
-
 
       table.db.on("afterReset", _p.recycle, false);
 
-      
     }
 
     async exist(key, throwError = false) {
       return super.exist(key, undefined, throwError);
     }
   
-    async get(key, opt={ autoCreate:false, throwError:true }) {
-      const row = await super.get(key, undefined, !opt.autoCreate && opt.throwError);
-      if (row) { return row; } else if (opt.autoCreate === true) { return this.seed(); }
+    async get(key, throwError=true) {
+      return super.get(key, undefined, throwError);
     }
   
     async count(throwError=true) {
@@ -82,19 +79,17 @@ export class RowsAsync extends ChopAsync {
       return super.getIndex(undefined, throwError);
     }
 
-    seed() { return RowAsync.create(this); }
-
     async addOrUpdate(vals, opt={ add:true, update:true, autoSave:true, resetOnError:true, throwError:true }) {
 
       await this.init();
     
       let step, key;
       const ck = await this.table.cols.primary;
-      if (!ck.formula && !ck.resetIf) { key = await ck.toRaw(ck.fetch(vals)); } // quick key
+      if (!ck.formula && !ck.resetIf) { key = ck.toRaw(ck.fetch(vals)); } // quick key
       if (key == null) { step = await this.initStep(vals); key = step.getKey(); }
       if (key == null) { if (opt.throwError !== false) { throw Error(this.msg("push failed - missing key", vals)); } return; }
     
-      const rowFrom = await this.get(key, { autoCreate:false, throwError:false });
+      const rowFrom = await this.get(key, false);
     
       if (opt.update !== false) {
         if (rowFrom) { await rowFrom.update(vals, opt); return rowFrom; }
@@ -103,7 +98,7 @@ export class RowsAsync extends ChopAsync {
     
       if (opt.add !== false) {
         if (rowFrom) { if (opt.throwError !== false) { throw Error(this.msg("add failed - duplicate key", key)); } return; }
-        const rowTo = RowAsync.create(this, step || await this.initStep(vals));
+        const rowTo = Row.create(this, step || await this.initStep(vals));
         if (opt.autoSave !== false) { await rowTo.save(opt); }
         return rowTo;
       }
@@ -123,11 +118,11 @@ export class RowsAsync extends ChopAsync {
     }
 
     nextStep(before) {
-      return StepAsync.create(this.table, before);
+      return Step.create(this.table, before);
     }
 
     async initStep(vals) {
-      const step = StepAsync.create(this.table);
+      const step = Step.create(this.table);
       if (jet.isMapable(vals)) { await step.push(vals); }
       return step;
     }

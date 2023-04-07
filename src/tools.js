@@ -1,5 +1,7 @@
 import jet from "@randajan/jet-core";
 
+export const vault = jet.vault("RamDBVault");
+
 export const formatKey = (key, def)=>key != null ? String(key) : def;
 export const functionOrNull = val=>val == null ? undefined : Function.jet.to(val);
 
@@ -27,6 +29,17 @@ export const colTraits = {
     formula: functionOrNull,
     ref: functionOrNull,
     separator: String.jet.to,
-    isVirtual: Boolean.jet.to
+    isVirtual: Boolean.jet.to,
+    isTrusted: Boolean.jet.to
 };
+
+export const nref = (tableName, colName)=>{
+    return {
+        isVirtual:true,
+        isTrusted:true,
+        ref:tableName,
+        separator:"; ",
+        formula:row=>row.refList(tableName, colName)
+    }
+}
 

@@ -1,15 +1,17 @@
 import jet from "@randajan/jet-core";
-import { WrapAsync } from "./WrapAsync";
+import { Wrap } from "./Wrap";
 
 const { solid, virtual } = jet.prop;
 
-export class StepAsync {
+export class Step {
 
-  static is(any) { return any instanceof StepAsync; }
+  static is(any) { return any instanceof Step; }
 
-  static create(row, before) { return new StepAsync(row, before); }
+  static create(row, before) { return new Step(row, before); }
 
   constructor(table, before) {
+
+    this.key = before?.key;
 
     solid.all(this, {
       db: table.db,
@@ -18,19 +20,18 @@ export class StepAsync {
     }, false);
 
     virtual.all(this, {
-      key:async _=>this.pull(await table.cols.primary, false),
       label:async _=>this.pull(await table.cols.label, false),
-      isExist:async _=>!this.isRemoved && await table.rows.exist(await this.key),
-      isDirty:async _=>!!this.changes.length || ( !(await this.isExist) !== !(await before?.isExist) ),
+      isExist:async _=>!this.isRemoved && await table.rows.exist(this.key),
+      isDirty:_=>this.changes.length || (this.key !== before?.key)
     });
 
-    solid(this, "wrap", WrapAsync.create(this), false);
+    solid(this, "wrap", Wrap.create(this), false);
 
     this.reset();
 
   }
 
-  async getKey() { return this.key; }
+  getKey() { return this.key; }
 
   async pull(col) {
     if (!col) { return; }
@@ -38,9 +39,7 @@ export class StepAsync {
     const { table, vals, raws, before, wrap } = this;
     const { isVirtual, init, resetIf, formula, isReadonly } = col;
 
-    //if (isVirtual) { return formula(wrap); }
     if (vals.hasOwnProperty(col)) { return vals[col]; }
-    
 
     let raw = raws[col];
     const self = _ => col.toVal(raw, wrap);
@@ -53,8 +52,7 @@ export class StepAsync {
     }
 
     const val = await self();
-    if (isVirtual) { return val; }
-    raws[col] = await col.toRaw(vals[col] = val);
+    if (!isVirtual) { raws[col] = col.toRaw(vals[col] = val); }
 
     return val
   };
@@ -68,7 +66,7 @@ export class StepAsync {
 
     for (const col of reals) {
       const raw = col.fetch(vals);
-      if (raw !== undefined) { raws[col] = raw === "" ? null : await col.toRaw(raw); }
+      if (raw !== undefined) { raws[col] = col.toRaw(raw); }
       else if (force) { raws[col] = null; }
       if (!before) { changes.push(col); }
     }
@@ -80,17 +78,19 @@ export class StepAsync {
       };
     }
 
+    this.key = await this.pull(await cols.primary, false);
+
     return !!changes.length;
   }
 
-  async get(col, opt = { throwError: true }) {
+  async get(col, throwError=true) {
     const { table: { cols } } = this;
-    if (!Array.isArray(col)) { return this.pull(await cols.get(col, opt.throwError !== false)); }
+    if (!Array.isArray(col)) { return this.pull(await cols.get(col, throwError !== false)); }
     let row;
     for (const c of col) {
-      if (c === col[0]) { row = await this.pull(await cols.get(c, opt.throwError !== false)); }
-      else if (row.get) { row = await row.get(c, opt); }
-      else { break; }
+      if (c === col[0]) { row = await this.pull(await cols.get(c, throwError !== false)); }
+      else if (row?.get) { row = await row.get(c, throwError); }
+      else { return; }
     }
     return row;
   }

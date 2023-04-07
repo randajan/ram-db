@@ -1,10 +1,10 @@
 import jet from "@randajan/jet-core";
-import { colTraits } from "../../uni/tools";
-import vault from "../../uni/vault";
+import { colTraits, colTypize } from "../tools";
+import { vault } from "../tools";
 
 const { solid, virtual } = jet.prop;
 
-export class ColumnSync {
+export class Col {
 
     constructor(cols, id, name, traits) {
         const { db, table } = cols;
@@ -25,6 +25,7 @@ export class ColumnSync {
             isPrimary: _ => _c.primary === name,
             isLabel: _ => _c.label === name
         });
+
         for (const tn in colTraits) {
             solid(this, tn, colTraits[tn](traits[tn], traits));
             delete traits[tn];
@@ -34,9 +35,8 @@ export class ColumnSync {
             throw Error(this.msg("virtual column require formula to be set"));
         }
 
-        if (this.ref) {
-            if (this.isPrimary || this.isLabel) { throw Error(this.msg("columns with ref couldn't be primary or label")); }
-            if (this.type !== "ref") { throw Error(this.msg(`columns with ref require type 'ref' or null provided:'${this.type}'`)); }
+        if (this.ref && (this.isPrimary || this.isLabel)) {
+            throw Error(this.msg("columns with ref couldn't be primary or label"));
         }
 
         const unknownTraits = Object.keys(traits);
@@ -54,7 +54,7 @@ export class ColumnSync {
     getKey() { return this.name; }
 
     _toRaw(val) {
-        return val?.getKey ? val.getKey() : (String.jet.to(val) || null);
+        return String.jet.to(val) || null;
     }
 
     toRaw(val) {
@@ -62,39 +62,41 @@ export class ColumnSync {
         if (!(separator && Array.jet.is(val))) { return this._toRaw(val); }
         let raw = "";
         for (let v of val) {
-            if (jet.isFull(v)) { raw += (raw ? separator : "") + this._toRaw(v); }
+            if (!v) { continue; }
+            if (v = this._toRaw(v)) { raw += (raw ? separator : "") + v; }
         }
         return raw || null;
     }
 
     _toVal(raw, refName) {
-        const { db, type } = this;
-        if (type === "datetime") { raw = Date.jet.to(raw); }
-        if (type === "number") { raw = Number.jet.to(raw); }
-        return refName ? db(refName).rows(raw, { autoCreate: true }) : raw;
+        raw = colTypize[this.type](raw);
+        return refName ? this.db(refName).rows.get(raw, false) : raw;
     }
 
     toVal(raw, row) {
-        const { separator, ref } = this;
+        const { separator, ref, isTrusted } = this;
         const refName = (ref && row) ? ref(row) : null;
 
-        if (Array.jet.is(raw)) { raw = raw.join(separator); }
         if (!separator) { return this._toVal(raw, refName); }
 
-        const list = raw ? String.jet.to(raw).split(separator) : [];
-        return list.length ? list.map(raw => this._toVal(raw, refName)) : list;
+        const list = Array.isArray(raw) ? raw : raw ? String.jet.to(raw).split(separator) : [];
+        if (!list.length || (isTrusted && raw === list)) { return list; }
+
+        for (let i in list) { list[i] = this._toVal(list[i], refName); }
+
+        return list;
     }
 
     fetch(vals) {
-        return Array.isArray(vals) ? vals[this.id] : jet.get(vals, this.name);
+        return Array.isArray(vals) ? vals[this.id] : vals ? vals[this.name] : undefined;
     }
 
     toJSON() {
-        return this.name;
+        return this.name || null;
     }
 
     toString() {
-        return this.name;
+        return this.name || "";
     }
 
 }

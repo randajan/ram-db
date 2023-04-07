@@ -1,15 +1,17 @@
 import jet from "@randajan/jet-core";
-import { WrapSync } from "./WrapSync";
+import { Wrap } from "./Wrap";
 
 const { solid, virtual } = jet.prop;
 
-export class StepSync {
+export class Step {
 
-  static is(any) { return any instanceof StepSync; }
+  static is(any) { return any instanceof Step; }
 
-  static create(row, before) { return new StepSync(row, before); }
+  static create(row, before) { return new Step(row, before); }
 
   constructor(table, before) {
+
+    this.key = before?.key;
 
     solid.all(this, {
       db: table.db,
@@ -18,13 +20,12 @@ export class StepSync {
     }, false);
 
     virtual.all(this, {
-      key: _ => this.pull(table.cols.primary, false),
-      label: _ => this.pull(table.cols.label, false),
-      isExist: _ => !this.isRemoved && table.rows.exist(this.key),
-      isDirty: _ => !!this.changes.length || (!this.isExist !== !before?.isExist),
+      label:_=>this.pull(table.cols.label, false),
+      isExist:_=>!this.isRemoved && table.rows.exist(this.key),
+      isDirty:_=>this.changes.length || (this.key !== before?.key)
     });
 
-    solid(this, "wrap", WrapSync.create(this), false);
+    solid(this, "wrap", Wrap.create(this), false);
 
     this.reset();
 
@@ -51,8 +52,7 @@ export class StepSync {
     }
 
     const val = self();
-    if (isVirtual) { return val; }
-    raws[col] = col.toRaw(vals[col] = val);
+    if (!isVirtual) { raws[col] = col.toRaw(vals[col] = val); }
 
     return val
   };
@@ -64,10 +64,9 @@ export class StepSync {
     const changes = this.changes = [];
     this.vals = {};
 
-
     for (const col of reals) {
       const raw = col.fetch(vals);
-      if (raw !== undefined) { raws[col] = raw === "" ? null : col.toRaw(raw); }
+      if (raw !== undefined) { raws[col] = col.toRaw(raw); }
       else if (force) { raws[col] = null; }
       if (!before) { changes.push(col); }
     }
@@ -79,17 +78,19 @@ export class StepSync {
       };
     }
 
+    this.key = this.pull(cols.primary, false);
+
     return !!changes.length;
   }
 
-  get(col, opt = { throwError: true }) {
+  get(col, throwError=true) {
     const { table: { cols } } = this;
-    if (!Array.isArray(col)) { return this.pull(cols.get(col, opt.throwError !== false)); }
+    if (!Array.isArray(col)) { return this.pull(cols.get(col, throwError !== false)); }
     let row;
     for (const c of col) {
-      if (c === col[0]) { row = this.pull(cols.get(c, opt.throwError !== false)); }
-      else if (row.get) { row = row.get(c, opt); }
-      else { break; }
+      if (c === col[0]) { row = this.pull(cols.get(c, throwError !== false)); }
+      else if (row?.get) { row = row.get(c, throwError); }
+      else { return; }
     }
     return row;
   }

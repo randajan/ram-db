@@ -1,10 +1,10 @@
 import jet from "@randajan/jet-core";
-import { colTraits, colTypize } from "../../uni/tools";
-import vault from "../../uni/vault";
+import { colTraits, colTypize } from "../tools";
+import { vault } from "../tools";
 
 const { solid, virtual } = jet.prop;
 
-export class ColumnAsync {
+export class Col {
 
     constructor(cols, id, name, traits) {
         const { db, table } = cols;
@@ -53,46 +53,50 @@ export class ColumnAsync {
 
     getKey() { return this.name; }
 
-    async _toRaw(val) {
-        return val?.getKey ? await val.getKey() : (String.jet.to(val) || null);
+    _toRaw(val) {
+        return String.jet.to(val) || null;
     }
 
-    async toRaw(val) {
+    toRaw(val) {
         const { separator } = this;
         if (!(separator && Array.jet.is(val))) { return this._toRaw(val); }
         let raw = "";
         for (let v of val) {
-            if (jet.isFull(v)) { raw += (raw ? separator : "") + (await this._toRaw(v)); }
+            if (!v) { continue; }
+            if (v = this._toRaw(v)) { raw += (raw ? separator : "") + v; }
         }
         return raw || null;
     }
 
     async _toVal(raw, refName) {
         raw = colTypize[this.type](raw);
-        return refName ? this.db(refName).rows.get(raw, { autoCreate:true }) : raw;
+        return refName ? this.db(refName).rows.get(raw, false) : raw;
     }
 
     async toVal(raw, row) {
-        const { separator, ref } = this;
+        const { separator, ref, isTrusted } = this;
         const refName = (ref && row) ? await ref(row) : null;
 
-        if (Array.jet.is(raw)) { raw = raw.join(separator); }
         if (!separator) { return this._toVal(raw, refName); }
 
-        const list = raw ? String.jet.to(raw).split(separator) : [];
-        return list.length ? Promise.all(list.map(raw => this._toVal(raw, refName))) : list;
+        const list = Array.isArray(raw) ? raw : raw ? String.jet.to(raw).split(separator) : [];
+        if (!list.length || (isTrusted && raw === list)) { return list; }
+
+        for (let i in list) { list[i] = await this._toVal(list[i], refName); }
+
+        return list;
     }
 
     fetch(vals) {
-        return Array.isArray(vals) ? vals[this.id] : jet.get(vals, this.name);
+        return Array.isArray(vals) ? vals[this.id] : vals ? vals[this.name] : undefined;
     }
 
     toJSON() {
-        return this.name;
+        return this.name || null;
     }
 
     toString() {
-        return this.name;
+        return this.name || "";
     }
 
 }

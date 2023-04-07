@@ -1,14 +1,14 @@
 import jet from "@randajan/jet-core";
-import vault from "../../uni/vault.js";
-import { ChopSync } from "./ChopSync.js";
-import { RowSync } from "./RowSync.js";
-import { StepSync } from "./StepSync.js";
-import { formatKey } from "../../uni/tools.js";
+import { vault } from "../tools.js";
+import { Chop } from "./Chop.js";
+import { Row } from "./Row.js";
+import { Step } from "./Step.js";
+import { formatKey } from "../tools.js";
 
-const { solid } = jet.prop;
+const { solid, virtual } = jet.prop;
 
-export class RowsSync extends ChopSync {
-    constructor(table, stream) {
+export class Rows extends Chop {
+    constructor(table, stream, onSave) {
       super(`${table.name}.rows`, {
         childName:"row",
         defaultContext:"all",
@@ -17,18 +17,24 @@ export class RowsSync extends ChopSync {
           for (let index in data) {
             const vals = data[index];
             if (!jet.isMapable(vals)) { return; }
-            RowSync.create(rows).set(vals, { throwError:false });
+            Row.create(rows).set(vals, { throwError:false });
           }
+
+          this.on("beforeReset", this.on("beforeSet", row=>onSave(table, "set", row.live)), false);
+          this.on("beforeReset", this.on("beforeUpdate", row=>onSave(table, "update", row.live)), false);
+          this.on("beforeReset", this.on("beforeRemove", row=>onSave(table, "remove", row.saved)), false);
         }
       });
 
       const _p = vault.get(this.uid);
-      table.db.on("afterReset", _p.recycle, false);
 
       _p.refs = {};
 
       _p.save = (row)=>{
-        const { live:{ key, isRemoved }, key:keySaved, isRemoved:wasRemoved } = row;
+        const keySaved = row.key;
+        const wasRemoved = row.isRemoved;
+        const key = row.live.key;
+        const isRemoved = row.live.isRemoved;
         
         const rekey = key !== keySaved;
         const remove = isRemoved !== wasRemoved;
@@ -46,18 +52,19 @@ export class RowsSync extends ChopSync {
 
       solid.all(this, {
         db:table.db,
-        table
+        table,
       }, false);
-      
+
+      table.db.on("afterReset", _p.recycle, false);
+
     }
 
     exist(key, throwError = false) {
       return super.exist(key, undefined, throwError);
     }
   
-    get(key, opt={ autoCreate:false, throwError:true }) {
-      const row = super.get(key, undefined, !opt.autoCreate && opt.throwError);
-      if (row) { return row; } else if (opt.autoCreate === true) { return this.seed(); }
+    get(key, throwError=true) {
+      return super.get(key, undefined, throwError);
     }
   
     count(throwError=true) {
@@ -72,8 +79,6 @@ export class RowsSync extends ChopSync {
       return super.getIndex(undefined, throwError);
     }
 
-    seed() { return RowSync.create(this); }
-
     addOrUpdate(vals, opt={ add:true, update:true, autoSave:true, resetOnError:true, throwError:true }) {
 
       this.init();
@@ -84,7 +89,7 @@ export class RowsSync extends ChopSync {
       if (key == null) { step = this.initStep(vals); key = step.getKey(); }
       if (key == null) { if (opt.throwError !== false) { throw Error(this.msg("push failed - missing key", vals)); } return; }
     
-      const rowFrom = this.get(key, { autoCreate:false, throwError:false });
+      const rowFrom = this.get(key, false);
     
       if (opt.update !== false) {
         if (rowFrom) { rowFrom.update(vals, opt); return rowFrom; }
@@ -93,7 +98,7 @@ export class RowsSync extends ChopSync {
     
       if (opt.add !== false) {
         if (rowFrom) { if (opt.throwError !== false) { throw Error(this.msg("add failed - duplicate key", key)); } return; }
-        const rowTo = RowSync.create(this, step || this.initStep(vals));
+        const rowTo = Row.create(this, step || this.initStep(vals));
         if (opt.autoSave !== false) { rowTo.save(opt); }
         return rowTo;
       }
@@ -113,11 +118,11 @@ export class RowsSync extends ChopSync {
     }
 
     nextStep(before) {
-      return StepSync.create(this.table, before);
+      return Step.create(this.table, before);
     }
 
     initStep(vals) {
-      const step = StepSync.create(this.table);
+      const step = Step.create(this.table);
       if (jet.isMapable(vals)) { step.push(vals); }
       return step;
     }

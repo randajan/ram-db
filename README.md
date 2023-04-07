@@ -2,7 +2,7 @@
 
 [![NPM](https://img.shields.io/npm/v/@randajan/ram-db.svg)](https://www.npmjs.com/package/@randajan/ram-db) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
-Goal is to store realtime database created for Google Sheets 
+Goal is to imitate functionality of AppSheet.
 
 ## Install
 
@@ -18,7 +18,24 @@ yarn add @randajan/ram-db
 
 
 ## Main methods
-*will be soon updated*
+
+### DB
+
+.count()
+.exist(tableName)
+.get(...)
+
+### Table
+
+### Cols
+
+### Col
+
+### Rows
+
+### Row
+
+### RowWrap
 
 
 ## License

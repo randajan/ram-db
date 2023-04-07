@@ -1,10 +1,10 @@
 import jet from "@randajan/jet-core";
-import vault from "../../uni/vault";
-import { BundleAsync } from "./BundleAsync";
+import { vault } from "../tools";
+import { Bundle } from "./Bundle";
 
 const { solid, virtual } = jet.prop;
 
-export class ChopAsync extends jet.types.Plex {
+export class Chop extends jet.types.Plex {
 
   constructor(name, config = {}) {
     const { stream, loader, parent, childName, getContext, defaultContext, maxAge, maxAgeError } = Object.jet.to(config);
@@ -12,13 +12,13 @@ export class ChopAsync extends jet.types.Plex {
       state: "waiting",
       loader,
       stream: jet.isRunnable(stream) ? stream : _ => stream,
-      bundle:new BundleAsync(
+      bundle:new Bundle(
         name,
         childName,
         getContext,
         defaultContext
       ),
-      recycle:async _=>{ if (await _p.bundle.run("beforeRecycle")) { console.warn(this.msg("recycled")); vault.end(uid); }}
+      recycle:_=>{ if (_p.bundle.run("beforeRecycle")) { vault.end(uid); }}
     });
 
     super((...args) => this.get(...args));
@@ -52,66 +52,66 @@ export class ChopAsync extends jet.types.Plex {
     return vault.get(this.uid).bundle.msg(text, key, context);
   }
 
-  async exist(key, context, throwError = false) {
-    await this.init();
+  exist(key, context, throwError = false) {
+    this.init();
     return vault.get(this.uid).bundle.exist(key, context, throwError);
   }
 
-  async get(key, context, throwError = true) {
-    await this.init();
+  get(key, context, throwError = true) {
+    this.init();
     return vault.get(this.uid).bundle.get(key, context, throwError);
   }
 
-  async count(context, throwError=true) {
-    await this.init();
+  count(context, throwError=false) {
+    this.init();
     return vault.get(this.uid).bundle.getData(context, throwError).list.length;
   }
 
-  async getList(context, throwError=true) {
-    await this.init();
+  getList(context, throwError=false) {
+    this.init();
     return [...vault.get(this.uid).bundle.getData(context, throwError).list];
   }
 
-  async getIndex(context, throwError=true) {
-    await this.init();
+  getIndex(context, throwError=false) {
+    this.init();
     return {...vault.get(this.uid).bundle.getData(context, throwError).index};
   }
 
-  async getContextList() {
-    await this.init();
+  getContextList() {
+    this.init();
     return Object.keys(vault.get(this.uid).bundle.data);
   }
 
-  async map(callback, opt={}) {
-    await this.init();
+  map(callback, opt={}) {
+    this.init();
     return vault.get(this.uid).bundle.map(callback, opt);
   }
 
-  async filter(checker, opt={}) {
-    await this.init();
+  filter(checker, opt={}) {
+    this.init();
     return vault.get(this.uid).bundle.filter(checker, opt);
   }
 
-  async find(checker, opt={}) {
-    await this.init();
+  find(checker, opt={}) {
+    this.init();
     return vault.get(this.uid).bundle.find(checker, opt);
   }
 
-  async reset(throwError=true) {
+  reset(throwError=true) {
     return vault.get(this.uid).bundle.reset(throwError);
   }
 
-  async init(throwError = true) {
+  init(throwError = true) {
     const _p = vault.get(this.uid);
     if (_p.state === "waiting") {
-      _p.build = (async _=>{
+      _p.build = (_=>{
         _p.state = "pending";
         try {
-          await _p.bundle.run("beforeInit", [_p.bundle]);
-          const data = await _p.stream();
-          //if (Promise.jet.is(data)) { throw Error(this.msg(`init failed - promise found at sync`)); }
-          await _p.loader(this, _p.bundle, data);
-          await _p.bundle.run("afterInit", [_p.bundle]);
+          _p.bundle.run("beforeInit", [_p.bundle]);
+          const data = _p.stream();
+          if (Promise.jet.is(data)) { throw Error(this.msg(`init failed - promise found at sync`)); }
+          _p.loader(this, _p.bundle, data);
+          _p.bundle.run("afterInit", [_p.bundle]);
           _p.state = "ready";
           if (this.maxAge) { setTimeout(_=>this.reset(), this.maxAge); }
         } catch(error) {
@@ -128,24 +128,24 @@ export class ChopAsync extends jet.types.Plex {
   }
 
   withInit(execute) {
-    return async (...args) => {
-      await this.init();
+    return (...args) => {
+      this.init();
       return execute(...args);
     }
   }
 
   chop(name, getContext, defaultContext) {
-    return new ChopAsync(this.name+"."+name, {
+    return new Chop(this.name+"."+name, {
       parent: this,
       childName:this.childName,
       maxAge:this.maxAge,
       maxAgeError:this.maxAgeError,
       getContext,
       defaultContext,
-      loader: async (chop, bundle) =>{
-        await this.map(child =>bundle.set(child));
-        chop.on("beforeReset", this.on("afterSet", async child=>bundle.set(child)), false);
-        chop.on("beforeReset", this.on("afterRemove", async child=>bundle.remove(child)), false);
+      loader: (chop, bundle) =>{
+        this.map(child =>bundle.set(child));
+        chop.on("beforeReset", this.on("afterSet", child=>bundle.set(child)), false);
+        chop.on("beforeReset", this.on("afterRemove", child=>bundle.remove(child)), false);
         this.on("beforeReset", _=>chop.reset(), false);
       }
     });

@@ -1,20 +1,20 @@
 import jet from "@randajan/jet-core";
-import vault from "../../uni/vault.js";
+import { vault } from "../tools.js";
 
 const { solid, virtual } = jet.prop;
 
-export class RowSync extends jet.types.Plex {
+export class Row extends jet.types.Plex {
 
-  static create(rows, iniStep) { return new RowSync(rows, iniStep); };
+  static create(rows, iniStep) { return new Row(rows, iniStep); };
 
   constructor(rows, iniStep) {
     const { db, table } = rows;
     const _p = {};
     const save = vault.get(rows.uid).save;
 
-    const get = (col, opt = { throwError: true }) => _p.live.get(col, opt);
+    const get = (col, throwError=true) => _p.live.get(col, throwError);
     const push = (vals, force, opt = { autoSave: true, resetOnError: true, throwError: true }) => {
-      return _p.live.push(vals, force) && (opt.autoSave === false || this.save(opt));
+      return (_p.live.push(vals, force)) && (opt.autoSave === false || this.save(opt));
     }
 
     super(get);
@@ -50,7 +50,7 @@ export class RowSync extends jet.types.Plex {
       key: _ => _p.saved?.key,
       label: _ => _p.saved?.label,
       isRemoved: _ => !_p.saved || _p.saved.isRemoved,
-      isExist: _ => !!_p.saved?.isExist,
+      isExist: _ => !!(_p.saved?.isExist),
       isDirty: _ => _p.live.isDirty,
       live: _ => _p.live.wrap,
       saved: _ => _p.saved?.wrap
@@ -65,5 +65,13 @@ export class RowSync extends jet.types.Plex {
   }
 
   getKey(isSet) { return isSet ? this.live.key : this.key; }
+
+  toJSON() {
+    return this.key || null;
+  }
+
+  toString() {
+    return this.key || "";
+  }
 
 }

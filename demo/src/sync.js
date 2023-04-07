@@ -1,15 +1,13 @@
 import jet from "@randajan/jet-core";
 import ramdb from "../../dist/index.js";
 import testData from "../data/TISDB_export.json";
+import { nref } from "../../src/async.js";
 
 export default ramdb("main", _=>{
   const schema = {
     sys_apps:{
       url:{ isVirtual:true, formula:r=>`https://www.appsheet.com/start/${r("url_id")}` },
-      sys_ents:{
-        isVirtual:true, separator:"; ", ref:"sys_ents",
-        formula:r=>r.refList("sys_ents", "sys_app_default")
-      }
+      sys_ents:nref("sys_ents", "sys_app_default")
     },
     sys_ents:{
       sys_app_default:{ ref:"sys_apps" },
@@ -43,17 +41,14 @@ export default ramdb("main", _=>{
     },
     kin_contacts:{
       kin_loc_bill:{ ref:"kin_locs" },
-      history_contacts:{
-        isVirtual:true, separator:"; ", ref:"history_contacts",
-        formula:r=>r.refList("history_contacts", "kin_contact")
-      }
+      history_contacts:nref("history_contacts", "kin_contact")
     },
     book_items:{
       book_doc:{ ref:"book_docs" },
       price_m:{ type:"number" }
     },
     book_docs:{
-      book_items:{ isVirtual:true, separator:"; ", ref:"book_items", formula:r=>window.ramdb("book_items").rows.filter(m=>m("book_doc").key === r.key) }
+      book_items:nref("book_items", "book_doc")
     },
     history_contacts:{
       kin_contact:{ ref:"kin_contacts" },

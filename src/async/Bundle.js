@@ -1,9 +1,9 @@
 import jet from "@randajan/jet-core";
-import { formatKey } from "../../uni/tools";
+import { formatKey } from "../tools";
 
 const { solid } = jet.prop;
 
-export class BundleSync {
+export class Bundle {
 
   constructor(name, childName, getContext, def) {
 
@@ -50,7 +50,7 @@ export class BundleSync {
     const list = (handlers[event] || (handlers[event] = []));
 
     let remove;
-    const cb = repeat ? callback : (...args)=>{ callback(...args); remove(); }
+    const cb = repeat ? callback : async (...args)=>{ await callback(...args); remove(); }
     if (event.startsWith("before")) { list.push(cb); } else { list.unshift(cb) }
 
     return remove = _ => {
@@ -60,14 +60,14 @@ export class BundleSync {
     }
   }
 
-  run(event, args=[], throwError=true) {
+  async run(event, args=[], throwError=true) {
     const handlers = this.handlers[event];
     if (!handlers?.length) { return true; }
-    const isBefore = event.startsWith(event.startsWith("before"));
+    const isBefore = event.startsWith("before");
     try {
       for (let i=handlers.length; i>=0; i--) {
         const cb = handlers[i];
-        try { if (cb) { cb(...args); } } catch(err) {
+        try { if (cb) { await cb(...args); } } catch(err) {
           if (isBefore) { throw err; }
           else if (throwError) { console.warn(this.msg(err?.message || "unknown error"), err?.stack); }
         }
@@ -79,13 +79,13 @@ export class BundleSync {
     }
   }
 
-  reset(throwError=true) {
-    if (!this.run("beforeReset", [], throwError)) { return false; }
+  async reset(throwError=true) {
+    if (!await this.run("beforeReset", [], throwError)) { return false; }
     for (let i in this.data) { delete this.data[i]; }
     return this.run("afterReset", [], throwError);
   }
 
-  _set(context, key, child, throwError = true) {
+  async _set(context, key, child, throwError = true) {
     const { context:ctx, index, list } = this.getData(context, throwError, true);
     
     if (index.hasOwnProperty(key)) {
@@ -93,23 +93,23 @@ export class BundleSync {
       return false;
     }
 
-    if (!this.run("beforeSet", [child, ctx], throwError)) { return false; }
+    if (!(await this.run("beforeSet", [child, ctx], throwError))) { return false; }
     
     list.push(index[key] = child);
 
     return this.run("afterSet", [child, ctx], throwError);
   }
 
-  set(child, throwError = true) {
-    const context = this.getContext(child, true);
+  async set(child, throwError = true) {
+    const context = await this.getContext(child, true);
     const key = this.validateKey(child.getKey(true), "set", throwError);
     if (!Array.isArray(context)) { return this._set(context, key, child, throwError); }
     let ok = true;
-    for (const ctx of context) { ok = this._set(ctx, key, child, throwError) && ok; }
+    for (const ctx of context) { ok = (await this._set(ctx, key, child, throwError)) && ok; }
     return ok;
   }
 
-  _remove(context, key, child, throwError = true) {
+  async _remove(context, key, child, throwError = true) {
     const { context:ctx, index, list } = this.getData(context, throwError);
     const id = list.indexOf(child);
 
@@ -118,7 +118,7 @@ export class BundleSync {
       return false;
     }
 
-    if (!this.run("beforeRemove", [child, ctx], throwError)) { return false; }
+    if (!(await this.run("beforeRemove", [child, ctx], throwError))) { return false; }
 
     if (list.length === 1) { delete this.data[ctx]; } else {
       list.splice(id, 1);
@@ -128,12 +128,12 @@ export class BundleSync {
     return this.run("afterRemove", [child, ctx], throwError);
   }
 
-  remove(child, throwError = true) {
-    const context = this.getContext(child, false);
+  async remove(child, throwError = true) {
+    const context = await this.getContext(child, false);
     const key = this.validateKey(child.getKey(false), "remove", throwError);
     if (!Array.isArray(context)) { return this._remove(context, key, child, throwError); }
     let ok = true;
-    for (const ctx of context) { ok = this._remove(ctx, key, child, throwError) && ok; }
+    for (const ctx of context) { ok = (await this._remove(ctx, key, child, throwError)) && ok; }
     return ok;
   }
 
@@ -153,37 +153,34 @@ export class BundleSync {
     if (throwError) { throw Error(this.msg(`get failed - not exist`, key, ctx)); }
   }
 
-  map(callback, opt={}) {
+  async map(callback, opt={}) {
     const { context, byKey, sort } = opt;
     const { list } = this.getData(context);
     const sorted = sort ? list.sort(sort) : [...list];
     const stop = val => { stop.active = true; return val; }
     const result = byKey ? {} : [];
-    let count = 0;
 
-    for (let i in sorted) {
+    for (const child of sorted) {
         if (stop.active) { break; }
-        const child = sorted[i];
-        const r = callback(child, i + 1, count, stop);
+        const r = await callback(child, stop);
         if (r === undefined) { continue; }
         if (byKey) { result[child.getKey(false)] = r; }
         else { result.push(r); }
-        count++;
     }
 
     return result;
   }
 
-  filter(checker, opt={}) {
-    return this.map((child, i, count, stop) => {
-      if (checker(child, i, count, stop)) { return child; }
+  async filter(checker, opt={}) {
+    return this.map(async (child, stop) => {
+      if (await checker(child, stop)) { return child; }
     }, opt);
   }
 
-  find(checker, opt={}) {
+  async find(checker, opt={}) {
     opt.byKey = false;
-    return this.map((child, i, count, stop) => {
-      if (checker(child, i, count, stop)) { return stop(child); }
+    return this.map(async (child, stop) => {
+      if (await checker(child)) { return stop(child); }
     }, opt)[0];
   }
 
