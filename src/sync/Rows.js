@@ -28,8 +28,6 @@ export class Rows extends Chop {
 
       const _p = vault.get(this.uid);
 
-      _p.refs = {};
-
       _p.save = (row)=>{
         const keySaved = row.key;
         const wasRemoved = row.isRemoved;
@@ -127,31 +125,31 @@ export class Rows extends Chop {
       return step;
     }
 
-    chop(name, getContext, defaultContext) {
-      const chop = super.chop(name, getContext, defaultContext);
+    chop(name, config={}) {
 
-      chop.on("afterInit", bundle=>{
+      config.loader = (chop, bundle)=>{
         const cleanUp = this.on("afterUpdate", row=>{ if (bundle.set(row, false)) { bundle.remove(row); }});
         chop.on("beforeReset", cleanUp, false);
-      });
+      }
 
-      return chop;
+      return super.chop(name, config);
     }
 
-    refs(col) {
-      const _p = vault.get(this.uid);
-      col = formatKey(col);
-
-      if (_p.refs[col]) { return _p.refs[col]; }
+    refs(col, cache={}) {
 
       const c = this.table.cols(col);
-      if (!c.ref) { throw Error(this.msg(`refs('${col}') failed - column is not ref`)); }
+      if (!c.ref) { throw Error(this.msg(`refs('${c.name}') failed - column is not ref`)); }
 
-      return _p.refs[col] = this.chop(
-        col,
-        (row, isSet)=>{
-          const val = row[isSet ? "live" : "saved"].get(col);
-          return c.separator ? val.map(v=>v.key) : val.key;
+      if (cache && cache[c.name]) { return cache[c.name]; }
+
+      return this.chop(
+        c.name,
+        {
+          getContext: (row, isSet)=>{
+            const val = row[isSet ? "live" : "saved"].get(c.name);
+            return c.separator ? val.map(v=>v.key) : val.key;
+          },
+          cache
         }
       );
   

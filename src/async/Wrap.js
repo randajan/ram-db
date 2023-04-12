@@ -35,8 +35,8 @@ export class Wrap extends jet.types.Plex {
 
   }
 
-  async refList(tableName, col) {
-    return (await this.db.get(tableName).rows.refs(col)).getList(this.getKey(), false);
+  async refs(tableName, colName, cache={}) {
+    return (await this.db.get(tableName).rows.refs(colName, cache)).getList(this.key, false);
   }
 
   getKey() {

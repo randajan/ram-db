@@ -4,6 +4,12 @@ export const vault = jet.vault("RamDBVault");
 
 export const formatKey = (key, def)=>key != null ? String(key) : def;
 export const functionOrNull = val=>val == null ? undefined : Function.jet.to(val);
+export const functionWithCache = trait=>{
+    trait = functionOrNull(trait);
+    if (!trait) { return; }
+    const cache = {};
+    return val=>trait(val, cache);
+}
 
 export const colsTraits = {
     isPrimary: "primary",
@@ -26,7 +32,7 @@ export const colTraits = {
     isReadonly: functionOrNull,
     resetIf: functionOrNull,
     init: functionOrNull,
-    formula: functionOrNull,
+    formula: functionWithCache,
     ref: functionOrNull,
     separator: String.jet.to,
     isVirtual: Boolean.jet.to,
@@ -39,7 +45,7 @@ export const nref = (tableName, colName)=>{
         isTrusted:true,
         ref:tableName,
         separator:"; ",
-        formula:row=>row.refList(tableName, colName)
+        formula:(row, cache)=>row.refs(tableName, colName, cache)
     }
 }
 

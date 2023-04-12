@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { vault } from "../tools";
+import { formatKey, vault } from "../tools";
 import { Bundle } from "./Bundle";
 
 const { solid, virtual } = jet.prop;
@@ -13,6 +13,7 @@ export class Chop extends jet.types.Plex {
       loader,
       stream: jet.isRunnable(stream) ? stream : _ => stream,
       bundle:new Bundle(
+        parent?.name,
         name,
         childName,
         getContext,
@@ -34,6 +35,7 @@ export class Chop extends jet.types.Plex {
     virtual.all(this, {
       state:_=>_p.state,
       name:_=>_p.bundle.name,
+      fullName:_=>_p.bundle.fullName,
       childName:_=>_p.bundle.childName
     });
 
@@ -134,11 +136,17 @@ export class Chop extends jet.types.Plex {
     }
   }
 
-  chop(name, getContext, defaultContext) {
-    return new Chop(this.name+"."+name, {
-      parent: this,
+  chop(name, config={}) {
+    const { getContext, defaultContext, cache, loader } = config;
+
+    name = formatKey(name);
+
+    if (cache && cache[name]) { return cache[name]; }
+
+    const chop = new Chop(name, {
+      parent:this,
       childName:this.childName,
-      maxAge:this.maxAge,
+      maxAge:0,
       maxAgeError:this.maxAgeError,
       getContext,
       defaultContext,
@@ -147,8 +155,12 @@ export class Chop extends jet.types.Plex {
         chop.on("beforeReset", this.on("afterSet", async child=>bundle.set(child)), false);
         chop.on("beforeReset", this.on("afterRemove", async child=>bundle.remove(child)), false);
         this.on("beforeReset", _=>chop.reset(), false);
+        if (loader) { loader(chop, bundle); }
       }
     });
+
+    return cache ? (cache[name] = chop) : chop;
+
   }
 
 }

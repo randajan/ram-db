@@ -61,8 +61,8 @@ export class Cols extends Chop {
     solid.all(this, {
       db:table.db,
       table,
-      virtuals:this.chop("virtuals", c=>c.isVirtual, true),
-      refs:this.chop("refs", c=>!!c.ref, true)
+      virtuals:this.chop("virtuals", { getContext:c=>c.isVirtual, defaultContext:true }),
+      refs:this.chop("refs", { getContext:c=>!!c.ref, defaultContext:true })
     }, false);
   
     virtual.all(this, {

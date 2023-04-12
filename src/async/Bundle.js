@@ -1,14 +1,17 @@
 import jet from "@randajan/jet-core";
 import { formatKey } from "../tools";
 
-const { solid } = jet.prop;
+const { solid, virtual } = jet.prop;
 
 export class Bundle {
 
-  constructor(name, childName, getContext, def) {
+  constructor(parentName, name, childName, getContext, def) {
+
+    name = formatKey(name, "Bundle");
 
     solid.all(this, {
-      name:formatKey(name, "Bundle"),
+      name,
+      fullName:(parentName && name) ? (parentName + "." + name) : parentName ? parentName : name ? name : "",
       childName:formatKey(childName, "key"),
       data:{},
       handlers: {},
@@ -16,17 +19,19 @@ export class Bundle {
       def:formatKey(def, "undefined")
     });
 
+    if (!this.name) { throw Error(this.msg("critical error - missing name")); }
+
   }
 
   msg(text, key, context) {
-    const { name, childName, def } = this;
+    const { fullName, childName, def } = this;
     key = formatKey(key);
     context = formatKey(context, def);
-    let msg = name;
+    let msg = fullName || "";
     if (context !== def) { msg += ` context('${context}')`; }
     if (key) { msg += ` ${childName}('${key}')`; }
     if (text) { msg += " "+text; }
-    return msg;
+    return msg.trim();
   }
 
   getData(context, throwError=true, autoCreate=false) {

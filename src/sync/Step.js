@@ -44,7 +44,7 @@ export class Step {
     let raw = raws[col];
     const self = _ => col.toVal(raw, wrap);
 
-    if (formula) { raw = formula(wrap, self); } //formula
+    if (formula) { raw = formula(wrap); } //formula
     else if (table.rows.state !== "pending") {
       const bew = before ? before.raws[col] : null;
       if (raw !== bew && isReadonly && isReadonly(wrap, self)) { raw = bew; } //revive value

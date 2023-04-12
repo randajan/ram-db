@@ -1,7 +1,21 @@
+import { log } from "@randajan/simple-lib/node";
+
 import jet from "@randajan/jet-core";
-import ramdb from "./async";
+import ramdb from "./sync";
 
-window.jet = jet;
+import odataServer from "../../dist/api/odata.js";
+
+import http from "http";
 
 
-window.ramdb = ramdb;
+const api = odataServer(ramdb, {
+    url:'http://localhost:1337',
+});
+
+
+const server = http.createServer(api.resolver).listen(1337);
+
+
+process.on("exit", (msg)=>{
+    server.close();
+});

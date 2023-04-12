@@ -48,6 +48,7 @@ export default ramdb("main", _=>{
       price_m:{ type:"number" }
     },
     book_docs:{
+      is_our:{type:"boolean"},
       book_items:nref("book_items", "book_doc")
     },
     history_contacts:{

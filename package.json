@@ -18,7 +18,7 @@
     "@randajan/jet-core": "^3.1.6"
   },
   "devDependencies": {
-    "@randajan/simple-lib": "^2.0.0"
+    "@randajan/simple-lib": "^2.1.1"
   },
   "files": [
     "dist",
@@ -37,5 +37,7 @@
     "email": "jnranda@gmail.com",
     "url": "https://www.linkedin.com/in/randajan/"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@randajan/odata-server": "^1.4.3"
+  }
 }
