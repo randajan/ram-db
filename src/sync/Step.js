@@ -36,7 +36,7 @@ export class Step {
   pull(col) {
     if (!col) { return; }
 
-    const { table, vals, raws, before, wrap } = this;
+    const { table:{ rows }, vals, raws, before, wrap } = this;
     const { isVirtual, init, resetIf, formula, isReadonly } = col;
 
     if (vals.hasOwnProperty(col)) { return vals[col]; }
@@ -45,7 +45,7 @@ export class Step {
     const self = _ => col.toVal(raw, wrap);
 
     if (formula) { raw = formula(wrap); } //formula
-    else if (table.rows.state !== "pending") {
+    else if (rows.isReady) {
       const bew = before ? before.raws[col] : null;
       if (raw !== bew && isReadonly && isReadonly(wrap, self)) { raw = bew; } //revive value
       if (!before ? (init && raw == null) : (resetIf && resetIf(wrap, self))) { raw = init ? init(wrap) : undefined; } //init or reset
@@ -58,7 +58,7 @@ export class Step {
   };
 
   push(vals, force = true) {
-    const { table: { cols }, raws, before } = this;
+    const { table: { cols, rows }, raws, before } = this;
 
     const reals = cols.virtuals.getList(false);
     const changes = this.changes = [];
@@ -68,13 +68,13 @@ export class Step {
       const raw = col.fetch(vals);
       if (raw !== undefined) { raws[col] = col.toRaw(raw); }
       else if (force) { raws[col] = null; }
-      if (!before) { changes.push(col); }
+      if (!rows.isReady) { changes.push(col); }
     }
 
-    if (before) {
+    if (rows.isReady) {
       for (const col of reals) {
         this.pull(col);
-        if (raws[col] !== before.raws[col]) { changes.push(col); } //is isDirty column
+        if (before && raws[col] !== before.raws[col]) { changes.push(col); } //is isDirty column
       };
     }
 

@@ -36,7 +36,8 @@ export class Chop extends jet.types.Plex {
       state:_=>_p.state,
       name:_=>_p.bundle.name,
       fullName:_=>_p.bundle.fullName,
-      childName:_=>_p.bundle.childName
+      childName:_=>_p.bundle.childName,
+      isReady:_=>_p.state === "ready"
     });
 
     _p.bundle.on("beforeReset", _=>{

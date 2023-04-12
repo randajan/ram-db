@@ -18,7 +18,7 @@ export class RamDBAdapter {
         solid(this, "ramdb", ramdb, false);
     }
 
-    generateModel() {
+    async generateModel() {
         const ramdb = this.ramdb;
         const namespace = ramdb.name;
         const entitySets = {};
@@ -43,53 +43,57 @@ export class RamDBAdapter {
     }
 
     async remove(context) {
-        const col = await this.getCollection(context);
+        const tbl = this.getTable(context);
+        const { params } = context;
 
-        const { options } = context;
-        const { $filter } = this.optValidate({ $filter:options.$filter });
-    
-        const res = await col.deleteOne($filter);
-    
-        if (res.deletedCount < 1) { throw {code:410, msg:"Gone"}; }
-        return res.deletedCount;
+        const row = tbl.rows.get(params.id, false);
+        if (!row) { throw {code:404, msg:"Not found"}; }
+
+
+        return row.remove();
     }
     
     async update(context) {
-        const col = await this.getCollection(context);
+        const tbl = this.getTable(context);
+        const { params, getBody } = context;
 
-        const { options, getBody } = context;
-        const { $filter } = this.optValidate({ $filter:options.$filter });
+        const row = tbl.rows.get(params.id, false);
+        if (!row) { throw {code:404, msg:"Not found"}; }
 
-        const res = await col.updateOne($filter, {$set:await getBody(true)});
-    
-        if (res.matchedCount < 1) { throw {code:410, msg:"Gone"}; }
-        return res.matchedCount;
+        const body = await context.getBody(true);
+
+        return row.update(body);
     }
     
     async insert(context) {
-        const col = await this.getCollection(context);
+        const tbl = this.getTable(context);
+        const { getBody } = context;
 
-        const { primaryKey } = context.entity;
-        const body = await context.getBody(true);
+        const body = await getBody(true);
 
-        if (primaryKey !== "_id" && !body[primaryKey]) { body[primaryKey] = jet.uid(16); }
-    
-        const value = await col.insertOne(body);
-    
-        return col.findOne({ _id: value.insertedId });
+        const row = tbl.rows.add(body);
+
+        return row.live.vals;
     }
     
     async query(context) {
         const tbl = this.getTable(context);
+        const { params } = context;
+        //const { $select, $sort, $skip, $limit, $filter } = options;
 
-        const { options } = context;
-        const { $select, $sort, $skip, $limit, $filter } = options;
-
-        return tbl.rows.map(row=>row.live.vals);   
+        if (params.hasOwnProperty("id")) {
+            const row = tbl.rows.get(params.id, false);
+            if (!row) { throw {code:404, msg:"Not found"}; }
+            return [row.live.vals];
+        } else {
+            return tbl.rows.map(row=>row.live.vals); 
+        }
     }
 
     async count(context) {
-        return this.query(context);
+        const tbl = this.getTable(context);
+
+        return tbl.rows.count();
     }
 
 }
