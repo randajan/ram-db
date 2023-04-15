@@ -147,7 +147,7 @@ export class Rows extends Chop {
         {
           getContext: (row, isSet)=>{
             const val = row[isSet ? "live" : "saved"].get(c.name);
-            return c.separator ? val.map(v=>v.key) : val.key;
+            return c.separator ? val.map(v=>v?.key) : val?.key;
           },
           cache
         }

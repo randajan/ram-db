@@ -22,7 +22,7 @@ export class Step {
     virtual.all(this, {
       label:_=>this.pull(table.cols.label, false),
       isExist:_=>!this.isRemoved && table.rows.exist(this.key),
-      isDirty:_=>this.changes.length || (this.key !== before?.key)
+      isDirty:_=>!!this.changes.length || this.key !== before?.key || !this.isRemoved !== !(before?.isRemoved)
     });
 
     solid(this, "wrap", Wrap.create(this), false);
@@ -45,7 +45,7 @@ export class Step {
     const self = _ => col.toVal(raw, wrap);
 
     if (formula) { raw = formula(wrap); } //formula
-    else if (rows.isReady) {
+    else if (rows.state !== "pending") {
       const bew = before ? before.raws[col] : null;
       if (raw !== bew && isReadonly && isReadonly(wrap, self)) { raw = bew; } //revive value
       if (!before ? (init && raw == null) : (resetIf && resetIf(wrap, self))) { raw = init ? init(wrap) : undefined; } //init or reset
@@ -58,7 +58,7 @@ export class Step {
   };
 
   push(vals, force = true) {
-    const { table: { cols, rows }, raws, before } = this;
+    const { table: { rows, cols }, raws, before } = this;
 
     const reals = cols.virtuals.getList(false);
     const changes = this.changes = [];

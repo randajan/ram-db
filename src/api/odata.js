@@ -22,18 +22,18 @@ export class RamDBAdapter {
         const ramdb = this.ramdb;
         const namespace = ramdb.name;
         const entitySets = {};
-    
-        const entityTypes = ramdb.map(({name, cols})=>{
+        const entityTypes = {};
+
+        for (const {name, cols} of ramdb.getList()) {
             entitySets[name] = { entityType:namespace+"."+name };
-            return cols.map((col, name)=>{
+            entityTypes[name] = await cols.map(async (col)=>{
                 const prop = {};
-    
                 prop.type = ramdbToODataType[col.type];
-                if (col.isPrimary) { prop.key = true; }
+                if (await col.isPrimary) { prop.key = true; }
     
                 return prop;
             }, { byKey:true });
-        }, { byKey:true });
+        };
     
         return { namespace, entityTypes, entitySets }
     }
@@ -46,34 +46,35 @@ export class RamDBAdapter {
         const tbl = this.getTable(context);
         const { params } = context;
 
-        const row = tbl.rows.get(params.id, false);
-        if (!row) { throw {code:404, msg:"Not found"}; }
+        const row = await tbl.rows.get(params.id, false);
+        if (!row) { return; }
 
+        await row.remove();
 
-        return row.remove();
+        return true;
     }
     
     async update(context) {
         const tbl = this.getTable(context);
-        const { params, getBody } = context;
+        const { params } = context;
 
-        const row = tbl.rows.get(params.id, false);
-        if (!row) { throw {code:404, msg:"Not found"}; }
+        const row = await tbl.rows.get(params.id, false);
+        if (!row) { return; }
 
-        const body = await context.getBody(true);
+        const body = await context.pullRequestBody({});
 
-        return row.update(body);
+        await row.update(body);
+
+        return true;
     }
     
     async insert(context) {
         const tbl = this.getTable(context);
-        const { getBody } = context;
+        const body = await context.pullRequestBody({});
+        
+        const row = await tbl.rows.add(body);
 
-        const body = await getBody(true);
-
-        const row = tbl.rows.add(body);
-
-        return row.live.vals;
+        return row?.live.vals;
     }
     
     async query(context) {
@@ -82,9 +83,8 @@ export class RamDBAdapter {
         //const { $select, $sort, $skip, $limit, $filter } = options;
 
         if (params.hasOwnProperty("id")) {
-            const row = tbl.rows.get(params.id, false);
-            if (!row) { throw {code:404, msg:"Not found"}; }
-            return [row.live.vals];
+            const row = await tbl.rows.get(params.id, false);
+            return row?.live.vals;
         } else {
             return tbl.rows.map(row=>row.live.vals); 
         }
@@ -101,6 +101,6 @@ export class RamDBAdapter {
 
 export default (ramdb, options={})=>{
     const adapter = options.adapter = new RamDBAdapter(ramdb);
-    options.model = adapter.generateModel();
+    options.model = adapter.generateModel.bind(adapter);
     return odataServer(options);
 }

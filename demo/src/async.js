@@ -49,7 +49,11 @@ export default ramdb("main", _=>{
     book_series:{
       book_docs:nref("book_docs", "book_serie")
     },
+    case_tasks:{
+      case_order:{ref:"case_orders"},
+    },
     book_docs:{
+      case_order:{ref:"case_orders"},
       book_items:nref("book_items", "book_doc"),
       is_our:{type:"boolean"},
       is_anonym:{type:"boolean"},
@@ -64,6 +68,13 @@ export default ramdb("main", _=>{
     },
     book_accs:{
       id:{ isVirtual:true, isPrimary:true, formula:async r=>(await r("account_id"))+"/"+(await r("bank_id")) }
+    },
+    kin_relations:{
+      id:{ isVirtual:true, isPrimary:true, formula:async r=>jet.melt([await r(["kin_contact_from", "id"]), await r(["kin_contact_to", "id"])], "_") }
+    },
+    case_orders:{
+      book_docs:nref("book_docs", "case_order"),
+      case_tasks:nref("case_tasks", "case_order")
     }
 
   }

@@ -22,7 +22,7 @@ export class Step {
     virtual.all(this, {
       label:async _=>this.pull(await table.cols.label, false),
       isExist:async _=>!this.isRemoved && await table.rows.exist(this.key),
-      isDirty:_=>this.changes.length || (this.key !== before?.key)
+      isDirty:_=>!!this.changes.length || this.key !== before?.key || !this.isRemoved !== !(before?.isRemoved)
     });
 
     solid(this, "wrap", Wrap.create(this), false);

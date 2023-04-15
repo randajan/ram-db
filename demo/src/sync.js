@@ -55,6 +55,17 @@ export default ramdb("main", _=>{
       kin_contact:{ ref:"kin_contacts" },
       version:{ type:"number" },
       id:{ isVirtual:true, isPrimary:true, formula:r=>jet.melt([r(["kin_contact", "id"]), r("version")], "_") }
+    },
+    book_accs:{
+      id:{ isVirtual:true, isPrimary:true, formula:r=>(r("account_id"))+"/"+(r("bank_id")) }
+    },
+    history_contacts:{
+      kin_contact:{ ref:"kin_contacts" },
+      version:{ type:"number" },
+      id:{ isVirtual:true, isPrimary:true, formula:r=>jet.melt([r(["kin_contact", "id"]), r("version")], "_") }
+    },
+    kin_relations:{
+      id:{ isVirtual:true, isPrimary:true, formula:r=>jet.melt([r(["kin_contact_from", "id"]), r(["kin_contact_to", "id"])], "_") }
     }
 
   }

@@ -147,7 +147,7 @@ export class Rows extends Chop {
         {
           getContext: async (row, isSet)=>{
             const val = await row[isSet ? "live" : "saved"].get(c.name);
-            return c.separator ? Promise.all(val.map(v=>v.key)) : val.key;
+            return c.separator ? Promise.all(val.map(v=>v?.key)) : val?.key;
           },
           cache
         }

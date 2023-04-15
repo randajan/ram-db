@@ -38,6 +38,6 @@
     "url": "https://www.linkedin.com/in/randajan/"
   },
   "dependencies": {
-    "@randajan/odata-server": "^1.4.3"
+    "@randajan/odata-server": "^1.5.0"
   }
 }
