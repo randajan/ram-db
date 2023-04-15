@@ -7,7 +7,9 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./dist/index.js",
+    "./async":"./dist/async.js",
+    "./odata":"./api/odata.js"
   },
   "scripts": {
     "start": "set NODE_ENV=dev&& node ./index.js",
