@@ -25,13 +25,12 @@ export class RamDBAdapter {
 
         for (const {name, cols} of ramdb.getList()) {
             entitySets[name] = { entityType:namespace+"."+name };
-            entityTypes[name] = await cols.map(async (col)=>{
-                const prop = {};
-                prop.type = ramdbToODataType[col.type];
-                if (await col.isPrimary) { prop.key = true; }
-    
-                return prop;
-            }, { byKey:true });
+            const entityType = entityTypes[name] = {};
+            for (const { name, type, isPrimary } of await cols.getList()) {
+                const prop = entityType[name] = {};
+                prop.type = ramdbToODataType[type];
+                if (await isPrimary) { prop.key = true; }
+            }
         };
     
         return { namespace, entityTypes, entitySets }
@@ -73,7 +72,7 @@ export class RamDBAdapter {
         
         const row = await tbl.rows.add(body);
 
-        return row?.live.vals;
+        return row?.saved.vals;
     }
     
     async query(context) {
@@ -83,9 +82,9 @@ export class RamDBAdapter {
 
         if (params.hasOwnProperty("id")) {
             const row = await tbl.rows.get(params.id, false);
-            return row?.live.vals;
+            return row?.saved.vals;
         } else {
-            return tbl.rows.map(row=>row.live.vals); 
+            return tbl.rows.map(row=>row.saved.vals); 
         }
     }
 

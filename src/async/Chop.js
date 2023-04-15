@@ -1,6 +1,7 @@
 import jet from "@randajan/jet-core";
 import { formatKey, vault } from "../tools";
 import { Bundle } from "./Bundle";
+import { Transactions } from "./Transactions";
 
 const { solid, virtual } = jet.prop;
 
@@ -9,9 +10,10 @@ export class Chop extends jet.types.Plex {
   constructor(name, config = {}) {
     const { stream, loader, parent, childName, getContext, defaultContext, maxAge, maxAgeError } = Object.jet.to(config);
     const [uid, _p] = vault.set({
-      state: "concept",
+      isLoaded:false,
       loader,
       stream: jet.isRunnable(stream) ? stream : _ => stream,
+      transactions:new Transactions(_=>{ if (this.maxAgeError) { setTimeout(_=>this.reset(), this.maxAgeError); } }),
       bundle:new Bundle(
         parent?.name,
         name,
@@ -19,7 +21,7 @@ export class Chop extends jet.types.Plex {
         getContext,
         defaultContext
       ),
-      recycle:async _=>{ if (await _p.bundle.run("beforeRecycle")) { vault.end(uid); }}
+      recycle:async _=>{ if (await _p.bundle.run("beforeRecycle")) { vault.end(uid); }},
     });
 
     super((...args) => this.get(...args));
@@ -33,16 +35,16 @@ export class Chop extends jet.types.Plex {
     }, false);
 
     virtual.all(this, {
-      state:_=>_p.state,
+      state:_=>(!_p.isLoaded && _p.transactions.state === "ready") ? "concept" : _p.transactions.state,
       name:_=>_p.bundle.name,
       fullName:_=>_p.bundle.fullName,
       childName:_=>_p.bundle.childName,
-      isLoading:_=>_p.state === "loading"
+      isLoading:_=>_p.transactions.state === "loading"
     });
 
     _p.bundle.on("beforeReset", _=>{
-      _p.state = "concept";
-      delete _p.error;
+      _p.isLoaded = false;
+      _p.transactions.reset();
     });
 
   }
@@ -56,47 +58,47 @@ export class Chop extends jet.types.Plex {
   }
 
   async exist(key, context, throwError = false) {
-    await this.load();
+    await this.untilReady();
     return vault.get(this.uid).bundle.exist(key, context, throwError);
   }
 
   async get(key, context, throwError = true) {
-    await this.load();
+    await this.untilReady();
     return vault.get(this.uid).bundle.get(key, context, throwError);
   }
 
   async count(context, throwError=false) {
-    await this.load();
+    await this.untilReady();
     return vault.get(this.uid).bundle.getData(context, throwError).list.length;
   }
 
   async getList(context, throwError=false) {
-    await this.load();
+    await this.untilReady();
     return [...vault.get(this.uid).bundle.getData(context, throwError).list];
   }
 
   async getIndex(context, throwError=false) {
-    await this.load();
+    await this.untilReady();
     return {...vault.get(this.uid).bundle.getData(context, throwError).index};
   }
 
   async getContextList() {
-    await this.load();
+    await this.untilReady();
     return Object.keys(vault.get(this.uid).bundle.data);
   }
 
   async map(callback, opt={}) {
-    await this.load();
+    await this.untilReady();
     return vault.get(this.uid).bundle.map(callback, opt);
   }
 
   async filter(checker, opt={}) {
-    await this.load();
+    await this.untilReady();
     return vault.get(this.uid).bundle.filter(checker, opt);
   }
 
   async find(checker, opt={}) {
-    await this.load();
+    await this.untilReady();
     return vault.get(this.uid).bundle.find(checker, opt);
   }
 
@@ -104,35 +106,26 @@ export class Chop extends jet.types.Plex {
     return vault.get(this.uid).bundle.reset(throwError);
   }
 
-  async load(throwError = true) {
+  async untilReady(throwError = true) {
+    if (this.state === "ready") { return true; }
+    if (this.state === "error" && !throwError) { return false; }
+
     const _p = vault.get(this.uid);
-    if (_p.state === "concept") {
-      _p.build = (async _=>{
-        _p.state = "loading";
-        try {
-          await _p.bundle.run("beforeInit", [_p.bundle]);
-          const data = await _p.stream();
-          //if (Promise.jet.is(data)) { throw Error(this.msg(`init failed - promise found at sync`)); }
-          await _p.loader(this, _p.bundle, data);
-          await _p.bundle.run("afterInit", [_p.bundle]);
-          _p.state = "ready";
-          if (this.maxAge) { setTimeout(_=>this.reset(), this.maxAge); }
-        } catch(error) {
-          _p.error = error;
-          _p.state = "error";
-          if (this.maxAgeError) { setTimeout(_=>this.reset(), this.maxAgeError); }
-          if (throwError) { throw error; }
-        }
-        return _p.state === "ready";
-      })();
-    }
-    else if (_p.state === "error" && throwError) { throw _p.error; }
-    return _p.build;
+    if (_p.isLoaded) { return _p.transactions.pending; }
+    return _p.transactions.execute("loading", async _=>{
+      await _p.bundle.run("beforeLoad", [_p.bundle]);
+      const data = await _p.stream();
+      //if (Promise.jet.is(data)) { throw Error(this.msg(`init failed - promise found at sync`)); }
+      await _p.loader(this, _p.bundle, data);
+      _p.isLoaded = true;
+      await _p.bundle.run("afterLoad", [_p.bundle]);
+      if (this.maxAge) { setTimeout(_=>this.reset(), this.maxAge); }
+    }, { stopOnError:false });
   }
 
-  withInit(execute) {
+  withUntilReady(execute) {
     return async (...args) => {
-      await this.load();
+      await this.untilReady();
       return execute(...args);
     }
   }

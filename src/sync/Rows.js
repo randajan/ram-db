@@ -7,6 +7,26 @@ import { formatKey } from "../tools.js";
 
 const { solid, virtual } = jet.prop;
 
+const save = (bundle, row)=>{
+  const keySaved = row.key;
+  const wasRemoved = row.isRemoved;
+  const key = row.live.key;
+  const isRemoved = row.live.isRemoved;
+  
+  const rekey = key !== keySaved;
+  const remove = isRemoved !== wasRemoved;
+  
+  if (key && !isRemoved) {
+    if (rekey) { bundle.set(row); }
+    else {
+      bundle.run("beforeUpdate", [row]);
+      bundle.run("afterUpdate", [row]);
+    }
+  }
+  if (keySaved && (rekey || remove)) { bundle.remove(row); }
+
+}
+
 export class Rows extends Chop {
     constructor(table, stream, onSave) {
       super(`${table.name}.rows`, {
@@ -27,26 +47,7 @@ export class Rows extends Chop {
       });
 
       const _p = vault.get(this.uid);
-
-      _p.save = (row)=>{
-        const keySaved = row.key;
-        const wasRemoved = row.isRemoved;
-        const key = row.live.key;
-        const isRemoved = row.live.isRemoved;
-        
-        const rekey = key !== keySaved;
-        const remove = isRemoved !== wasRemoved;
-
-        if (key && !isRemoved) {
-          if (rekey) { _p.bundle.set(row); }
-          else {
-            _p.bundle.run("beforeUpdate", [row]);
-            _p.bundle.run("afterUpdate", [row]);
-          }
-        }
-        if (keySaved && (rekey || remove)) { _p.bundle.remove(row); }
-
-      }
+      _p.save = row=>this.isLoading ? save(_p.bundle, row) : _p.transactions.execute("saving", _=>save(_p.bundle, row));
 
       solid.all(this, {
         db:table.db,
@@ -79,7 +80,7 @@ export class Rows extends Chop {
 
     addOrUpdate(vals, opt={ add:true, update:true, autoSave:true, resetOnError:true, throwError:true }) {
 
-      this.load();
+      this.untilReady();
     
       let step, key;
       const ck = this.table.cols.primary;

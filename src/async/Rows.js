@@ -7,6 +7,26 @@ import { formatKey } from "../tools.js";
 
 const { solid, virtual } = jet.prop;
 
+const save = async (bundle, row)=>{
+  const keySaved = await row.key;
+  const wasRemoved = await row.isRemoved;
+  const key = await row.live.key;
+  const isRemoved = await row.live.isRemoved;
+  
+  const rekey = key !== keySaved;
+  const remove = isRemoved !== wasRemoved;
+  
+  if (key && !isRemoved) {
+    if (rekey) { await bundle.set(row); }
+    else {
+      await bundle.run("beforeUpdate", [row]);
+      await bundle.run("afterUpdate", [row]);
+    }
+  }
+  if (keySaved && (rekey || remove)) { await bundle.remove(row); }
+
+}
+
 export class Rows extends Chop {
     constructor(table, stream, onSave) {
       super(`${table.name}.rows`, {
@@ -27,26 +47,7 @@ export class Rows extends Chop {
       });
 
       const _p = vault.get(this.uid);
-
-      _p.save = async (row)=>{
-        const keySaved = await row.key;
-        const wasRemoved = await row.isRemoved;
-        const key = await row.live.key;
-        const isRemoved = await row.live.isRemoved;
-        
-        const rekey = key !== keySaved;
-        const remove = isRemoved !== wasRemoved;
-
-        if (key && !isRemoved) {
-          if (rekey) { await _p.bundle.set(row); }
-          else {
-            await _p.bundle.run("beforeUpdate", [row]);
-            await _p.bundle.run("afterUpdate", [row]);
-          }
-        }
-        if (keySaved && (rekey || remove)) { await _p.bundle.remove(row); }
-
-      }
+      _p.save = row=>this.isLoading ? save(_p.bundle, row) : _p.transactions.execute("saving", _=>save(_p.bundle, row));
 
       solid.all(this, {
         db:table.db,
@@ -79,7 +80,7 @@ export class Rows extends Chop {
 
     async addOrUpdate(vals, opt={ add:true, update:true, autoSave:true, resetOnError:true, throwError:true }) {
 
-      await this.load();
+      await this.untilReady();
     
       let step, key;
       const ck = await this.table.cols.primary;

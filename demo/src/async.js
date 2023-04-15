@@ -112,10 +112,11 @@ export default ramdb("main", _=>{
       cols:_=>global(name, jet.map(rows[0], _=>({}))),
       rows:_=>rows,
       onSave:async (table, event, row)=>{
-        console.log({ table:table.name, event, row:await row.key });
-        //const x = new Promise((res, rej)=>setTimeout(rej, 5000));
-        //await x;
-        //console.log("ready");
+        const willBeError = Boolean.jet.rnd();
+        console.log({ table:table.name, event, row:await row.key, willBeError });
+        const x = new Promise((res, rej)=>setTimeout(willBeError ? rej : res, 2000));
+        await x;
+
       }
     }
   });
