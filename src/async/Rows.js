@@ -79,7 +79,7 @@ export class Rows extends Chop {
 
     async addOrUpdate(vals, opt={ add:true, update:true, autoSave:true, resetOnError:true, throwError:true }) {
 
-      await this.init();
+      await this.load();
     
       let step, key;
       const ck = await this.table.cols.primary;

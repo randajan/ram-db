@@ -12,20 +12,20 @@
   resolved "https://registry.yarnpkg.com/@randajan/jet-core/-/jet-core-3.1.6.tgz#50351f4dc010025e5bc9dd62aedfb3b92de44eab"
   integrity sha512-JyjUdxq3Dus3RxnsyAups+RsUO8cHpWq85h1u6FB+jKSrs6dHGxxtHmIFG6B24uSzGT52umeIDAf+d4yzaJbhg==
 
-"@randajan/odata-server@^1.5.0":
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/@randajan/odata-server/-/odata-server-1.5.0.tgz#f2570292016ca23088fce49370f8ccdd84f0d5e8"
-  integrity sha512-3X2A3pq+zi5lBxbyekMRlqhkFRqEz7ONJfQMXlcqgYzZ01qSDGwcjCfF6XglcyfZRdMbFY6McuSfr2vYX4IWLA==
+"@randajan/odata-server@^1.5.2":
+  version "1.5.2"
+  resolved "https://registry.yarnpkg.com/@randajan/odata-server/-/odata-server-1.5.2.tgz#d61878d672530729d2c7ae10d9c8ba46915c3c41"
+  integrity sha512-9+zBDuPluMtM6B/OUf7/hgKbIIAbNsWKttgPW6Mld1lGx7Nw4Wlkub+DYZLKgwUbMrGzw8hLHp5l+W+UGQbRvA==
   dependencies:
     methods "1.1.2"
     odata-parser "^1.4.1"
     path-to-regexp "6.2.1"
     xmlbuilder "15.1.1"
 
-"@randajan/simple-lib@^2.1.1":
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/@randajan/simple-lib/-/simple-lib-2.1.1.tgz#8500778cdc038eb0bb86d4d2a7c27da8dd4e6382"
-  integrity sha512-JaTFEcSd6KubPu96DA6YYeQCEHPfX4btuUnHiyDf2WYmbRcllTSs5n0cix8RKDCemC6HzhP/Ufrwx0AgBlCU2A==
+"@randajan/simple-lib@2.1.2":
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/@randajan/simple-lib/-/simple-lib-2.1.2.tgz#6831aa49fc5351981859494ea84054db75d70034"
+  integrity sha512-6OgzYo2FUUWctCoMr0MAicvSvLenBNju1/j8cBWKVOyUaQSu3UEYQMme8PWhnH1La5wONsm6/fDCMnF+DgWtpg==
   dependencies:
     app-root-path "^3.1.0"
     approot "^0.2.1"

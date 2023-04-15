@@ -9,7 +9,7 @@ export class Chop extends jet.types.Plex {
   constructor(name, config = {}) {
     const { stream, loader, parent, childName, getContext, defaultContext, maxAge, maxAgeError } = Object.jet.to(config);
     const [uid, _p] = vault.set({
-      state: "waiting",
+      state: "concept",
       loader,
       stream: jet.isRunnable(stream) ? stream : _ => stream,
       bundle:new Bundle(
@@ -37,11 +37,11 @@ export class Chop extends jet.types.Plex {
       name:_=>_p.bundle.name,
       fullName:_=>_p.bundle.fullName,
       childName:_=>_p.bundle.childName,
-      isReady:_=>_p.state === "ready"
+      isLoading:_=>_p.state === "loading"
     });
 
     _p.bundle.on("beforeReset", _=>{
-      _p.state = "waiting";
+      _p.state = "concept";
       delete _p.error;
     });
 
@@ -56,47 +56,47 @@ export class Chop extends jet.types.Plex {
   }
 
   async exist(key, context, throwError = false) {
-    await this.init();
+    await this.load();
     return vault.get(this.uid).bundle.exist(key, context, throwError);
   }
 
   async get(key, context, throwError = true) {
-    await this.init();
+    await this.load();
     return vault.get(this.uid).bundle.get(key, context, throwError);
   }
 
   async count(context, throwError=false) {
-    await this.init();
+    await this.load();
     return vault.get(this.uid).bundle.getData(context, throwError).list.length;
   }
 
   async getList(context, throwError=false) {
-    await this.init();
+    await this.load();
     return [...vault.get(this.uid).bundle.getData(context, throwError).list];
   }
 
   async getIndex(context, throwError=false) {
-    await this.init();
+    await this.load();
     return {...vault.get(this.uid).bundle.getData(context, throwError).index};
   }
 
   async getContextList() {
-    await this.init();
+    await this.load();
     return Object.keys(vault.get(this.uid).bundle.data);
   }
 
   async map(callback, opt={}) {
-    await this.init();
+    await this.load();
     return vault.get(this.uid).bundle.map(callback, opt);
   }
 
   async filter(checker, opt={}) {
-    await this.init();
+    await this.load();
     return vault.get(this.uid).bundle.filter(checker, opt);
   }
 
   async find(checker, opt={}) {
-    await this.init();
+    await this.load();
     return vault.get(this.uid).bundle.find(checker, opt);
   }
 
@@ -104,11 +104,11 @@ export class Chop extends jet.types.Plex {
     return vault.get(this.uid).bundle.reset(throwError);
   }
 
-  async init(throwError = true) {
+  async load(throwError = true) {
     const _p = vault.get(this.uid);
-    if (_p.state === "waiting") {
+    if (_p.state === "concept") {
       _p.build = (async _=>{
-        _p.state = "pending";
+        _p.state = "loading";
         try {
           await _p.bundle.run("beforeInit", [_p.bundle]);
           const data = await _p.stream();
@@ -132,7 +132,7 @@ export class Chop extends jet.types.Plex {
 
   withInit(execute) {
     return async (...args) => {
-      await this.init();
+      await this.load();
       return execute(...args);
     }
   }

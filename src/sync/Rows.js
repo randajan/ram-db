@@ -79,7 +79,7 @@ export class Rows extends Chop {
 
     addOrUpdate(vals, opt={ add:true, update:true, autoSave:true, resetOnError:true, throwError:true }) {
 
-      this.init();
+      this.load();
     
       let step, key;
       const ck = this.table.cols.primary;

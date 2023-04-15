@@ -45,7 +45,7 @@ export class Step {
     const self = _ => col.toVal(raw, wrap);
 
     if (formula) { raw = await formula(wrap); } //formula
-    else if (rows.state !== "pending") {
+    else if (!rows.isLoading) {
       const bew = before ? before.raws[col] : null;
       if (raw !== bew && isReadonly && await isReadonly(wrap, self)) { raw = bew; } //revive value
       if (!before ? (init && raw == null) : (resetIf && await resetIf(wrap, self))) { raw = init ? await init(wrap) : undefined; } //init or reset
@@ -68,10 +68,10 @@ export class Step {
       const raw = col.fetch(vals);
       if (raw !== undefined) { raws[col] = col.toRaw(raw); }
       else if (force) { raws[col] = null; }
-      if (!rows.isReady) { changes.push(col); }
+      if (rows.isLoading) { changes.push(col); }
     }
 
-    if (rows.isReady) {
+    if (!rows.isLoading) {
       for (const col of reals) {
         await this.pull(col);
         if (before && raws[col] !== before.raws[col]) { changes.push(col); } //is isDirty column

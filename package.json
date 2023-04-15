@@ -15,10 +15,11 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@randajan/jet-core": "^3.1.6"
+    "@randajan/jet-core": "^3.1.6",
+    "@randajan/odata-server": "^1.5.2"
   },
   "devDependencies": {
-    "@randajan/simple-lib": "^2.1.1"
+    "@randajan/simple-lib": "2.1.2"
   },
   "files": [
     "dist",
@@ -37,7 +38,5 @@
     "email": "jnranda@gmail.com",
     "url": "https://www.linkedin.com/in/randajan/"
   },
-  "dependencies": {
-    "@randajan/odata-server": "^1.5.0"
-  }
+  "dependencies": {}
 }

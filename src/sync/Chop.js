@@ -4,12 +4,14 @@ import { Bundle } from "./Bundle";
 
 const { solid, virtual } = jet.prop;
 
+//states = [ init,  ]
+
 export class Chop extends jet.types.Plex {
 
   constructor(name, config = {}) {
     const { stream, loader, parent, childName, getContext, defaultContext, maxAge, maxAgeError } = Object.jet.to(config);
     const [uid, _p] = vault.set({
-      state: "waiting",
+      state: "concept",
       loader,
       stream: jet.isRunnable(stream) ? stream : _ => stream,
       bundle:new Bundle(
@@ -37,11 +39,11 @@ export class Chop extends jet.types.Plex {
       name:_=>_p.bundle.name,
       fullName:_=>_p.bundle.fullName,
       childName:_=>_p.bundle.childName,
-      isReady:_=>_p.state === "ready"
+      isLoading:_=>_p.state === "loading"
     });
 
     _p.bundle.on("beforeReset", _=>{
-      _p.state = "waiting";
+      _p.state = "concept";
       delete _p.error;
     });
 
@@ -56,47 +58,47 @@ export class Chop extends jet.types.Plex {
   }
 
   exist(key, context, throwError = false) {
-    this.init();
+    this.load();
     return vault.get(this.uid).bundle.exist(key, context, throwError);
   }
 
   get(key, context, throwError = true) {
-    this.init();
+    this.load();
     return vault.get(this.uid).bundle.get(key, context, throwError);
   }
 
   count(context, throwError=false) {
-    this.init();
+    this.load();
     return vault.get(this.uid).bundle.getData(context, throwError).list.length;
   }
 
   getList(context, throwError=false) {
-    this.init();
+    this.load();
     return [...vault.get(this.uid).bundle.getData(context, throwError).list];
   }
 
   getIndex(context, throwError=false) {
-    this.init();
+    this.load();
     return {...vault.get(this.uid).bundle.getData(context, throwError).index};
   }
 
   getContextList() {
-    this.init();
+    this.load();
     return Object.keys(vault.get(this.uid).bundle.data);
   }
 
   map(callback, opt={}) {
-    this.init();
+    this.load();
     return vault.get(this.uid).bundle.map(callback, opt);
   }
 
   filter(checker, opt={}) {
-    this.init();
+    this.load();
     return vault.get(this.uid).bundle.filter(checker, opt);
   }
 
   find(checker, opt={}) {
-    this.init();
+    this.load();
     return vault.get(this.uid).bundle.find(checker, opt);
   }
 
@@ -104,15 +106,15 @@ export class Chop extends jet.types.Plex {
     return vault.get(this.uid).bundle.reset(throwError);
   }
 
-  init(throwError = true) {
+  load(throwError = true) {
     const _p = vault.get(this.uid);
-    if (_p.state === "waiting") {
+    if (_p.state === "concept") {
       _p.build = (_=>{
-        _p.state = "pending";
+        _p.state = "loading";
         try {
           _p.bundle.run("beforeInit", [_p.bundle]);
           const data = _p.stream();
-          if (Promise.jet.is(data)) { throw Error(this.msg(`init failed - promise found at sync`)); }
+          if (Promise.jet.is(data)) { throw Error(this.msg(`load failed - promise found at sync`)); }
           _p.loader(this, _p.bundle, data);
           _p.bundle.run("afterInit", [_p.bundle]);
           _p.state = "ready";
@@ -132,7 +134,7 @@ export class Chop extends jet.types.Plex {
 
   withInit(execute) {
     return (...args) => {
-      this.init();
+      this.load();
       return execute(...args);
     }
   }

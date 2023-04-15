@@ -13,7 +13,6 @@ const { solid } = jet.prop;
 
 export class RamDBAdapter {
 
-
     constructor(ramdb) {
         solid(this, "ramdb", ramdb, false);
     }
@@ -39,7 +38,7 @@ export class RamDBAdapter {
     }
 
     getTable(context) {
-        return this.ramdb.get(context.params.collection);
+        return this.ramdb.get(context.params.entity);
     }
 
     async remove(context) {

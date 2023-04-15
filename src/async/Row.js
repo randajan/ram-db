@@ -31,7 +31,6 @@ export class Row extends jet.types.Plex {
         return _p.live.remove() && (opt.autoSave === false || await this.save(opt));
       },
       save: async (opt = { resetOnError: true, throwError: true }) => {
-        console.log(this.live.isDirty);
         if (!this.isDirty) { return true; }
         try {
           await save(this);
