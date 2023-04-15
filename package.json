@@ -9,7 +9,7 @@
   "exports": {
     ".": "./dist/index.js",
     "./async": "./dist/async.js",
-    "./odata": "./api/odata.js"
+    "./odata": "./dist/api/odata.js"
   },
   "scripts": {
     "start": "set NODE_ENV=dev&& node ./index.js",
