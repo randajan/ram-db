@@ -69,7 +69,13 @@ export class RamDBAdapter {
 
         const body = await context.pullRequestBody({});
 
-        await row.update(body);
+        //appsheet bug remove workaround
+
+        if (body?.hasOwnProperty("$$remove") && Boolean.jet.to(body.$$remove)) {
+            await row.remove();
+        } else {
+            await row.update(body);
+        }
 
         return true;
     }
@@ -87,7 +93,7 @@ export class RamDBAdapter {
         const options = await context.fetchOptions();
         const { $select, $sort, $skip, $limit, $filter } = options;
 
-        if ($filter.hasOwnProperty(primaryKey)) {
+        if ($filter?.hasOwnProperty(primaryKey)) {
             return this.rowToResponse(context, await tbl.rows.get($filter[primaryKey], false));
         } else {
             return tbl.rows.map(row=>this.rowToResponse(context, row)); 

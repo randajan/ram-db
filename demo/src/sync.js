@@ -73,6 +73,8 @@ export default ramdb("main", _=>{
   const global = (name, cols)=>{
     if (schema[name]) { cols = {...cols, ...schema[name] }; }
 
+    cols.$$remove = { type:"boolean" };
+
     if (cols.id) {
       cols.id.isPrimary = true;
       cols.id.init = _=>jet.uid(12);
