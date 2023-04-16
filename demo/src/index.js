@@ -9,13 +9,14 @@ import http from "http";
 
 
 const api = odataServer(ramdb, {
-    returnVals:(context)=>context.returnVals,
     extender:(context, returnVals)=>{
         context.returnVals = returnVals;
         // const route = context.server.findRoute("/"+context.url.pathname);
         // console.log("b");
         // console.log(context.url, route?.action);
     },
+    returnVals:(context)=>context.returnVals,
+    fakeRemove:"$$remove",
     filter:(context, tbl, col)=>{
         if (tbl.name.startsWith("safe_")) { return false; }
         return true;

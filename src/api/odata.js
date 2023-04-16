@@ -13,15 +13,16 @@ const { solid } = jet.prop;
 
 export class RamDBAdapter {
 
-    constructor(ramdb, returnVals) {
+    constructor(ramdb, returnVals, fakeRemove) {
         solid.all(this, {
             ramdb,
+            fakeRemove:String.jet.to(fakeRemove),
             returnVals:jet.isRunnable(returnVals) ? returnVals : _=>returnVals
         }, false);
     }
 
     async generateModel() {
-        const ramdb = this.ramdb;
+        const { ramdb, fakeRemove } = this;
         const namespace = ramdb.name;
         const entitySets = {};
         const entityTypes = {};
@@ -29,11 +30,14 @@ export class RamDBAdapter {
         for (const {name, cols} of ramdb.getList()) {
             entitySets[name] = { entityType:namespace+"."+name };
             const entityType = entityTypes[name] = {};
+
             for (const { name, type, isPrimary } of await cols.getList()) {
                 const prop = entityType[name] = {};
                 prop.type = ramdbToODataType[type];
                 if (await isPrimary) { prop.key = true; }
             }
+
+            if (fakeRemove) { entityType[fakeRemove] = { type:"Edm.Boolean" }; } //workaround appsheet bug - fake column for remove
         };
     
         return { namespace, entityTypes, entitySets }
@@ -69,10 +73,10 @@ export class RamDBAdapter {
 
         const body = await context.pullRequestBody({});
 
-        //appsheet bug remove workaround
+        
 
-        if (body?.hasOwnProperty("$$remove") && Boolean.jet.to(body.$$remove)) {
-            await row.remove();
+        if (body && this.fakeRemove && Boolean.jet.to(body[this.fakeRemove])) {
+            await row.remove(); //workaround appsheet bug - fake column for remove
         } else {
             await row.update(body);
         }
@@ -110,14 +114,15 @@ export class RamDBAdapter {
 
 
 export default (ramdb, options={})=>{
-    const { filter, returnVals } = options;
+    const { filter, returnVals, fakeRemove } = options;
 
     const _filter = jet.isRunnable(filter) ? filter : null;
 
-    const _adapter = options.adapter = new RamDBAdapter(ramdb, returnVals);
+    const _adapter = options.adapter = new RamDBAdapter(ramdb, returnVals, fakeRemove);
     options.model = _adapter.generateModel.bind(_adapter);
 
     options.filter = async (context, entity, prop)=>{
+        if (prop === _adapter.fakeRemove) { return true; } //workaround appsheet bug - fake column for remove
         const rv = _adapter.returnVals(context) === true;
         if (!filter && (rv || !prop)) { return true; }
         const tbl = ramdb.get(entity);
