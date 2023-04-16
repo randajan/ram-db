@@ -9,9 +9,15 @@ import http from "http";
 
 
 const api = odataServer(ramdb, {
-    url:'http://localhost:1337',
-    filter:(context, entity, col)=>{
-        if (entity.startsWith("safe_")) { return false; }
+    returnVals:(context)=>context.returnVals,
+    extender:(context, returnVals)=>{
+        context.returnVals = returnVals;
+        // const route = context.server.findRoute("/"+context.url.pathname);
+        // console.log("b");
+        // console.log(context.url, route?.action);
+    },
+    filter:(context, tbl, col)=>{
+        if (tbl.name.startsWith("safe_")) { return false; }
         return true;
     }
 });
@@ -24,7 +30,7 @@ const api = odataServer(ramdb, {
 // ramdb("sys_")
 
 
-const server = http.createServer(api.resolver).listen(1337);
+const server = http.createServer(api.serve('http://localhost:1337/odata')).listen(1337);
 
 
 process.on("exit", (msg)=>{

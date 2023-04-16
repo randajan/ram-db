@@ -13,8 +13,11 @@ const { solid } = jet.prop;
 
 export class RamDBAdapter {
 
-    constructor(ramdb) {
-        solid(this, "ramdb", ramdb, false);
+    constructor(ramdb, returnVals) {
+        solid.all(this, {
+            ramdb,
+            returnVals:jet.isRunnable(returnVals) ? returnVals : _=>returnVals
+        }, false);
     }
 
     async generateModel() {
@@ -38,6 +41,11 @@ export class RamDBAdapter {
 
     getTable(context) {
         return this.ramdb.get(context.params.entity);
+    }
+
+    rowToResponse(context, row) {
+        if (!row) { return; }
+        return row.saved[this.returnVals(context) === true ? "vals" : "raws"];
     }
 
     async remove(context) {
@@ -70,9 +78,7 @@ export class RamDBAdapter {
         const tbl = this.getTable(context);
         const body = await context.pullRequestBody({});
         
-        const row = await tbl.rows.add(body);
-
-        return row?.saved.vals;
+        return this.rowToResponse(context, await tbl.rows.add(body));
     }
     
     async query(context) {
@@ -81,10 +87,9 @@ export class RamDBAdapter {
         //const { $select, $sort, $skip, $limit, $filter } = options;
 
         if (params.hasOwnProperty("id")) {
-            const row = await tbl.rows.get(params.id, false);
-            return row?.saved.vals;
+            return this.rowToResponse(context, await tbl.rows.get(params.id, false));
         } else {
-            return tbl.rows.map(row=>row.saved.vals); 
+            return tbl.rows.map(row=>this.rowToResponse(context, row)); 
         }
     }
 
@@ -98,7 +103,21 @@ export class RamDBAdapter {
 
 
 export default (ramdb, options={})=>{
-    const adapter = options.adapter = new RamDBAdapter(ramdb);
-    options.model = adapter.generateModel.bind(adapter);
+    const { filter, returnVals } = options;
+
+    const _filter = jet.isRunnable(filter) ? filter : null;
+
+    const _adapter = options.adapter = new RamDBAdapter(ramdb, returnVals);
+    options.model = _adapter.generateModel.bind(_adapter);
+
+    options.filter = async (context, entity, prop)=>{
+        const rv = _adapter.returnVals(context) === true;
+        if (!filter && (rv || !prop)) { return true; }
+        const tbl = ramdb.get(entity);
+        const col = prop ? await tbl.cols.get(prop) : undefined;
+        if (!rv && col?.isVirtual) { return false; }
+        return _filter ? _filter(context, tbl, col) : true;
+    }
+
     return odataServer(options);
 }
