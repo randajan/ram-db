@@ -83,11 +83,12 @@ export class RamDBAdapter {
     
     async query(context) {
         const tbl = this.getTable(context);
-        const { params } = context;
-        //const { $select, $sort, $skip, $limit, $filter } = options;
+        const { primaryKey } = await context.fetchEntity();
+        const options = await context.fetchOptions();
+        const { $select, $sort, $skip, $limit, $filter } = options;
 
-        if (params.hasOwnProperty("id")) {
-            return this.rowToResponse(context, await tbl.rows.get(params.id, false));
+        if ($filter.hasOwnProperty(primaryKey)) {
+            return this.rowToResponse(context, await tbl.rows.get($filter[primaryKey], false));
         } else {
             return tbl.rows.map(row=>this.rowToResponse(context, row)); 
         }
