@@ -27,7 +27,7 @@ export class RamDBAdapter {
         const entitySets = {};
         const entityTypes = {};
 
-        for (const {name, cols} of ramdb.getList()) {
+        for (const {name, cols} of await ramdb.getList()) {
             entitySets[name] = { entityType:namespace+"."+name };
             const entityType = entityTypes[name] = {};
 
@@ -43,7 +43,7 @@ export class RamDBAdapter {
         return { namespace, entityTypes, entitySets }
     }
 
-    getTable(context) {
+    async getTable(context) {
         return this.ramdb.get(context.params.entity);
     }
 
@@ -53,7 +53,7 @@ export class RamDBAdapter {
     }
 
     async remove(context) {
-        const tbl = this.getTable(context);
+        const tbl = await this.getTable(context);
         const { params } = context;
 
         const row = await tbl.rows.get(params.id, false);
@@ -65,7 +65,7 @@ export class RamDBAdapter {
     }
     
     async update(context) {
-        const tbl = this.getTable(context);
+        const tbl = await this.getTable(context);
         const { params } = context;
 
         const row = await tbl.rows.get(params.id, false);
@@ -85,14 +85,14 @@ export class RamDBAdapter {
     }
     
     async insert(context) {
-        const tbl = this.getTable(context);
+        const tbl = await this.getTable(context);
         const body = await context.pullRequestBody({});
         
         return this.rowToResponse(context, await tbl.rows.add(body));
     }
     
     async query(context) {
-        const tbl = this.getTable(context);
+        const tbl = await this.getTable(context);
         const { primaryKey } = await context.fetchEntity();
         const options = await context.fetchOptions();
         const { $select, $sort, $skip, $limit, $filter } = options;
@@ -105,7 +105,7 @@ export class RamDBAdapter {
     }
 
     async count(context) {
-        const tbl = this.getTable(context);
+        const tbl = await this.getTable(context);
 
         return tbl.rows.count();
     }
@@ -125,7 +125,7 @@ export default (ramdb, options={})=>{
         if (prop === _adapter.fakeRemove) { return true; } //workaround appsheet bug - fake column for remove
         const rv = _adapter.returnVals(context) === true;
         if (!filter && (rv || !prop)) { return true; }
-        const tbl = ramdb.get(entity);
+        const tbl = await ramdb.get(entity);
         const col = prop ? await tbl.cols.get(prop) : undefined;
         if (!rv && col?.isVirtual) { return false; }
         return _filter ? _filter(context, tbl, col) : true;

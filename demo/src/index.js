@@ -1,7 +1,7 @@
 import { log } from "@randajan/simple-lib/node";
 
 import jet from "@randajan/jet-core";
-import ramdb from "./sync";
+import ramdb from "./async";
 
 import odataServer from "../../dist/api/odata.js";
 

@@ -1,30 +1,24 @@
 import jet from "@randajan/jet-core";
-import { Chop } from "../sync/Chop";
-import { Table } from "./Table";
+import { Chop } from "./Chop";
+import { Rows } from "./Rows";
+import { Cols } from "./Cols";
+import { Table } from "../uni/Table";
 
-const { solid } = jet.prop;
-
-export class RamDB extends Chop {
+export class DB extends Chop {
 
     constructor(name, config={}) {
-        const { stream, maxAge, maxAgeError, Rows, Cols } = config;
+        
+        const { stream, maxAge, maxAgeError } = config;
         super(name, {
             stream,
             loader: (self, bundle, tables) => {
-                jet.map(tables, (stream, key) => bundle.set(new Table(this, key, {
-                    stream,
-                    Rows,
-                    Cols
-                })));
+                jet.map(tables, (stream, key) => bundle.set(new Table(this, key, { stream, Rows, Cols })));
             },
             childName: "table",
             defaultContext: "all",
             maxAge,
             maxAgeError
         });
-
-        solid(this, "epics", this.chop("epics", tbl => tbl.name.split("_")[0], "sys"));
-
     }
 
     exist(name, throwError = false) {
