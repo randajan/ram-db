@@ -16,16 +16,16 @@ export const colsTraits = {
     isLabel: "label"
 };
 
-export const colTypize = {
-    ref:String,
-    string:String.jet.to,
-    datetime:Date.jet.to,
-    number:Number.jet.to,
-    boolean:Boolean.jet.to,
+export const colTo = {
+    ref:{val:String, raw:_=>_},
+    string:{val:String.jet.to, raw:_=>_},
+    datetime:{val:Date.jet.to, raw:_=>_},
+    number:{val:Number.jet.to, raw:_=>_},
+    boolean:{val:Boolean.jet.to, raw:_=>_},
 }
 
 export const colTraits = {
-    type: jet.enumFactory(Object.keys(colTypize), {
+    type: jet.enumFactory(Object.keys(colTo), {
         before:raw=>String.jet.to(raw).jet.simplify(), 
         after:(output, traits)=>output != null ? output : traits.ref ? "ref" : "string"
     }),

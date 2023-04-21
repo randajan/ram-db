@@ -23,20 +23,23 @@ export class Wrap extends jet.types.Plex {
 
     virtual.all(this, {
       key:_=>step.key,
-      label:_=>step.label,
+      label:async _=>step.label,
       before:_=>step.before.wrap,
-      isExist:_=>step.isExist,
+      isExist:async _=>step.isExist,
       isDirty:_=>step.isDirty,
       isRemoved:_=>step.isRemoved,
       raws:_=>({...step.raws}),
-      vals:_=>cols.map(col=>step.pull(col, true), { byKey:true }),
-      changes:_=>([...step.changes])
+      vals:async _=>cols.map(col=>step.pull(col, true), { byKey:true }),
+      changeList:_=>([...step.changeList]),
+      changes:_=>({...step.changes})
     });
 
   }
 
-  refs(tableName, colName, cache={}) {
-    return (this.db.get(tableName).rows.refs(colName, cache)).getList(this.key, false);
+  async refs(tableName, colName, cache={}) {
+    const table = await this.db.get(tableName);
+    const refs = await table.rows.refs(colName, cache);
+    return refs.getList(this.key, false);
   }
 
   getKey() {

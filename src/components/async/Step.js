@@ -22,7 +22,7 @@ export class Step {
     virtual.all(this, {
       label:async _=>this.pull(await table.cols.label, false),
       isExist:async _=>!this.isRemoved && await table.rows.exist(this.key),
-      isDirty:_=>!!this.changes.length || this.key !== before?.key || !this.isRemoved !== !(before?.isRemoved)
+      isDirty:_=>!!this.changeList.length || this.key !== before?.key || !this.isRemoved !== !(before?.isRemoved)
     });
 
     solid(this, "wrap", Wrap.create(this), false);
@@ -61,26 +61,33 @@ export class Step {
     const { table: { rows, cols }, raws, before } = this;
 
     const reals = await cols.virtuals.getList(false);
-    const changes = this.changes = [];
+    const changeList = this.changeList = [];
+    const changes = this.changes = {};
     this.vals = {};
 
     for (const col of reals) {
       const raw = col.fetch(vals);
       if (raw !== undefined) { raws[col] = col.toRaw(raw); }
       else if (force) { raws[col] = null; }
-      if (rows.isLoading) { changes.push(col); }
+      if (rows.isLoading) {
+        changeList.push(col);
+        changes[col] = raws[col];
+      }
     }
 
     if (!rows.isLoading) {
       for (const col of reals) {
         await this.pull(col);
-        if (before && raws[col] !== before.raws[col]) { changes.push(col); } //is isDirty column
+        if (before && raws[col] !== before.raws[col]) { //is isDirty column
+          changeList.push(col);
+          changes[col] = raws[col];
+        } 
       };
     }
 
     this.key = await this.pull(await cols.primary, false);
 
-    return !!changes.length;
+    return !!changeList.length;
   }
 
   async get(col, throwError=true) {
@@ -104,7 +111,8 @@ export class Step {
     this.isRemoved = before?.isRemoved || false;
     this.raws = before ? { ...before.raws } : {};
     this.vals = before ? { ...before.vals } : {};
-    this.changes = [];
+    this.changeList = [];
+    this.changes = {};
     return true;
   }
 

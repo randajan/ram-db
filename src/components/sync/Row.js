@@ -1,19 +1,18 @@
 import jet from "@randajan/jet-core";
-import { vault } from "../tools.js";
+import { vault } from "../uni/tools.js";
 
 const { solid, virtual } = jet.prop;
 
 export class Row extends jet.types.Plex {
 
-  static create(rows, iniStep) { return new Row(rows, iniStep); };
+  static create(rows, onSave, iniStep) { return new Row(rows, onSave, iniStep); };
 
-  constructor(rows, iniStep) {
+  constructor(rows, onSave, iniStep) {
     const { db, table } = rows;
     const _p = {};
-    const save = vault.get(rows.uid).save;
 
     const get = (col, throwError=true) => _p.live.get(col, throwError);
-    const push = (vals, force, opt = { autoSave: true, resetOnError: true, throwError: true }) => {
+    const push = (vals, force, opt = { autoSave: true, resetOnError: true, throwError: true, silentSave:false }) => {
       return (_p.live.push(vals, force)) && (opt.autoSave === false || this.save(opt));
     }
 
@@ -30,10 +29,10 @@ export class Row extends jet.types.Plex {
       remove: (opt = { autoSave: true, resetOnError: true, throwError: true }) => {
         return _p.live.remove() && (opt.autoSave === false || this.save(opt));
       },
-      save: (opt = { resetOnError: true, throwError: true }) => {
+      save: (opt = { resetOnError: true, throwError: true, silentSave:false }) => {
         if (!this.isDirty) { return true; }
         try {
-          save(this);
+          onSave(this, opt.silentSave === true);
           _p.live = rows.nextStep(_p.saved = _p.live);
           return true;
         } catch (err) {

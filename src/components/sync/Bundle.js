@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { formatKey } from "../tools";
+import { formatKey } from "../uni/tools";
 
 const { solid, virtual } = jet.prop;
 
@@ -90,7 +90,7 @@ export class Bundle {
     return this.run("afterReset", [], throwError);
   }
 
-  _set(context, key, child, throwError = true) {
+  _set(context, key, child, throwError = true, opt) {
     const { context:ctx, index, list } = this.getData(context, throwError, true);
     
     if (index.hasOwnProperty(key)) {
@@ -98,23 +98,23 @@ export class Bundle {
       return false;
     }
 
-    if (!(this.run("beforeSet", [child, ctx], throwError))) { return false; }
+    if (!(this.run("beforeSet", [child, ctx, opt], throwError))) { return false; }
     
     list.push(index[key] = child);
 
-    return this.run("afterSet", [child, ctx], throwError);
+    return this.run("afterSet", [child, ctx, opt], throwError);
   }
 
-  set(child, throwError = true) {
+  set(child, throwError = true, opt) {
     const context = this.getContext(child, true);
     const key = this.validateKey(child.getKey(true), "set", throwError);
-    if (!Array.isArray(context)) { return this._set(context, key, child, throwError); }
+    if (!Array.isArray(context)) { return this._set(context, key, child, throwError, opt); }
     let ok = true;
-    for (const ctx of context) { ok = (this._set(ctx, key, child, throwError)) && ok; }
+    for (const ctx of context) { ok = (this._set(ctx, key, child, throwError, opt)) && ok; }
     return ok;
   }
 
-  _remove(context, key, child, throwError = true) {
+  _remove(context, key, child, throwError = true, opt) {
     const { context:ctx, index, list } = this.getData(context, throwError);
     const id = list.indexOf(child);
 
@@ -123,22 +123,22 @@ export class Bundle {
       return false;
     }
 
-    if (!(this.run("beforeRemove", [child, ctx], throwError))) { return false; }
+    if (!(this.run("beforeRemove", [child, ctx, opt], throwError))) { return false; }
 
     if (list.length === 1) { delete this.data[ctx]; } else {
       list.splice(id, 1);
       delete index[key];
     }
     
-    return this.run("afterRemove", [child, ctx], throwError);
+    return this.run("afterRemove", [child, ctx, opt], throwError);
   }
 
-  remove(child, throwError = true) {
+  remove(child, throwError = true, opt) {
     const context = this.getContext(child, false);
     const key = this.validateKey(child.getKey(false), "remove", throwError);
-    if (!Array.isArray(context)) { return this._remove(context, key, child, throwError); }
+    if (!Array.isArray(context)) { return this._remove(context, key, child, throwError, opt); }
     let ok = true;
-    for (const ctx of context) { ok = (this._remove(ctx, key, child, throwError)) && ok; }
+    for (const ctx of context) { ok = (this._remove(ctx, key, child, throwError, opt)) && ok; }
     return ok;
   }
 

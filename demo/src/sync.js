@@ -102,9 +102,6 @@ export default ramdb("main", _=>{
     return {
       cols:_=>global(name, jet.map(rows[0], _=>({}))),
       rows:_=>rows,
-      onSave:(table, event, data)=>{
-        console.log({ name:table.name, event, key:data.key, data:data.raws });
-      }
     }
   });
 });

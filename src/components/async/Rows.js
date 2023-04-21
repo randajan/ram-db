@@ -1,13 +1,12 @@
 import jet from "@randajan/jet-core";
-import { vault } from "../tools.js";
+import { vault } from "../uni/tools.js";
 import { Chop } from "./Chop.js";
 import { Row } from "./Row.js";
 import { Step } from "./Step.js";
-import { formatKey } from "../tools.js";
 
 const { solid, virtual } = jet.prop;
 
-const save = async (bundle, row)=>{
+const save = async (bundle, row, silentSave)=>{
   const keySaved = await row.key;
   const wasRemoved = await row.isRemoved;
   const key = await row.live.key;
@@ -17,18 +16,18 @@ const save = async (bundle, row)=>{
   const remove = isRemoved !== wasRemoved;
   
   if (key && !isRemoved) {
-    if (rekey) { await bundle.set(row); }
+    if (rekey) { await bundle.set(row, true, silentSave); }
     else {
-      await bundle.run("beforeUpdate", [row]);
-      await bundle.run("afterUpdate", [row]);
+      await bundle.run("beforeUpdate", [row, undefined, silentSave]);
+      await bundle.run("afterUpdate", [row, undefined, silentSave]);
     }
   }
-  if (keySaved && (rekey || remove)) { await bundle.remove(row); }
+  if (keySaved && (rekey || remove)) { await bundle.remove(row, true, silentSave); }
 
 }
 
 export class Rows extends Chop {
-    constructor(table, stream, onSave) {
+    constructor(table, stream) {
       super(`${table.name}.rows`, {
         childName:"row",
         defaultContext:"all",
@@ -37,17 +36,19 @@ export class Rows extends Chop {
           for (let index in data) {
             const vals = data[index];
             if (!jet.isMapable(vals)) { return; }
-            await Row.create(rows).set(vals, { throwError:false });
+            await Row.create(rows, _p.onSave).set(vals, { throwError:false, silentSave:true });
           }
-
-          this.on("beforeReset", this.on("beforeSet", async row=>onSave(table, "set", row.live)), false);
-          this.on("beforeReset", this.on("beforeUpdate", async row=>onSave(table, "update", row.live)), false);
-          this.on("beforeReset", this.on("beforeRemove", async row=>onSave(table, "remove", row.saved)), false);
         }
       });
 
       const _p = vault.get(this.uid);
-      _p.save = row=>this.isLoading ? save(_p.bundle, row) : _p.transactions.execute("saving", _=>save(_p.bundle, row));
+      _p.onSave = (row, silentSave)=>{
+        if (this.isLoading) {
+          return save(_p.bundle, row, silentSave);
+        } else {
+          return _p.transactions.execute("saving", _=>save(_p.bundle, row, silentSave));
+        }
+      }
 
       solid.all(this, {
         db:table.db,
@@ -97,7 +98,7 @@ export class Rows extends Chop {
     
       if (opt.add !== false) {
         if (rowFrom) { if (opt.throwError !== false) { throw Error(this.msg("add failed - duplicate key", key)); } return; }
-        const rowTo = Row.create(this, step || await this.initStep(vals));
+        const rowTo = Row.create(this, vault.get(this.uid).onSave, step || await this.initStep(vals));
         if (opt.autoSave !== false) { await rowTo.save(opt); }
         return rowTo;
       }

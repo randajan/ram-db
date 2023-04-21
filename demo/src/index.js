@@ -1,11 +1,11 @@
-import { log } from "@randajan/simple-lib/node";
-
 import jet from "@randajan/jet-core";
 import ramdb from "./async";
 
 import odataServer from "../../dist/api/odata.js";
 
 import http from "http";
+
+
 
 
 const api = odataServer(ramdb, {
@@ -31,7 +31,7 @@ const api = odataServer(ramdb, {
 // ramdb("sys_")
 
 
-const server = http.createServer(api.serve('http://localhost:1337/odata')).listen(1337);
+const server = http.createServer(api.serve('http://localhost:1337/odata', true)).listen(1337);
 
 
 process.on("exit", (msg)=>{

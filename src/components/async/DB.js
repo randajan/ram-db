@@ -12,7 +12,12 @@ export class DB extends Chop {
         super(name, {
             stream,
             loader: (self, bundle, tables) => {
-                jet.map(tables, (stream, key) => bundle.set(new Table(this, key, { stream, Rows, Cols })));
+                const onChange = async (when, action, row, silentSave)=>{
+                    if (when === "before") { await bundle.run(when+"Change", [action, row]); }
+                    if (silentSave !== true) { await bundle.run(when+"Save", [action, row]); }
+                    if (when === "after") { await bundle.run(when+"Change", [action, row]); }
+                };
+                jet.map(tables, (stream, key) => bundle.set(new Table(this, key, { stream, Rows, Cols, onChange})));
             },
             childName: "table",
             defaultContext: "all",

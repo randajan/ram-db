@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { formatKey, vault } from "../tools";
+import { formatKey, vault } from "../uni/tools";
 import { Bundle } from "./Bundle";
 import { Transactions } from "./Transactions";
 
@@ -21,7 +21,7 @@ export class Chop extends jet.types.Plex {
         getContext,
         defaultContext
       ),
-      recycle:_=>{ if (_p.bundle.run("beforeRecycle")) { vault.end(uid); }},
+      recycle:async _=>{ if (await _p.bundle.run("beforeRecycle")) { vault.end(uid); }},
     });
 
     super((...args) => this.get(...args));
@@ -57,75 +57,75 @@ export class Chop extends jet.types.Plex {
     return vault.get(this.uid).bundle.msg(text, key, context);
   }
 
-  exist(key, context, throwError = false) {
-    this.untilReady();
+  async exist(key, context, throwError = false) {
+    await this.untilReady();
     return vault.get(this.uid).bundle.exist(key, context, throwError);
   }
 
-  get(key, context, throwError = true) {
-    this.untilReady();
+  async get(key, context, throwError = true) {
+    await this.untilReady();
     return vault.get(this.uid).bundle.get(key, context, throwError);
   }
 
-  count(context, throwError=false) {
-    this.untilReady();
+  async count(context, throwError=false) {
+    await this.untilReady();
     return vault.get(this.uid).bundle.getData(context, throwError).list.length;
   }
 
-  getList(context, throwError=false) {
-    this.untilReady();
+  async getList(context, throwError=false) {
+    await this.untilReady();
     return [...vault.get(this.uid).bundle.getData(context, throwError).list];
   }
 
-  getIndex(context, throwError=false) {
-    this.untilReady();
+  async getIndex(context, throwError=false) {
+    await this.untilReady();
     return {...vault.get(this.uid).bundle.getData(context, throwError).index};
   }
 
-  getContextList() {
-    this.untilReady();
+  async getContextList() {
+    await this.untilReady();
     return Object.keys(vault.get(this.uid).bundle.data);
   }
 
-  map(callback, opt={}) {
-    this.untilReady();
+  async map(callback, opt={}) {
+    await this.untilReady();
     return vault.get(this.uid).bundle.map(callback, opt);
   }
 
-  filter(checker, opt={}) {
-    this.untilReady();
+  async filter(checker, opt={}) {
+    await this.untilReady();
     return vault.get(this.uid).bundle.filter(checker, opt);
   }
 
-  find(checker, opt={}) {
-    this.untilReady();
+  async find(checker, opt={}) {
+    await this.untilReady();
     return vault.get(this.uid).bundle.find(checker, opt);
   }
 
-  reset(throwError=true) {
+  async reset(throwError=true) {
     return vault.get(this.uid).bundle.reset(throwError);
   }
 
-  untilReady(throwError = true) {
+  async untilReady(throwError = true) {
     if (this.state === "ready") { return true; }
     if (this.state === "error" && !throwError) { return false; }
 
     const _p = vault.get(this.uid);
     if (_p.isLoaded) { return _p.transactions.pending; }
-    return _p.transactions.execute("loading", _=>{
-      _p.bundle.run("beforeLoad", [_p.bundle]);
-      const data = _p.stream();
-      if (Promise.jet.is(data)) { throw Error(this.msg(`init failed - promise found at sync`)); }
-      _p.loader(this, _p.bundle, data);
+    return _p.transactions.execute("loading", async _=>{
+      await _p.bundle.run("beforeLoad", [_p.bundle]);
+      const data = await _p.stream(this);
+      //if (Promise.jet.is(data)) { throw Error(this.msg(`init failed - promise found at sync`)); }
+      await _p.loader(this, _p.bundle, data);
       _p.isLoaded = true;
-      _p.bundle.run("afterLoad", [_p.bundle]);
+      await _p.bundle.run("afterLoad", [_p.bundle]);
       if (this.maxAge) { setTimeout(_=>this.reset(), this.maxAge); }
     }, { stopOnError:false });
   }
 
   withUntilReady(execute) {
-    return (...args) => {
-      this.untilReady();
+    return async (...args) => {
+      await this.untilReady();
       return execute(...args);
     }
   }
@@ -144,10 +144,10 @@ export class Chop extends jet.types.Plex {
       maxAgeError:this.maxAgeError,
       getContext,
       defaultContext,
-      loader: (chop, bundle) =>{
-        this.map(child =>bundle.set(child));
-        chop.on("beforeReset", this.on("afterSet", child=>bundle.set(child)), false);
-        chop.on("beforeReset", this.on("afterRemove", child=>bundle.remove(child)), false);
+      loader: async (chop, bundle) =>{
+        await this.map(child =>bundle.set(child));
+        chop.on("beforeReset", this.on("afterSet", async child=>bundle.set(child)), false);
+        chop.on("beforeReset", this.on("afterRemove", async child=>bundle.remove(child)), false);
         this.on("beforeReset", _=>chop.reset(), false);
         if (loader) { loader(chop, bundle); }
       }
