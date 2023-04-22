@@ -58,47 +58,47 @@ export class Chop extends jet.types.Plex {
   }
 
   exist(key, context, throwError = false) {
-    this.untilReady();
+    this.untilLoaded();
     return vault.get(this.uid).bundle.exist(key, context, throwError);
   }
 
   get(key, context, throwError = true) {
-    this.untilReady();
+    this.untilLoaded();
     return vault.get(this.uid).bundle.get(key, context, throwError);
   }
 
   count(context, throwError=false) {
-    this.untilReady();
+    this.untilLoaded();
     return vault.get(this.uid).bundle.getData(context, throwError).list.length;
   }
 
   getList(context, throwError=false) {
-    this.untilReady();
+    this.untilLoaded();
     return [...vault.get(this.uid).bundle.getData(context, throwError).list];
   }
 
   getIndex(context, throwError=false) {
-    this.untilReady();
+    this.untilLoaded();
     return {...vault.get(this.uid).bundle.getData(context, throwError).index};
   }
 
   getContextList() {
-    this.untilReady();
+    this.untilLoaded();
     return Object.keys(vault.get(this.uid).bundle.data);
   }
 
   map(callback, opt={}) {
-    this.untilReady();
+    this.untilLoaded();
     return vault.get(this.uid).bundle.map(callback, opt);
   }
 
   filter(checker, opt={}) {
-    this.untilReady();
+    this.untilLoaded();
     return vault.get(this.uid).bundle.filter(checker, opt);
   }
 
   find(checker, opt={}) {
-    this.untilReady();
+    this.untilLoaded();
     return vault.get(this.uid).bundle.find(checker, opt);
   }
 
@@ -106,12 +106,14 @@ export class Chop extends jet.types.Plex {
     return vault.get(this.uid).bundle.reset(throwError);
   }
 
-  untilReady(throwError = true) {
-    if (this.state === "ready") { return true; }
-    if (this.state === "error" && !throwError) { return false; }
-
+  untilLoaded(throwError = true) {
     const _p = vault.get(this.uid);
-    if (this.state === "loading" || _p.isLoaded) { return _p.transactions.last; }
+    if (_p.isLoaded) { return true; }
+
+    const { state, last } = _p.transactions;
+    if (state === "error") { return throwError ? last : false; }
+    if (state === "loading") { return last; }
+
     return _p.transactions.execute("loading", _=>{
       if (_p.isLoaded) { return; }
       _p.bundle.run("beforeLoad", [_p.bundle]);
@@ -124,9 +126,9 @@ export class Chop extends jet.types.Plex {
     }, { stopOnError:false });
   }
 
-  withUntilReady(execute) {
+  withUntilLoaded(execute) {
     return (...args) => {
-      this.untilReady();
+      this.untilLoaded();
       return execute(...args);
     }
   }

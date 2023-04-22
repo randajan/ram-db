@@ -80,8 +80,9 @@ export class Rows extends Chop {
     }
 
     async addOrUpdate(vals, opt={ add:true, update:true, autoSave:true, resetOnError:true, throwError:true }) {
-
-      await this.untilReady();
+      const _p = vault.get(this.uid);
+      await this.untilLoaded(); //await load
+      await _p.transactions.last; //await any operation
     
       let step, key;
       const ck = await this.table.cols.primary;
@@ -98,7 +99,7 @@ export class Rows extends Chop {
     
       if (opt.add !== false) {
         if (rowFrom) { if (opt.throwError !== false) { throw Error(this.msg("add failed - duplicate key", key)); } return; }
-        const rowTo = Row.create(this, vault.get(this.uid).onSave, step || await this.initStep(vals));
+        const rowTo = Row.create(this, _p.onSave, step || await this.initStep(vals));
         if (opt.autoSave !== false) { await rowTo.save(opt); }
         return rowTo;
       }

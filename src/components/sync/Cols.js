@@ -66,8 +66,8 @@ export class Cols extends Chop {
     }, false);
   
     virtual.all(this, {
-      primary:this.withUntilReady(_=>_p.bundle.get(_p.primary)),
-      label:this.withUntilReady(_=>_p.bundle.get(_p.label))
+      primary:this.withUntilLoaded(_=>_p.bundle.get(_p.primary)),
+      label:this.withUntilLoaded(_=>_p.bundle.get(_p.label))
     });
 
   }

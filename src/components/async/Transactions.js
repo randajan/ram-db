@@ -30,6 +30,7 @@ export class Transactions {
             }
             
             if (isErr && opt.throwError !== false) { throw err; }
+            
             return !isErr;
         }
 
