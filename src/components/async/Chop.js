@@ -111,7 +111,7 @@ export class Chop extends jet.types.Plex {
     if (this.state === "error" && !throwError) { return false; }
 
     const _p = vault.get(this.uid);
-    if (this.state === "loading" || _p.isLoaded) { return _p.transactions.pending; }
+    if (this.state === "loading" || _p.isLoaded) { return _p.transactions.last; }
     return _p.transactions.execute("loading", async _=>{
       await _p.bundle.run("beforeLoad", [_p.bundle]);
       const data = await _p.stream(this);
