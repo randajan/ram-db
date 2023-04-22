@@ -184,9 +184,9 @@ export class Bundle {
 
   async find(checker, opt={}) {
     opt.byKey = false;
-    return this.map(async (child, stop) => {
+    return (await this.map(async (child, stop) => {
       if (await checker(child)) { return stop(child); }
-    }, opt)[0];
+    }, opt))[0];
   }
 
 }
