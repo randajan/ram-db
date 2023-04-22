@@ -94,7 +94,7 @@ export class Bundle {
     const { context:ctx, index, list } = this.getData(context, throwError, true);
     
     if (index.hasOwnProperty(key)) {
-      if (throwError) { throw Error(this.msg(`set(...) failed - duplicate`, ctx)); }
+      if (throwError) { throw Error(this.msg(`set(...) failed - duplicate`, key, ctx)); }
       return false;
     }
 
