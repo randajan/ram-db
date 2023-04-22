@@ -113,6 +113,7 @@ export class Chop extends jet.types.Plex {
     const _p = vault.get(this.uid);
     if (this.state === "loading" || _p.isLoaded) { return _p.transactions.last; }
     return _p.transactions.execute("loading", async _=>{
+      if (_p.isLoaded) { return; }
       await _p.bundle.run("beforeLoad", [_p.bundle]);
       const data = await _p.stream(this);
       //if (Promise.jet.is(data)) { throw Error(this.msg(`init failed - promise found at sync`)); }
