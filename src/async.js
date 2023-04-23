@@ -1,4 +1,4 @@
-import { nref } from "./components/uni/tools";
+import { nref, timestamps } from "./components/uni/temps";
 import { DB } from "./components/async/DB";
 
 
@@ -8,6 +8,8 @@ export default (name, stream, maxAge=0, maxAgeError=0) => new DB(name, {
     maxAgeError,
 });
 
+
 export {
-    nref
+    nref,
+    timestamps
 }
