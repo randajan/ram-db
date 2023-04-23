@@ -145,12 +145,12 @@ export class Rows extends Chop {
       const c = await this.table.cols(colName);
 
       return this.chop(
-        c.name,
+        colName,
         {
           getContext: async (row, isSet)=>{
             const wrap = row[isSet ? "live" : "saved"];
             if (filter && (await filter(wrap)) === false) { return; }
-            const val = await wrap.get(c.name);
+            const val = await wrap.get(colName);
             if (!c.separator) { return c._toRaw(val); }
             let res = [];
             for (const v of val) { 
