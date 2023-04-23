@@ -38,14 +38,3 @@ export const colTraits = {
     isVirtual: Boolean.jet.to,
     isTrusted: Boolean.jet.to
 };
-
-export const nref = (tableName, colName)=>{
-    return {
-        isVirtual:true,
-        isTrusted:true,
-        ref:tableName,
-        separator:"; ",
-        formula:(row, cache)=>row.refs(tableName, colName, cache)
-    }
-}
-
