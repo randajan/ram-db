@@ -8,9 +8,9 @@ export const nref = (tableName, colName)=>{
     }
 };
 
-export const timestamps = _=>({
-    updated_at: { type: "datetime", formula: _ => new Date() },
+export const timestamps = (alternative=false)=>({
+    ["updated"+(alternative ? "" : "_at")]: { type: "datetime", formula: _ => new Date() },
     updater: {},
-    created_at: { type: "datetime", init: _ => new Date(), isReadonly: true },
+    ["created"+(alternative ? "" : "_at")]: { type: "datetime", init: _ => new Date(), isReadonly: true },
     creator: {}
 });
