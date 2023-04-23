@@ -128,32 +128,39 @@ export class Rows extends Chop {
       return step;
     }
 
-    chop(name, config={}) {
+    chop(name, config={}, cache={}) {
+      if (cache[name]) { return cache[name]; }
 
       config.loader = (chop, bundle)=>{
         const cleanUp = this.on("afterUpdate", row=>{ if (bundle.set(row, false)) { bundle.remove(row); }});
         chop.on("beforeReset", cleanUp, false);
       }
 
-      return super.chop(name, config);
+      return super.chop(name, config, cache);
     }
 
-    refs(col, cache={}) {
+    chopByCol(colName, filter, cache={}) {
+      if (cache[colName]) { return cache[colName]; }
 
-      const c = this.table.cols(col);
-      if (!c.ref) { throw Error(this.msg(`refs('${c.name}') failed - column is not ref`)); }
-
-      if (cache && cache[c.name]) { return cache[c.name]; }
+      const c = this.table.cols(colName);
 
       return this.chop(
         c.name,
         {
           getContext: (row, isSet)=>{
-            const val = row[isSet ? "live" : "saved"].get(c.name);
-            return c.separator ? val.map(v=>v?.key) : val?.key;
-          },
-          cache
-        }
+            const wrap = row[isSet ? "live" : "saved"];
+            if (filter && (filter(wrap)) === false) { return; }
+            const val = wrap.get(c.name);
+            if (!c.separator) { return c._toRaw(val); }
+            let res = [];
+            for (const v of val) { 
+              const r = c._toRaw(v);
+              if (r != null) { res.push(r); }
+            }
+            return res;
+          }
+        },
+        cache
       );
   
     }

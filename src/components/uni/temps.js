@@ -1,10 +1,10 @@
-export const nref = (tableName, colName)=>{
+export const nref = (tableName, colName, filter)=>{
     return {
         isVirtual:true,
         isTrusted:true,
         ref:tableName,
         separator:"; ",
-        formula:(row, cache)=>row.refs(tableName, colName, cache)
+        formula:(row, cache)=>row.refs(tableName, colName, filter, cache)
     }
 };
 

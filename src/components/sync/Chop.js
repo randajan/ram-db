@@ -133,14 +133,14 @@ export class Chop extends jet.types.Plex {
     }
   }
 
-  chop(name, config={}) {
-    const { getContext, defaultContext, cache, loader } = config;
+  chop(name, config={}, cache={}) {
+    if (cache[name]) { return cache[name]; }
+
+    const { getContext, defaultContext, loader } = config;
 
     name = formatKey(name);
 
-    if (cache && cache[name]) { return cache[name]; }
-
-    const chop = new Chop(name, {
+    return cache[name] = new Chop(name, {
       parent:this,
       childName:this.childName,
       maxAge:0,
@@ -155,8 +155,6 @@ export class Chop extends jet.types.Plex {
         if (loader) { loader(chop, bundle); }
       }
     });
-
-    return cache ? (cache[name] = chop) : chop;
 
   }
 

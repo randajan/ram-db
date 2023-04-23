@@ -128,32 +128,39 @@ export class Rows extends Chop {
       return step;
     }
 
-    chop(name, config={}) {
+    chop(name, config={}, cache={}) {
+      if (cache[name]) { return cache[name]; }
 
       config.loader = (chop, bundle)=>{
         const cleanUp = this.on("afterUpdate", async row=>{ if (await bundle.set(row, false)) { bundle.remove(row); }});
         chop.on("beforeReset", cleanUp, false);
       }
 
-      return super.chop(name, config);
+      return super.chop(name, config, cache);
     }
 
-    async refs(col, cache={}) {
+    async chopByCol(colName, filter, cache={}) {
+      if (cache[colName]) { return cache[colName]; }
 
-      const c = await this.table.cols(col);
-      if (!c.ref) { throw Error(this.msg(`refs('${c.name}') failed - column is not ref`)); }
-
-      if (cache && cache[c.name]) { return cache[c.name]; }
+      const c = await this.table.cols(colName);
 
       return this.chop(
         c.name,
         {
           getContext: async (row, isSet)=>{
-            const val = await row[isSet ? "live" : "saved"].get(c.name);
-            return c.separator ? Promise.all(val.map(v=>v?.key)) : val?.key;
-          },
-          cache
-        }
+            const wrap = row[isSet ? "live" : "saved"];
+            if (filter && (await filter(wrap)) === false) { return; }
+            const val = await wrap.get(c.name);
+            if (!c.separator) { return c._toRaw(val); }
+            let res = [];
+            for (const v of val) { 
+              const r = c._toRaw(v);
+              if (r != null) { res.push(r); }
+            }
+            return res;
+          }
+        },
+        cache
       );
   
     }

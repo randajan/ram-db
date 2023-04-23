@@ -59,7 +59,7 @@ export class Col {
 
     toRaw(val) {
         const { separator } = this;
-        if (!(separator && Array.jet.is(val))) { return this._toRaw(val); }
+        if (!(separator && Array.isArray(val))) { return this._toRaw(val); }
         let raw = "";
         for (let v of val) {
             if (!v) { continue; }
