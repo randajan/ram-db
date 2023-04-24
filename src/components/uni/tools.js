@@ -19,7 +19,7 @@ export const colsTraits = {
 export const colTo = {
     ref:{val:String, raw:v=>v.key || v},
     string:{val:String.jet.to, raw:_=>_},
-    datetime:{val:Date.jet.to, raw:_=>_},
+    datetime:{val:v=>v == null ? undefined : Date.jet.to(v), raw:_=>_},
     number:{val:Number.jet.to, raw:_=>_},
     boolean:{val:Boolean.jet.to, raw:_=>_},
 }

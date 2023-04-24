@@ -18,7 +18,23 @@ export class Wrap extends jet.types.Plex {
     solid.all(this, {
       db,
       table,
-      get
+      get,
+      getVals:(select, throwError=true)=>{
+        const r = {};
+        for (const c of select) {
+          const col = cols.get(c, throwError);
+          if (col) { r[c] = step.pull(col); }
+        }
+        return r;
+      },
+      getRaws:(select, throwError=true)=>{
+        const r = {};
+        for (const c of select) {
+          const col = throwError !== false ? cols.get(c) : c;
+          if (col) { r[c] = step.raws[c]; }
+        }
+        return r;
+      },
     }, false);
 
     virtual.all(this, {
