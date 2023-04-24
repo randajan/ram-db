@@ -22,15 +22,15 @@ export class Wrap extends jet.types.Plex {
       getVals:async (select, throwError=true)=>{
         const r = {};
         for (const c of select) {
-          const col = cols.get(c, throwError);
+          const col = await cols.get(c, throwError);
           if (col) { r[c] = await step.pull(col); }
         }
         return r;
       },
-      getRaws:(select, throwError=true)=>{
+      getRaws:async (select, throwError=true)=>{
         const r = {};
         for (const c of select) {
-          const col = throwError !== false ? cols.get(c) : c;
+          const col = throwError !== false ? await cols.get(c) : c;
           if (col) { r[c] = step.raws[c]; }
         }
         return r;
