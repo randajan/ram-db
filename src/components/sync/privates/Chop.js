@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { formatKey, vault } from "../uni/tools";
+import { formatKey, vault } from "../../uni/tools";
 import { Bundle } from "./Bundle";
 import { Transactions } from "./Transactions";
 
@@ -21,7 +21,7 @@ export class Chop extends jet.types.Plex {
         getContext,
         defaultContext
       ),
-      recycle:async _=>{ if (await _p.bundle.run("beforeRecycle")) { vault.end(uid); }},
+      recycle:_=>{ if (_p.bundle.run("beforeRecycle")) { vault.end(uid); }},
     });
 
     super((...args) => this.get(...args));
@@ -57,56 +57,56 @@ export class Chop extends jet.types.Plex {
     return vault.get(this.uid).bundle.msg(text, key, context);
   }
 
-  async exist(key, context, throwError = false) {
-    await this.untilLoaded();
+  exist(key, context, throwError = false) {
+    this.untilLoaded();
     return vault.get(this.uid).bundle.exist(key, context, throwError);
   }
 
-  async get(key, context, throwError = true) {
-    await this.untilLoaded();
+  get(key, context, throwError = true) {
+    this.untilLoaded();
     return vault.get(this.uid).bundle.get(key, context, throwError);
   }
 
-  async count(context, throwError=false) {
-    await this.untilLoaded();
+  count(context, throwError=false) {
+    this.untilLoaded();
     return vault.get(this.uid).bundle.getData(context, throwError).list.length;
   }
 
-  async getList(context, throwError=false) {
-    await this.untilLoaded();
+  getList(context, throwError=false) {
+    this.untilLoaded();
     return [...vault.get(this.uid).bundle.getData(context, throwError).list];
   }
 
-  async getIndex(context, throwError=false) {
-    await this.untilLoaded();
+  getIndex(context, throwError=false) {
+    this.untilLoaded();
     return {...vault.get(this.uid).bundle.getData(context, throwError).index};
   }
 
-  async getContextList() {
-    await this.untilLoaded();
+  getContextList() {
+    this.untilLoaded();
     return Object.keys(vault.get(this.uid).bundle.data);
   }
 
-  async map(callback, opt={}) {
-    await this.untilLoaded();
+  map(callback, opt={}) {
+    this.untilLoaded();
     return vault.get(this.uid).bundle.map(callback, opt);
   }
 
-  async filter(checker, opt={}) {
-    await this.untilLoaded();
+  filter(checker, opt={}) {
+    this.untilLoaded();
     return vault.get(this.uid).bundle.filter(checker, opt);
   }
 
-  async find(checker, opt={}) {
-    await this.untilLoaded();
+  find(checker, opt={}) {
+    this.untilLoaded();
     return vault.get(this.uid).bundle.find(checker, opt);
   }
 
-  async reset(throwError=true) {
+  reset(throwError=true) {
     return vault.get(this.uid).bundle.reset(throwError);
   }
 
-  async untilLoaded(throwError = true) {
+  untilLoaded(throwError = true) {
     const _p = vault.get(this.uid);
     if (_p.isLoaded) { return true; }
 
@@ -114,21 +114,21 @@ export class Chop extends jet.types.Plex {
     if (state === "error") { return throwError ? last : false; }
     if (state === "loading") { return last; }
 
-    return _p.transactions.execute("loading", async _=>{
+    return _p.transactions.execute("loading", _=>{
       if (_p.isLoaded) { return; }
-      await _p.bundle.run("beforeLoad", [_p.bundle]);
-      const data = await _p.stream(this);
-      //if (Promise.jet.is(data)) { throw Error(this.msg(`init failed - promise found at sync`)); }
-      await _p.loader(this, _p.bundle, data);
+      _p.bundle.run("beforeLoad", [_p.bundle]);
+      const data = _p.stream(this);
+      if (Promise.jet.is(data)) { throw Error(this.msg(`init failed - promise found at sync`)); }
+      _p.loader(this, _p.bundle, data);
       _p.isLoaded = true;
-      await _p.bundle.run("afterLoad", [_p.bundle]);
+      _p.bundle.run("afterLoad", [_p.bundle]);
       if (this.maxAge) { setTimeout(_=>this.reset(), this.maxAge); }
     }, { stopOnError:false });
   }
 
   withUntilLoaded(execute) {
-    return async (...args) => {
-      await this.untilLoaded();
+    return (...args) => {
+      this.untilLoaded();
       return execute(...args);
     }
   }
@@ -147,10 +147,10 @@ export class Chop extends jet.types.Plex {
       maxAgeError:this.maxAgeError,
       getContext,
       defaultContext,
-      loader: async (chop, bundle) =>{
-        await this.map(child =>bundle.set(child));
-        chop.on("beforeReset", this.on("afterSet", async child=>bundle.set(child)), false);
-        chop.on("beforeReset", this.on("afterRemove", async child=>bundle.remove(child)), false);
+      loader: (chop, bundle) =>{
+        this.map(child =>bundle.set(child));
+        chop.on("beforeReset", this.on("afterSet", child=>bundle.set(child)), false);
+        chop.on("beforeReset", this.on("afterRemove", child=>bundle.remove(child)), false);
         this.on("beforeReset", _=>chop.reset(), false);
         if (loader) { loader(chop, bundle); }
       }

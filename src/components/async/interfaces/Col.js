@@ -1,6 +1,5 @@
 import jet from "@randajan/jet-core";
-import { colTraits, colTo } from "../uni/tools";
-import { vault } from "../uni/tools";
+import { vault, colTraits, colTo } from "../../uni/tools";
 
 const { solid, virtual } = jet.prop;
 
@@ -68,21 +67,21 @@ export class Col {
         return raw || null;
     }
 
-    _toVal(raw, refName) {
+    async _toVal(raw, refName) {
         raw = colTo[this.type].val(raw);
-        return refName ? (this.db(refName)).rows.get(raw, false) : raw;
+        return refName ? (await this.db(refName)).rows.get(raw, false) : raw;
     }
 
-    toVal(raw, row) {
+    async toVal(raw, row) {
         const { separator, ref, isTrusted } = this;
-        const refName = (ref && row) ? ref(row) : null;
+        const refName = (ref && row) ? await ref(row) : null;
 
         if (!separator) { return this._toVal(raw, refName); }
 
         const list = Array.isArray(raw) ? raw : raw ? String.jet.to(raw).split(separator) : [];
         if (!list.length || (isTrusted && raw === list)) { return list; }
 
-        for (let i in list) { list[i] = this._toVal(list[i], refName); }
+        for (let i in list) { list[i] = await this._toVal(list[i], refName); }
 
         return list;
     }

@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { formatKey } from "../uni/tools";
+import { formatKey } from "../../uni/tools";
 
 const { solid, virtual } = jet.prop;
 

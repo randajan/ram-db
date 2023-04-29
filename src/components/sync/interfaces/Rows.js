@@ -1,8 +1,8 @@
 import jet from "@randajan/jet-core";
-import { vault } from "../uni/tools.js";
-import { Chop } from "./Chop.js";
+import { vault } from "../../uni/tools.js";
+import { Chop } from "../privates/Chop.js";
+import { Step } from "../privates/Step.js";
 import { Row } from "./Row.js";
-import { Step } from "./Step.js";
 
 const { solid, virtual } = jet.prop;
 

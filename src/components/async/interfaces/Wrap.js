@@ -9,7 +9,7 @@ export class Wrap extends jet.types.Plex {
   static create(step) { return new Wrap(step); }
 
   constructor(step) {
-    const { table } = step, { db, cols } = table;
+    const { table } = step, { db, rows, cols } = table;
 
     const get = (col, throwError=true) => step.get(col, throwError);
 
@@ -18,6 +18,7 @@ export class Wrap extends jet.types.Plex {
     solid.all(this, {
       db,
       table,
+      rows,
       get,
       getVals:async (select, throwError=true)=>{
         const r = {};

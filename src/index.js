@@ -1,6 +1,6 @@
 import { nref, timestamps } from "./components/uni/temps";
-import { DB } from "./components/sync/DB";
 import { reductor, summary } from "./components/sync/temps";
+import { DB } from "./components/sync/interfaces/DB";
 
 
 export default (name, stream, maxAge = 0, maxAgeError = 0) => new DB(name, {

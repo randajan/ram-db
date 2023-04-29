@@ -36,5 +36,6 @@ export const colTraits = {
     ref: functionOrNull,
     separator: String.jet.to,
     isVirtual: Boolean.jet.to,
-    isTrusted: Boolean.jet.to
+    isTrusted: Boolean.jet.to,
+    noCache: Boolean.jet.to
 };

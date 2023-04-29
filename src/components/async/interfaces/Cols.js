@@ -1,13 +1,13 @@
 import jet from "@randajan/jet-core";
-import { vault } from "../uni/tools.js";
-import { colsTraits } from "../uni/tools.js";
-import { Chop } from "./Chop.js";
+import { vault, colsTraits, formatKey } from "../../uni/tools.js";
+
+import { Chop } from "../privates/Chop.js";
 import { Col } from "./Col.js";
-import { formatKey } from "../uni/tools.js";
+
 
 const { solid, virtual } = jet.prop;
 
-const loader = (cols, bundle, data) => {
+const loader = async (cols, bundle, data) => {
   const _p = vault.get(cols.uid);
   const isArray = Array.isArray(data);
   const { list } = _p.bundle.getData();
@@ -34,7 +34,7 @@ const loader = (cols, bundle, data) => {
       }
     }
     
-    bundle.set(new Col(cols, list.length, name, traits));
+    await bundle.set(new Col(cols, list.length, name, traits));
   }
 
   if (!list.length) { throw Error(cols.msg("at least one column is required")); }
@@ -72,23 +72,23 @@ export class Cols extends Chop {
 
   }
 
-  exist(name, throwError = false) {
+  async exist(name, throwError = false) {
     return super.exist(name, undefined, throwError);
   }
 
-  get(name, throwError = true) {
+  async get(name, throwError = true) {
     return super.get(name, undefined, throwError);
   }
 
-  count(throwError=true) {
+  async count(throwError=true) {
     return super.count(undefined, throwError);
   }
 
-  getList(throwError=true) {
+  async getList(throwError=true) {
     return super.getList(undefined, throwError);
   }
 
-  getIndex(throwError=true) {
+  async getIndex(throwError=true) {
     return super.getIndex(undefined, throwError);
   }
 

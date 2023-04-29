@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { Wrap } from "./Wrap";
+import { Wrap } from "../interfaces/Wrap";
 
 const { solid, virtual } = jet.prop;
 
@@ -36,10 +36,10 @@ export class Step {
   pull(col) {
     if (!col) { return; }
 
-    const { table:{ rows }, vals, raws, before, wrap } = this;
-    const { isVirtual, init, resetIf, formula, isReadonly } = col;
+    const { db:{ lastChange }, table:{ rows }, vals, raws, valsStamp, before, wrap } = this;
+    const { isVirtual, noCache, init, resetIf, formula, isReadonly } = col;
 
-    if (vals.hasOwnProperty(col)) { return vals[col]; }
+    if (vals.hasOwnProperty(col) && (!isVirtual || valsStamp[col] === lastChange)) { return vals[col]; }
 
     let raw = raws[col];
     const self = _ => col.toVal(raw, wrap);
@@ -52,9 +52,11 @@ export class Step {
     }
 
     const val = self();
-    if (!isVirtual) { raws[col] = col.toRaw(vals[col] = val); }
+    if (!noCache) { vals[col] = val; }
+    if (!isVirtual) { valsStamp[col] = lastChange; }
+    else { raws[col] = col.toRaw(val); }
 
-    return val
+    return val;
   };
 
   push(vals, force = true) {
@@ -64,6 +66,7 @@ export class Step {
     const changeList = this.changeList = [];
     const changes = this.changes = {};
     this.vals = {};
+    this.valsStamp = {};
 
     for (const col of reals) {
       const raw = col.fetch(vals);
@@ -111,6 +114,7 @@ export class Step {
     this.isRemoved = before?.isRemoved || false;
     this.raws = before ? { ...before.raws } : {};
     this.vals = before ? { ...before.vals } : {};
+    this.valsStamp = before ? { ...before.valsStamp } : {};
     this.changeList = [];
     this.changes = {};
     return true;
