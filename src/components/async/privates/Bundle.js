@@ -159,8 +159,8 @@ export class Bundle {
   }
 
   async map(callback, opt={}) {
-    const { context, byKey, sort } = opt;
-    const { list } = this.getData(context);
+    const { context, byKey, sort, throwError } = opt;
+    const { list } = this.getData(context, throwError);
     const sorted = sort ? list.sort(sort) : [...list];
     const stop = val => { stop.active = true; return val; }
     const result = byKey ? {} : [];
