@@ -46,7 +46,7 @@ export class Step {
 
     if (formula) { raw = formula(wrap); } //formula
     else if (!rows.isLoading) {
-      const bew = before ? before.raws[col] : null;
+      const bew = before ? before.raws[col] : raw;
       if (raw !== bew && isReadonly && isReadonly(wrap, self)) { raw = bew; } //revive value
       if (!before ? (init && raw == null) : (resetIf && resetIf(wrap, self))) { raw = init ? init(wrap) : undefined; } //init or reset
     }
