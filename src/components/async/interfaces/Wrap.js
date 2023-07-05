@@ -46,7 +46,7 @@ export class Wrap extends jet.types.Plex {
       isDirty:_=>step.isDirty,
       isRemoved:_=>step.isRemoved,
       raws:_=>({...step.raws}),
-      vals:async _=>cols.map(col=>step.pull(col, true), { byKey:true }),
+      vals:async _=>cols.map(col=>step.pull(col), { byKey:true }),
       changeList:_=>([...step.changeList]),
       changes:_=>({...step.changes})
     });

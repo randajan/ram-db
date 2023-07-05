@@ -31,7 +31,7 @@ const api = odataServer(ramdb, {
 // ramdb("sys_")
 
 
-const server = http.createServer(api.serve('http://localhost:1337/odata', true)).listen(1337);
+const server = http.createServer(api.serve('http://localhost:1337/odata', false)).listen(1337);
 
 
 process.on("exit", (msg)=>{
