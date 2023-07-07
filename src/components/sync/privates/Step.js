@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { Wrap } from "../interfaces/Wrap";
+import { Wrap } from "../../sync/interfaces/Wrap";
 
 const { solid, virtual } = jet.prop;
 
@@ -20,7 +20,7 @@ export class Step {
     }, false);
 
     virtual.all(this, {
-      label:_=>this.pull(table.cols.label, false),
+      label:_=>this.pull(table.cols.label),
       isExist:_=>!this.isRemoved && table.rows.exist(this.key),
       isDirty:_=>!!this.changeList.length || this.key !== before?.key || !this.isRemoved !== !(before?.isRemoved)
     });
@@ -36,49 +36,55 @@ export class Step {
   pull(col) {
     if (!col) { return; }
 
-    const { db:{ lastChange }, table:{ rows }, vals, raws, valsStamp, before, wrap } = this;
+    const { db:{ lastChange }, vals, raws, vStamp, vSolid, before, wrap } = this;
     const { isVirtual, noCache, init, resetIf, formula, isReadonly } = col;
 
-    if (vals.hasOwnProperty(col) && (!isVirtual || valsStamp[col] === lastChange)) { return vals[col]; }
+    if (vals.hasOwnProperty(col) && (!isVirtual || vStamp[col] === lastChange)) { return vals[col]; } //revive cached value
 
     let raw = raws[col];
     const self = _ => col.toVal(raw, wrap);
 
-    if (formula) { raw = formula(wrap); } //formula
-    else if (!rows.isLoading) {
-      const bew = before ? before.raws[col] : raw;
-      if (raw !== bew && isReadonly && isReadonly(wrap, self)) { raw = bew; } //revive value
-      if (!before ? (init && raw == null) : (resetIf && resetIf(wrap, self))) { raw = init ? init(wrap) : undefined; } //init or reset
+    if (!vSolid[col]) {
+      vSolid[col] = !isVirtual; //reset everytime if isVirtual
+      if (formula) { raw = formula(wrap); } //formula
+      else {
+        const bew = before ? before.raws[col] : raw;
+        if (raw !== bew && isReadonly && isReadonly(wrap, self)) { raw = bew; } //revive value
+        if (!before ? (init && raw == null) : (resetIf && resetIf(wrap, self))) { raw = init ? init(wrap) : undefined; } //init or reset
+      }
     }
 
     const val = self();
-    if (!noCache) { vals[col] = val; }
-    if (!isVirtual) { valsStamp[col] = lastChange; }
-    else { raws[col] = col.toRaw(val); }
+    if (!noCache) { vals[col] = val; } //cache value
+
+    if (!isVirtual) { vStamp[col] = lastChange; }
+    else { raws[col] = col.toRaw(val); } // create raw data even from virtual columns
 
     return val;
   };
 
   push(vals, force = true) {
-    const { table: { rows, cols }, raws, before } = this;
+    const { table: { rows:{ isLoading }, cols }, raws, before } = this;
 
     const reals = cols.virtuals.getList(false);
     const changeList = this.changeList = [];
     const changes = this.changes = {};
     this.vals = {};
-    this.valsStamp = {};
+    this.vStamp = {};
+    this.vSolid = {};
 
     for (const col of reals) {
+      this.vSolid[col] = isLoading;
       const raw = col.fetch(vals);
       if (raw !== undefined) { raws[col] = col.toRaw(raw); }
       else if (force) { raws[col] = null; }
-      if (rows.isLoading) {
+      if (isLoading) {
         changeList.push(col);
         changes[col] = raws[col];
       }
     }
 
-    if (!rows.isLoading) {
+    if (!isLoading) {
       for (const col of reals) {
         this.pull(col);
         if (before && raws[col] !== before.raws[col]) { //is isDirty column
@@ -88,7 +94,7 @@ export class Step {
       };
     }
 
-    this.key = this.pull(cols.primary, false);
+    this.key = this.pull(cols.primary);
 
     return !!changeList.length;
   }
@@ -112,9 +118,10 @@ export class Step {
   reset() {
     const { before } = this;
     this.isRemoved = before?.isRemoved || false;
-    this.raws = before ? { ...before.raws } : {};
-    this.vals = before ? { ...before.vals } : {};
-    this.valsStamp = before ? { ...before.valsStamp } : {};
+    this.raws = before ? { ...before.raws } : {}; // raw data stored
+    this.vals = before ? { ...before.vals } : {}; // values ready to use
+    this.vStamp = before ? { ...before.vStamp } : {}; // keep track of when value was cached
+    this.vSolid = before ? { ...before.vSolid } : {}; // keep track of values that should be reseted (formula bug repair)
     this.changeList = [];
     this.changes = {};
     return true;
