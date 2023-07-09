@@ -74,6 +74,9 @@ const schema = {
   case_orders:{
     book_docs:nref("book_docs", "case_order"),
     case_tasks:nref("case_tasks", "case_order")
+  },
+  kin_locs:{
+    duration:{ type:"duration" }
   }
 
 }

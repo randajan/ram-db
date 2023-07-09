@@ -7,6 +7,7 @@ const ramdbToODataType = {
     "number":"Edm.Decimal",
     "datetime":"Edm.DateTimeOffset",
     "boolean":"Edm.Boolean",
+    "duration":"Edm.Duration"
 }
 
 const { solid } = jet.prop;
@@ -72,8 +73,6 @@ export class RamDBAdapter {
         if (!row) { return; }
 
         const body = await context.pullRequestBody({});
-
-        
 
         if (body && this.fakeRemove && Boolean.jet.to(body[this.fakeRemove])) {
             await row.remove(); //workaround appsheet bug - fake column for remove

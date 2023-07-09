@@ -17,11 +17,12 @@ export const colsTraits = {
 };
 
 export const colTo = {
-    ref:{val:String, raw:v=>v.key || v},
-    string:{val:String.jet.to, raw:_=>_},
-    datetime:{val:v=>v == null ? undefined : new Date(v), raw:_=>_},
-    number:{val:v=>Number(Number.jet.to(v).toFixed(2)), raw:_=>_},
     boolean:{val:Boolean.jet.to, raw:_=>_},
+    string:{val:String.jet.to, raw:_=>_},
+    ref:{val:String, raw:v=>v.key || v},
+    number:{val:v=>Number(Number.jet.to(v).toFixed(2)), raw:_=>_},
+    datetime:{val:v=>v == null ? undefined : new Date(v), raw:_=>_},
+    duration:{val:v=>Math.round(Number.jet.to(v)), raw:_=>_},
 }
 
 export const colTraits = {

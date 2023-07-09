@@ -12,10 +12,10 @@
   resolved "https://registry.yarnpkg.com/@randajan/jet-core/-/jet-core-3.1.6.tgz#50351f4dc010025e5bc9dd62aedfb3b92de44eab"
   integrity sha512-JyjUdxq3Dus3RxnsyAups+RsUO8cHpWq85h1u6FB+jKSrs6dHGxxtHmIFG6B24uSzGT52umeIDAf+d4yzaJbhg==
 
-"@randajan/odata-server@^1.7.5":
-  version "1.7.5"
-  resolved "https://registry.yarnpkg.com/@randajan/odata-server/-/odata-server-1.7.5.tgz#37111fc17522a50cf611d1ab35f748ac405474ef"
-  integrity sha512-fNiD72MOUiY8M20LMWCSNP7Gp0TLpGhLSlJAxjFTYylnitLs+3ax6FBwUOqbfxmNshRd9zRzwqG1cDYA2KiWfw==
+"@randajan/odata-server@^2.1.8":
+  version "2.1.8"
+  resolved "https://registry.yarnpkg.com/@randajan/odata-server/-/odata-server-2.1.8.tgz#5834c4b5154aee3cc972ee8c418f5d25ed528c6e"
+  integrity sha512-tcsO8iOXo1FdfDIXj9bggS1hunMwt4GmCcbZ/1SAJR4d7uTH238BimqXCShpZlQCfcMCbfhFJnDDUg1RDxzsuQ==
   dependencies:
     methods "1.1.2"
     odata-parser "^1.4.1"
