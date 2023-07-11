@@ -57,8 +57,10 @@ export class Step {
     const val = await self();
     if (!noCache) { vals[col] = val; } //cache value
 
-    if (!isVirtual) { vStamp[col] = lastChange; }
-    else { raws[col] = col.toRaw(val); } // create raw data even from virtual columns
+    if (!isVirtual || col.isPrimary) {
+      raws[col] = col.toRaw(val);
+      vStamp[col] = lastChange;
+    }
 
     return val;
   };
