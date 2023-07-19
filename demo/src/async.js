@@ -1,7 +1,7 @@
 import fse from "fs-extra";
 import { log, info } from "@randajan/simple-lib/node";
 import jet from "@randajan/jet-core";
-import ramdb, { nref } from "../../dist/async.js";
+import ramdbConstructor, { nref } from "../../dist/async.js";
 
 const schema = {
   sys_apps:{
@@ -76,7 +76,8 @@ const schema = {
     case_tasks:nref("case_tasks", "case_order")
   },
   kin_locs:{
-    duration:{ type:"duration" }
+    duration:{ type:"duration", noNull:true },
+    distance:{ type:"number" }
   }
 
 }
@@ -113,7 +114,7 @@ const dbRoot = info.dir.root+"\\tmp\\db";
 
 
 
-export default ramdb("main", async (self)=>{
+export const ramdb = ramdbConstructor("main", async (self)=>{
   self.on("beforeSave", async (action, row)=>{
     const { table } = row;
     const rows = await table.rows.map(r=>r.saved.raws, { byKey:true });
@@ -146,3 +147,5 @@ export default ramdb("main", async (self)=>{
   return tbls;
 
 });
+
+export default ramdb;

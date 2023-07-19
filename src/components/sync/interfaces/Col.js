@@ -53,22 +53,25 @@ export class Col {
     getKey() { return this.name; }
 
     _toRaw(val) {
-        return val == null ? null : colTo[this.type].raw(val);
+        return (val == null && !this.noNull) ? null : colTo[this.type].raw(val);
     }
 
     toRaw(val) {
         const { separator } = this;
-        if (!(separator && Array.isArray(val))) { return this._toRaw(val); }
+        if (!separator) { return this._toRaw(val); }
+        if (typeof val === "string") { val = val.split(separator); }
+        else if (!Array.isArray(val)) { return null; }
         let raw = "";
         for (let v of val) {
-            if (!v) { continue; }
-            if (v = this._toRaw(v)) { raw += (raw ? separator : "") + v; }
+            v = this._toRaw(v);           
+            if (v == null || v == "") { continue; }
+            raw += (raw ? separator : "") + v;
         }
         return raw || null;
     }
 
     _toVal(raw, refName) {
-        raw = colTo[this.type].val(raw);
+        raw = (raw == null && !this.noNull) ? null : colTo[this.type].val(raw);
         return refName ? (this.db(refName)).rows.get(raw, false) : raw;
     }
 

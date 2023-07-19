@@ -17,12 +17,12 @@ export const colsTraits = {
 };
 
 export const colTo = {
-    boolean:{val:Boolean.jet.to, raw:_=>_},
-    string:{val:String.jet.to, raw:_=>_},
+    boolean:{val:Boolean.jet.to, raw:Boolean.jet.to},
+    string:{val:String.jet.to, raw:String.jet.to},
     ref:{val:String, raw:v=>v.key || v},
-    number:{val:v=>Number(Number.jet.to(v).toFixed(2)), raw:_=>_},
-    datetime:{val:v=>v == null ? undefined : new Date(v), raw:_=>_},
-    duration:{val:v=>Math.round(Number.jet.to(v)), raw:_=>_},
+    number:{val:v=>Number.jet.round(Number.jet.to(v), 2), raw:v=>Number.jet.round(Number.jet.to(v), 2)},
+    datetime:{val:v=>v == null ? new Date() : new Date(v), raw:v=>v == null ? new Date() : new Date(v)},
+    duration:{val:v=>Math.max(0, Math.round(Number.jet.to(v))), raw:v=>Math.max(0, Math.round(Number.jet.to(v)))},
 }
 
 export const colTraits = {
@@ -38,5 +38,6 @@ export const colTraits = {
     separator: String.jet.to,
     isVirtual: Boolean.jet.to,
     isTrusted: Boolean.jet.to,
-    noCache: Boolean.jet.to
+    noCache: Boolean.jet.to,
+    noNull: Boolean.jet.to
 };
