@@ -53,10 +53,14 @@ export class Wrap extends jet.types.Plex {
 
   }
 
-  async refs(tableName, colName, filter, cache={}) {
+  async chopByRef(tableName, colName, filter, cacheAs=true) {
     const table = await this.db.get(tableName);
-    const refs = await table.rows.chopByCol(colName, filter, cache);
-    return refs.getList(this.key, false);
+    return table.rows.chopByCol(colName, filter, cacheAs);
+  }
+
+  async refs(tableName, colName, filter, cache={}) {
+    const chop = cache.current || (cache.current = await this.chopByRef(tableName, colName, filter, false));
+    return chop.getList(this.key, false);
   }
 
   getKey() {

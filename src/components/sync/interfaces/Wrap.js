@@ -46,17 +46,21 @@ export class Wrap extends jet.types.Plex {
       isDirty:_=>step.isDirty,
       isRemoved:_=>step.isRemoved,
       raws:_=>({...step.raws}),
-      vals:_=>cols.map(col=>step.pull(col, true), { byKey:true }),
+      vals:_=>cols.map(col=>step.pull(col), { byKey:true }),
       changeList:_=>([...step.changeList]),
       changes:_=>({...step.changes})
     });
 
   }
 
-  refs(tableName, colName, filter, cache={}) {
+  chopByRef(tableName, colName, filter, cacheAs=true) {
     const table = this.db.get(tableName);
-    const refs = table.rows.chopByCol(colName, filter, cache);
-    return refs.getList(this.key, false);
+    return table.rows.chopByCol(colName, filter, cacheAs);
+  }
+
+  refs(tableName, colName, filter, cache={}) {
+    const chop = cache.current || (cache.current = this.chopByRef(tableName, colName, filter, false));
+    return chop.getList(this.key, false);
   }
 
   getKey() {

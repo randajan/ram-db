@@ -8,9 +8,9 @@ export const nref = (tableName, colName, filter)=>{
     }
 };
 
-export const timestamps = (alternative=false)=>({
+export const timestamps = (doerRef, doerFormula, alternative=false)=>({
     ["updated"+(alternative ? "" : "_at")]: { type: "datetime", formula: _ => new Date() },
-    updater: {},
+    updater: { ref:doerRef, formula:doerFormula },
     ["created"+(alternative ? "" : "_at")]: { type: "datetime", init: _ => new Date(), isReadonly: true },
-    creator: {}
+    creator: { ref:doerRef, init:doerFormula, isReadonly:true }
 });

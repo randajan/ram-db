@@ -128,25 +128,23 @@ export class Rows extends Chop {
       return step;
     }
 
-    chop(name, config={}, cache={}) {
-      if (cache[name]) { return cache[name]; }
-
-      config.loader = (chop, bundle)=>{
-        const cleanUp = this.on("afterUpdate", async row=>{ if (await bundle.set(row, false)) { bundle.remove(row); }});
-        chop.on("beforeReset", cleanUp, false);
-      }
-
-      return super.chop(name, config, cache);
+    addChop(name, opt={}) {
+      return super.addChop(name, {
+        ...opt,
+        loader:(chop, bundle)=>{
+          const cleanUp = this.on("afterUpdate", async row=>{ if (await bundle.set(row, false)) { bundle.remove(row); }});
+          chop.on("beforeReset", cleanUp, false);
+        }
+      });
     }
 
-    async chopByCol(colName, filter, cache={}) {
-      if (cache[colName]) { return cache[colName]; }
-
+    async chopByCol(colName, filter, cacheAs=true) {
       const c = await this.table.cols(colName);
 
-      return this.chop(
-        colName,
+      return this.addChop(
+        typeof cacheAs == "string" ? cacheAs : colName,
         {
+          useCache:cacheAs,
           getContext: async (row, isSet)=>{
             const wrap = row[isSet ? "live" : "saved"];
             if (filter && (await filter(wrap)) === false) { return; }
@@ -159,8 +157,7 @@ export class Rows extends Chop {
             }
             return res;
           }
-        },
-        cache
+        }
       );
   
     }

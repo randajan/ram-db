@@ -1,8 +1,8 @@
 import jet from "@randajan/jet-core";
 import { vault, colsTraits, formatKey } from "../../uni/tools.js";
 
-import { Chop } from "../privates/Chop.js";
-import { Col } from "./Col.js";
+import { Chop } from "../../async/privates/Chop.js";
+import { Col } from "../../async/interfaces/Col.js";
 
 
 const { solid, virtual } = jet.prop;
@@ -61,8 +61,8 @@ export class Cols extends Chop {
     solid.all(this, {
       db:table.db,
       table,
-      virtuals:this.chop("virtuals", { getContext:c=>c.isVirtual, defaultContext:true }),
-      refs:this.chop("refs", { getContext:c=>!!c.ref, defaultContext:true })
+      virtuals:this.addChop("virtuals", { getContext:c=>c.isVirtual, defaultContext:true }),
+      refs:this.addChop("refs", { getContext:c=>!!c.ref, defaultContext:true })
     }, false);
   
     virtual.all(this, {

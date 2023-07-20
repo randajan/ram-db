@@ -21,6 +21,7 @@ export class Chop extends jet.types.Plex {
         getContext,
         defaultContext
       ),
+      subs:{},
       recycle:async _=>{ if (await _p.bundle.run("beforeRecycle")) { vault.end(uid); }},
     });
 
@@ -133,14 +134,18 @@ export class Chop extends jet.types.Plex {
     }
   }
 
-  chop(name, config={}, cache={}) {
-    if (cache[name]) { return cache[name]; }
-
-    const { getContext, defaultContext, loader } = config;
+  addChop(name, opt={}) {
+    const subs = vault.get(this.uid).subs; //sub chops
+    const { useCache, throwError, getContext, defaultContext, loader } = opt;
 
     name = formatKey(name);
 
-    return cache[name] = new Chop(name, {
+    if (useCache !== false && subs[name]) {
+      if (throwError !== false) { throw Error(this.msg(`chop '${name}' allready exist`)); }
+      return subs[name];
+    }
+
+    const sub = new Chop(name, {
       parent:this,
       childName:this.childName,
       maxAge:0,
@@ -156,6 +161,13 @@ export class Chop extends jet.types.Plex {
       }
     });
 
+    return (useCache !== false) ? subs[name] = sub : sub;
+  }
+
+  getChop(name, throwError=true) {
+    const subs = vault.get(this.uid).subs; //sub chops
+    if (subs[name]) { return subs[name]; }
+    if (throwError) { throw Error(this.msg(`chop '${name}' doesn't exist`)); }
   }
 
 }
