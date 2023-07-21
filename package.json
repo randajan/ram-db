@@ -18,11 +18,12 @@
   "license": "MIT",
   "peerDependencies": {
     "@randajan/jet-core": "^3.1.6",
-    "@randajan/odata-server": "^2.1.8"
+    "@randajan/odata-server": "^2.1.11",
+    "crypto-js": "^4.1.1",
+    "fs-extra": "^11.1.1"
   },
   "devDependencies": {
-    "@randajan/simple-lib": "2.1.2",
-    "fs-extra": "^11.1.1"
+    "@randajan/simple-lib": "2.1.2"
   },
   "files": [
     "dist",

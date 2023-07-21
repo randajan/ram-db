@@ -113,7 +113,6 @@ const global = (name, cols)=>{
 const dbRoot = info.dir.root+"\\tmp\\db";
 
 
-
 export const ramdb = ramdbConstructor("main", async (self)=>{
   self.on("beforeSave", async (action, row)=>{
     const { table } = row;

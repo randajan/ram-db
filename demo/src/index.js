@@ -2,14 +2,10 @@ import jet from "@randajan/jet-core";
 import ramdb from "./async";
 
 import odataServer from "../../dist/api/odata.js";
+
 import responder from "@randajan/odata-server/express";
 
 import http from "http";
-
-setTimeout(_=>{
-    ramdb.reset().then(_=>console.log("Reset"));
-}, 10000);
-
 
 const api = odataServer(ramdb, {
     extender:(context, returnVals)=>{
