@@ -39,7 +39,8 @@ const schema = {
     is_expired:{ isVirtual:true, formula:r=>r("expired_at") && (new Date() > r("expired_at")) }
   },
   kin_contacts:{
-    kin_loc_bill:{ ref:"kin_locs" } 
+    kin_loc_bill:{ ref:"kin_locs" },
+    phone:{ separator:"; " }
   },
   book_items:{
     book_doc:{ ref:"book_docs" },

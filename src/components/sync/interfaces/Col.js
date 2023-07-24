@@ -58,9 +58,8 @@ export class Col {
 
     toRaw(val) {
         const { separator } = this;
-        if (!separator) { return this._toRaw(val); }
-        if (typeof val === "string") { val = val.split(separator); }
-        else if (!Array.isArray(val)) { return null; }
+        if (!separator || val == null) { return this._toRaw(val); }
+        if (!Array.isArray(val)) { val = String(val).split(separator); }
         let raw = "";
         for (let v of val) {
             v = this._toRaw(v);           
@@ -81,7 +80,7 @@ export class Col {
 
         if (!separator) { return this._toVal(raw, refName); }
 
-        const list = Array.isArray(raw) ? raw : raw ? String.jet.to(raw).split(separator) : [];
+        const list = raw == null ? [] : Array.isArray(raw) ? raw : String(raw).split(separator);
         if (!list.length || (isTrusted && raw === list)) { return list; }
 
         for (let i in list) { list[i] = this._toVal(list[i], refName); }
