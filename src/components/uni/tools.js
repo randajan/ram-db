@@ -1,5 +1,7 @@
 import jet from "@randajan/jet-core";
 
+const { solid } = jet.prop;
+
 export const vault = jet.vault("RamDBVault");
 
 export const formatKey = (key, def)=>key != null ? String(key) : def;
@@ -27,7 +29,7 @@ export const colTo = {
 
 export const colTraits = {
     type: jet.enumFactory(Object.keys(colTo), {
-        before:raw=>String.jet.to(raw).jet.simplify(), 
+        before:raw=>String.jet.simplify(String.jet.to(raw)), 
         after:(output, traits)=>output != null ? output : traits.ref ? "ref" : "string"
     }),
     isReadonly: functionOrNull,
@@ -39,5 +41,15 @@ export const colTraits = {
     isVirtual: Boolean.jet.to,
     isTrusted: Boolean.jet.to,
     noCache: Boolean.jet.to,
-    noNull: Boolean.jet.to
+    noNull: Boolean.jet.to,
+    extra: Object.jet.to
 };
+
+
+const _sortBy = (colName, descending=false, list=[])=>{
+    const _sb = (colName, descending)=>_sortBy(colName, descending, list);
+    solid(_sb, "list", list);
+    list.push([colName, Boolean.jet.to(descending)]);
+    return _sb;
+}
+export const sortBy = (colName, descending=false)=>_sortBy(colName, descending);

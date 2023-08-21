@@ -159,21 +159,17 @@ export class Bundle {
   }
 
   map(callback, opt={}) {
-    const { context, byKey, sort, throwError } = opt;
+    const { context, byKey, orderBy, throwError } = opt;
     const { list } = this.getData(context, throwError);
-    const sorted = sort ? list.sort(sort) : [...list];
-    const stop = val => { stop.active = true; return val; }
-    const result = byKey ? {} : [];
+    const bk = byKey ? {} : null;
 
-    for (const child of sorted) {
-        if (stop.active) { break; }
-        const r = callback(child, stop);
-        if (r === undefined) { continue; }
-        if (byKey) { result[child.getKey(false)] = r; }
-        else { result.push(r); }
-    }
+    const bn = Array.jet.remap(list, (child, key, stop)=>{
+      const r = callback(child, stop);
+      if (bk && r !== undefined) { bk[child.getKey(false)] = r; } 
+      return r;
+    }, ...(orderBy || []));
 
-    return result;
+    return bk || bn;
   }
 
   filter(checker, opt={}) {

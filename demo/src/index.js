@@ -29,10 +29,15 @@ const api = odataServer(ramdb, {
 // }, 10000);
 // ramdb("sys_")
 
-
-
 const server = http.createServer(api.serve(responder, 'http://localhost:1337/odata', true)).listen(1337);
 
+
+ramdb("kin_contacts").then(tbl=>tbl.rows.map(async row=>{
+    const r = await row.select({name:"name", kin_loc_bill:["address"]}, { byKey: true});
+    return r;
+}, { orderBy:[[async r=>r("name"), true]]})).then(v=>console.log(JSON.stringify(v)));
+
+//ramdb("sys_apps").then(tbl=>tbl.cols.getList()).then(list=>console.log(list));
 
 process.on("exit", (msg)=>{
     server.close();

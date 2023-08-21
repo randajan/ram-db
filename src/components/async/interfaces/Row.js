@@ -22,6 +22,7 @@ export class Row extends jet.types.Plex {
       table,
       rows,
       get,
+      select: (selector, opt={}) => this.live.select(selector, opt),
       set: async (vals, opt = { autoSave: true, resetOnError: true, throwError: true }) => push(vals, true, opt),
       update: async (vals, opt = { autoSave: true, resetOnError: true, throwError: true }) => push(vals, false, opt),
       reset: async _ => !this.isDirty || _p.live.reset(),
