@@ -23,7 +23,7 @@ const schema = {
     sys_ent:{ ref:"sys_ents" },
     sys_news_owner:{ separator:"; " },
     sys_news_supervizor:{ separator:"; " },
-    code:{ isVirtual:true, formula:r=>r("x")+(r("y")<10 ? "0" : "")+r("y") },
+    code:{ isVirtual:true, formula:async r=>(await r("x"))+(await r("y")).padStart(2, "0") },
     label:{ isVirtual:true, isLabel:true, formula:r=>r("code") + " " + r("name") }
   },
   sys_rights:{

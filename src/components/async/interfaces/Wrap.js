@@ -24,10 +24,10 @@ export class Wrap extends jet.types.Plex {
 
   static is(any) { return any instanceof Wrap; }
 
-  static create(step) { return new Wrap(step); }
+  static create(table, step) { return new Wrap(table, step); }
 
-  constructor(step) {
-    const { table } = step, { db, rows, cols } = table;
+  constructor(table, step) {
+    const { db, rows, cols } = table;
 
     const get = (col, throwError = true) => step.get(col, throwError);
 

@@ -53,7 +53,7 @@ export class Col {
     getKey() { return this.name; }
 
     _toRaw(val) {
-        return (val == null && !this.noNull) ? null : colTo[this.type].raw(val);
+        if (val != null || this.noNull) { return colTo[this.type].raw(val); }
     }
 
     toRaw(val) {
@@ -66,24 +66,24 @@ export class Col {
             if (v == null || v == "") { continue; }
             raw += (raw ? separator : "") + v;
         }
-        return raw || null;
+        return raw;
     }
 
-    _toVal(raw, refName) {
-        raw = (raw == null && !this.noNull) ? null : colTo[this.type].val(raw);
-        return refName ? (this.db(refName)).rows.get(raw, false) : raw;
+    async _toVal(raw, refName) {
+        if (raw != null || this.noNull) { raw = colTo[this.type].val(raw); }
+        if (raw != null) { return refName ? (await this.db(refName)).rows.get(raw, false) : raw; }
     }
 
-    toVal(raw, row) {
+    async toVal(raw, row) {
         const { separator, ref, isTrusted } = this;
-        const refName = (ref && row) ? ref(row) : null;
+        const refName = (ref && row) ? await ref(row) : null;
 
         if (!separator) { return this._toVal(raw, refName); }
 
         const list = raw == null ? [] : Array.isArray(raw) ? raw : String(raw).split(separator);
         if (!list.length || (isTrusted && raw === list)) { return list; }
 
-        for (let i in list) { list[i] = this._toVal(list[i], refName); }
+        for (let i in list) { list[i] = await this._toVal(list[i], refName); }
 
         return list;
     }

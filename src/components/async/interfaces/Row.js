@@ -33,7 +33,9 @@ export class Row extends jet.types.Plex {
         if (!this.isDirty) { return true; }
         try {
           await onSave(this, opt.silentSave === true);
-          _p.live = rows.nextStep(_p.saved = _p.live);
+          const nextStep = rows.nextStep(_p.live);
+          _p.saved = _p.live.retire();
+          _p.live = nextStep;
           return true;
         } catch (err) {
           if (opt.resetOnError !== false) { await this.reset(); }

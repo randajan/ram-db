@@ -12,23 +12,24 @@ export class Step {
   constructor(table, before) {
 
     this.key = before?.key;
+    let retired = false;
 
     solid.all(this, {
       db: table.db,
       table,
-      before,
+      wrap:Wrap.create(table, this),
+      retire:_=>{ before = null; retired = true; return this; }
     }, false);
 
     virtual.all(this, {
+      before:_=>before,
+      retired:_=>retired,
       label:async _=>this.pull(await table.cols.label),
       isExist:async _=>!this.isRemoved && await table.rows.exist(this.key),
       isDirty:_=>!!this.changeList.length || this.key !== before?.key || !this.isRemoved !== !(before?.isRemoved)
     });
 
-    solid(this, "wrap", Wrap.create(this), false);
-
     this.reset();
-
   }
 
   getKey() { return this.key; }
@@ -66,6 +67,8 @@ export class Step {
   };
 
   async push(vals, force = true) {
+    if (this.retired) { return false; }
+
     const { table: { rows:{ isLoading }, cols }, raws, before } = this;
 
     const reals = await cols.virtuals.getList(false);
@@ -79,7 +82,7 @@ export class Step {
       this.vSolid[col] = isLoading; //no reset raws on pull
       const raw = col.fetch(vals);
       if (raw !== undefined) { raws[col] = col.toRaw(raw); }
-      else if (force) { raws[col] = null; }
+      else if (force) { delete raws[col]; }
       if (isLoading) {
         changeList.push(col);
         changes[col] = raws[col];
@@ -114,11 +117,13 @@ export class Step {
   }
 
   remove() {
+    if (this.retired) { return false; }
     return this.isRemoved = true;
   }
 
   reset() {
-    const { before } = this;
+    if (this.retired) { return false; }
+    const { before} = this;
     this.isRemoved = before?.isRemoved || false;
     this.raws = before ? { ...before.raws } : {}; // raw data stored
     this.vals = before ? { ...before.vals } : {}; // values ready to use
@@ -128,6 +133,5 @@ export class Step {
     this.changes = {};
     return true;
   }
-
 
 }

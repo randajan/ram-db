@@ -53,7 +53,7 @@ export class Col {
     getKey() { return this.name; }
 
     _toRaw(val) {
-        return (val == null && !this.noNull) ? null : colTo[this.type].raw(val);
+        if (val != null || this.noNull) { return colTo[this.type].raw(val); }
     }
 
     toRaw(val) {
@@ -66,12 +66,12 @@ export class Col {
             if (v == null || v == "") { continue; }
             raw += (raw ? separator : "") + v;
         }
-        return raw || null;
+        return raw;
     }
 
     async _toVal(raw, refName) {
-        raw = (raw == null && !this.noNull) ? null : colTo[this.type].val(raw);
-        return refName ? (await this.db(refName)).rows.get(raw, false) : raw;
+        if (raw != null || this.noNull) { raw = colTo[this.type].val(raw); }
+        if (raw != null) { return refName ? (await this.db(refName)).rows.get(raw, false) : raw; }
     }
 
     async toVal(raw, row) {
