@@ -7,7 +7,8 @@ const ramdbToODataType = {
     "number":"Edm.Decimal",
     "datetime":"Edm.DateTimeOffset",
     "boolean":"Edm.Boolean",
-    "duration":"Edm.Duration"
+    "duration":"Edm.Duration",
+    "object":"Edm.String" //for now
 }
 
 const { solid } = jet.prop;

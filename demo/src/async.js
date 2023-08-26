@@ -6,7 +6,8 @@ import ramdbConstructor, { nref } from "../../dist/async.js";
 const schema = {
   sys_apps:{
     url:{ isVirtual:true, formula:async r=>`https://www.appsheet.com/start/${await r("url_id")}`, extra:{ test:"aaaa" } },
-    sys_ents:nref("sys_ents", "sys_app_default")
+    sys_ents:nref("sys_ents", "sys_app_default"),
+    test:{ type:"object", isVirtual:true, formula:_=>({ wtf:1 }) }
   },
   sys_ents:{
     sys_app_default:{ ref:"sys_apps" },
