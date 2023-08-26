@@ -53,4 +53,5 @@ const _sortBy = (colName, descending=false, list=[])=>{
     list.push([colName, Boolean.jet.to(descending)]);
     return _sb;
 }
+
 export const sortBy = (colName, descending=false)=>_sortBy(colName, descending);
