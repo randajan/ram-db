@@ -25,6 +25,7 @@ export const colTo = {
     number:{val:v=>Number.jet.round(Number.jet.to(v), 2), raw:v=>Number.jet.round(Number.jet.to(v), 2)},
     datetime:{val:v=>v == null ? new Date() : new Date(v), raw:v=>v == null ? new Date() : new Date(v)},
     duration:{val:v=>Math.max(0, Math.round(Number.jet.to(v))), raw:v=>Math.max(0, Math.round(Number.jet.to(v)))},
+    object:{val:v=>jet.json.from(v), raw:v=>jet.json.from(v)}
 }
 
 export const colTraits = {
