@@ -44,7 +44,7 @@ export class Wrap extends jet.types.Plex {
     virtual.all(this, {
       key: _ => step.key,
       label: async _ => step.label,
-      before: _ => step.before.wrap,
+      before: _ => step.before?.wrap,
       isExist: async _ => step.isExist,
       isDirty: _ => step.isDirty,
       isRemoved: _ => step.isRemoved,
