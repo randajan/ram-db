@@ -4,7 +4,13 @@ import { Chop } from "../privates/Chop.js";
 import { Step } from "../privates/Step.js";
 import { Row } from "./Row.js";
 
-const { solid, virtual } = jet.prop;
+const { solid } = jet.prop;
+
+const initStep = (table, vals)=>{
+  const step = Step.create(table);
+  if (jet.isMapable(vals)) { step.push(vals); }
+  return step;
+}
 
 const save = (bundle, row, silentSave)=>{
   const keySaved = row.key;
@@ -55,6 +61,8 @@ export class Rows extends Chop {
         table,
       }, false);
 
+      this.on("afterSet", row=>row._markAsSaved());
+      this.on("afterUpdate", row=>row._markAsSaved());
       table.db.on("afterReset", _p.recycle, false);
 
     }
@@ -80,14 +88,15 @@ export class Rows extends Chop {
     }
 
     addOrUpdate(vals, opt={ add:true, update:true, autoSave:true, resetOnError:true, throwError:true }) {
+      const { table } = this;
       const _p = vault.get(this.uid);
       this.untilLoaded(); //load
       _p.transactions.last; //any operation
     
       let step, key;
-      const ck = this.table.cols.primary;
+      const ck = table.cols.primary;
       if (!ck.formula && !ck.resetIf) { key = ck.toRaw(ck.fetch(vals)); } // quick key
-      if (key == null) { step = this.initStep(vals); key = step.getKey(); }
+      if (key == null) { step = initStep(table, vals); key = step.getKey(); }
       if (key == null) { if (opt.throwError !== false) { throw Error(this.msg("push failed - missing key", vals)); } return; }
     
       const rowFrom = this.get(key, false);
@@ -99,7 +108,7 @@ export class Rows extends Chop {
     
       if (opt.add !== false) {
         if (rowFrom) { if (opt.throwError !== false) { throw Error(this.msg("add failed - duplicate key", key)); } return; }
-        const rowTo = Row.create(this, _p.onSave, step || this.initStep(vals));
+        const rowTo = Row.create(this, _p.onSave, step || initStep(table, vals));
         if (opt.autoSave !== false) { rowTo.save(opt); }
         return rowTo;
       }
@@ -116,16 +125,6 @@ export class Rows extends Chop {
       opt.add = false;
       opt.update = true;
       return this.addOrUpdate(vals, opt);
-    }
-
-    nextStep(before) {
-      return Step.create(this.table, before);
-    }
-
-    initStep(vals) {
-      const step = Step.create(this.table);
-      if (jet.isMapable(vals)) { step.push(vals); }
-      return step;
     }
 
     addChop(name, opt={}) {

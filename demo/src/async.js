@@ -149,4 +149,14 @@ export const ramdb = ramdbConstructor("main", async (self)=>{
 
 });
 
+ramdb.on("beforeSave", async (action, row)=>{
+  const rr = await row.table.rows(row.key, false);
+  console.log("AAA", rr?.key);
+});
+
+ramdb.on("afterSave", async (action, row)=>{
+  const rr = await row.table.rows(row.key, false);
+  console.log("BBB", rr?.key);
+});
+
 export default ramdb;

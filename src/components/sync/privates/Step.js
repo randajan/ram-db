@@ -7,7 +7,7 @@ export class Step {
 
   static is(any) { return any instanceof Step; }
 
-  static create(row, before) { return new Step(row, before); }
+  static create(table, before) { return new Step(table, before); }
 
   constructor(table, before) {
 

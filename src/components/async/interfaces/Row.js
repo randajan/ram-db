@@ -1,4 +1,5 @@
 import jet from "@randajan/jet-core";
+import { Step } from "../privates/Step";
 
 const { solid, virtual } = jet.prop;
 
@@ -29,13 +30,19 @@ export class Row extends jet.types.Plex {
       remove: async (opt = { autoSave: true, resetOnError: true, throwError: true }) => {
         return _p.live.remove() && (opt.autoSave === false || await this.save(opt));
       },
+      _markAsSaved:_=>{
+        if (!_p.saving) { return false; }
+        const nextStep = Step.create(table, _p.live);
+        _p.saved = _p.live.retire();
+        _p.live = nextStep;
+        return true;
+      },
       save: async (opt = { resetOnError: true, throwError: true, silentSave:false }) => {
         if (!this.isDirty) { return true; }
         try {
+          _p.saving = true;
           await onSave(this, opt.silentSave === true);
-          const nextStep = rows.nextStep(_p.live);
-          _p.saved = _p.live.retire();
-          _p.live = nextStep;
+          _p.saving = false;
           return true;
         } catch (err) {
           if (opt.resetOnError !== false) { await this.reset(); }
@@ -43,8 +50,7 @@ export class Row extends jet.types.Plex {
           console.warn(this.msg(err?.message || "unknown error"), err?.stack);
           return false;
         }
-      },
-
+      }
     }, false);
 
     virtual.all(this, {
@@ -57,7 +63,7 @@ export class Row extends jet.types.Plex {
       saved: _ => _p.saved?.wrap
     });
 
-    _p.live = iniStep || rows.nextStep();
+    _p.live = iniStep || Step.create(table);
 
   }
 
@@ -68,7 +74,7 @@ export class Row extends jet.types.Plex {
   getKey(isSet) { return isSet ? this.live.key : this.key; }
 
   toJSON() {
-    return this.key || null;
+    return this.key;
   }
 
   toString() {
