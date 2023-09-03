@@ -12,7 +12,8 @@ const schema = {
   sys_ents:{
     sys_app_default:{ ref:"sys_apps" },
     options:{ separator:"; " },
-    label:{ isVirtual:true, isLabel:true, formula:r=>r("plural") }
+    label:{ isVirtual:true, isLabel:true, formula:r=>r("plural") },
+    is_happy: { type:"boolean", isVirtual:true, formula:_=>true }
   },
   sys_views:{
     id:{ isVirtual:true, formula:async r=>jet.melt([await r(["sys_ent", "id"]), await r("key")], "_") },
@@ -147,7 +148,7 @@ export const ramdb = ramdbConstructor("main", async (self)=>{
 
   return tbls;
 
-});
+}, { displayDefault:1 });
 
 ramdb.on("beforeSave", async (action, row)=>{
   const rr = await row.table.rows(row.key, false);

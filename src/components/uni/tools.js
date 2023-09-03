@@ -5,6 +5,7 @@ const { solid } = jet.prop;
 export const vault = jet.vault("RamDBVault");
 
 export const formatKey = (key, def)=>key != null ? String(key) : def;
+export const numberPositive = n=>n == null ? 0 : Math.max(0, Number.jet.to(n));
 export const functionOrNull = val=>val == null ? undefined : Function.jet.to(val);
 export const functionWithCache = trait=>{
     trait = functionOrNull(trait);
@@ -38,6 +39,7 @@ export const colTraits = {
     init: functionOrNull,
     formula: functionWithCache,
     ref: functionOrNull,
+    display: numberPositive,
     separator: String.jet.to,
     isVirtual: Boolean.jet.to,
     isTrusted: Boolean.jet.to,

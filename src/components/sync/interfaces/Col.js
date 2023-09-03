@@ -26,7 +26,9 @@ export class Col {
         });
 
         for (const tn in colTraits) {
-            solid(this, tn, colTraits[tn](traits[tn], traits));
+            let tv = colTraits[tn](traits[tn], traits);
+            if (tn === "display") { tv = tv || db.displayDefault; }
+            solid(this, tn, tv);
             delete traits[tn];
         }
 
@@ -69,21 +71,21 @@ export class Col {
         return raw;
     }
 
-    async _toVal(raw, refName) {
+    _toVal(raw, refName) {
         if (raw != null || this.noNull) { raw = colTo[this.type].val(raw); }
-        if (raw != null) { return refName ? (await this.db(refName)).rows.get(raw, false) : raw; }
+        if (raw != null) { return refName ? (this.db(refName)).rows.get(raw, false) : raw; }
     }
 
-    async toVal(raw, row) {
+    toVal(raw, row) {
         const { separator, ref, isTrusted } = this;
-        const refName = (ref && row) ? await ref(row) : null;
+        const refName = (ref && row) ? ref(row) : null;
 
         if (!separator) { return this._toVal(raw, refName); }
 
         const list = raw == null ? [] : Array.isArray(raw) ? raw : String(raw).split(separator);
         if (!list.length || (isTrusted && raw === list)) { return list; }
 
-        for (let i in list) { list[i] = await this._toVal(list[i], refName); }
+        for (let i in list) { list[i] = this._toVal(list[i], refName); }
 
         return list;
     }

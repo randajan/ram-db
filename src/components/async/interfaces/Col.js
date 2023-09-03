@@ -26,7 +26,9 @@ export class Col {
         });
 
         for (const tn in colTraits) {
-            solid(this, tn, colTraits[tn](traits[tn], traits));
+            let tv = colTraits[tn](traits[tn], traits);
+            if (tn === "display") { tv = tv || db.displayDefault; }
+            solid(this, tn, tv);
             delete traits[tn];
         }
 

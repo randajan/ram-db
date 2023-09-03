@@ -38,6 +38,11 @@ export class Wrap extends jet.types.Plex {
       table,
       rows,
       get,
+      getRaw:async (colName, throwError=true) => {
+        if (step.raws.hasOwnProperty(colName)) { return step.raws[colName]; }
+        const col = await cols(colName, throwError);
+        if (col && await col.isVirtual) { return col.toRaw(await step.pull(col)); }
+      },
       select:async (selector, opt = {}) => _select(step, cols, selector, opt)
     }, false);
 

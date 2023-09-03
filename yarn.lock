@@ -7,15 +7,15 @@
   resolved "https://registry.yarnpkg.com/@esbuild/linux-loong64/-/linux-loong64-0.14.54.tgz#de2a4be678bd4d0d1ffbb86e6de779cde5999028"
   integrity sha512-bZBrLAIX1kpWelV0XemxBZllyRmM6vgFQQG2GdNb+r3Fkp0FOh1NJSvekXDs7jq70k4euu1cryLMfU+mTXlEpw==
 
-"@randajan/jet-core@3.2.5":
-  version "3.2.5"
-  resolved "https://registry.yarnpkg.com/@randajan/jet-core/-/jet-core-3.2.5.tgz#cc23a16773701605531a7a7dbef5d64a3dedcf17"
-  integrity sha512-G6hSz+w8N+AvxJlENrzNCvTWM5u6xsZVR4vipEthhRgbwaPWNGJiu46sxilRqXdB/jNpLPL1SYjWUg7WtKw89A==
+"@randajan/jet-core@^3.2.7":
+  version "3.2.7"
+  resolved "https://registry.yarnpkg.com/@randajan/jet-core/-/jet-core-3.2.7.tgz#232877f3a83014a50bf3e9871df6fc85ebd5e97a"
+  integrity sha512-2kUpe8FM4k0o70CIAUiTiP/gdoK3KPuyulCGAzb1zWNUfHpGHJERnIqmYZ1mNFBDOxrrBTVEX69HWLguqin1KA==
 
-"@randajan/odata-server@^2.1.12":
-  version "2.1.12"
-  resolved "https://registry.yarnpkg.com/@randajan/odata-server/-/odata-server-2.1.12.tgz#4ae5a9e884e890ade2a4c22c9421c1eb3636aaca"
-  integrity sha512-ffPVwafmMnBPgHjK8ULz1GY5W9k0FtJsKb/TUfGlSFt1+IV/t//5delOSrLJ2WdSdnvXgCWJ7/7sEB4zvqGUQg==
+"@randajan/odata-server@^2.1.14":
+  version "2.1.14"
+  resolved "https://registry.yarnpkg.com/@randajan/odata-server/-/odata-server-2.1.14.tgz#3685c65a8ee5012b1797d831d49d3d5b93e9cfbf"
+  integrity sha512-47dEhy5yeLr5XfJDATShIb9AF+7nzA6/c3Yaov87W+DLUR0gw/uq9HnQjJFHZN1I2ntwvXQUiR4fWi4oncA4Lg==
   dependencies:
     methods "1.1.2"
     odata-parser "^1.4.1"
@@ -637,6 +637,15 @@ fs-extra@^10.1.0:
   version "10.1.0"
   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-10.1.0.tgz#02873cfbc4084dde127eaa5f9905eef2325d1abf"
   integrity sha512-oRXApq54ETRj4eMiFzGnHWGy+zo5raudjuxN0b8H7s/RU2oW0Wvsx9O0ACRN/kRq9E8Vu/ReskGB5o3ji+FzHQ==
+  dependencies:
+    graceful-fs "^4.2.0"
+    jsonfile "^6.0.1"
+    universalify "^2.0.0"
+
+fs-extra@^11.1.1:
+  version "11.1.1"
+  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-11.1.1.tgz#da69f7c39f3b002378b0954bb6ae7efdc0876e2d"
+  integrity sha512-MGIE4HOvQCeUCzmlHs0vXpih4ysz4wg9qiSAu6cd42lVwPbTM1TjV7RusoyQqMmk/95gdQZX72u+YW+c3eEpFQ==
   dependencies:
     graceful-fs "^4.2.0"
     jsonfile "^6.0.1"

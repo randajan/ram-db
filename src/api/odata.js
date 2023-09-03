@@ -51,7 +51,13 @@ export class RamDBAdapter {
 
     rowToResponse(context, row) {
         if (!row) { return; }
-        return row.saved[this.returnVals(context) === true ? "vals" : "raws"];
+
+        const returnVals = this.returnVals(context) === true;
+
+        return async colName=>{
+            if (colName === "$$remove") { return; }
+            return returnVals ? row.get(colName) : row.getRaw(colName);
+        };
     }
 
     async remove(context) {
@@ -127,7 +133,7 @@ export default (ramdb, options={})=>{
         if (!filter && (rv || !prop)) { return true; }
         const tbl = await ramdb.get(entity);
         const col = prop ? await tbl.cols.get(prop) : undefined;
-        if (!rv && col?.isVirtual) { return false; }
+        if (col && !col.display) { return false; }
         return _filter ? _filter(context, tbl, col) : true;
     }
 
