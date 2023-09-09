@@ -67,7 +67,7 @@ export class Wrap extends jet.types.Plex {
   }
 
   refs(tableName, colName, filter, cache = {}) {
-    const chop = cache.current || (cache.current = this.chopByRef(tableName, colName, filter, false));
+    const chop = (cache.current || (cache.current = this.chopByRef(tableName, colName, filter, false)));
     return chop.getList(this.key, false);
   }
 
