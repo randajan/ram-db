@@ -1,13 +1,17 @@
-import sapp from "@randajan/simple-lib";
+import slib from "@randajan/simple-lib";
+import ImportGlobPlugin from 'esbuild-plugin-import-glob';
 
 
-sapp(process.env.NODE_ENV==="prod", {
+slib(process.env.NODE_ENV==="prod", {
     port:4002,
-    mode:"node",
-    external:["chalk"],
+    mode:"web",
+    
     minify:false,
     lib:{
+        external:["chalk"],
         entries:["index.js", "async.js", "api/odata.js"]
+    },
+    demo:{
+        plugins:[ImportGlobPlugin.default()]
     }
- 
 })

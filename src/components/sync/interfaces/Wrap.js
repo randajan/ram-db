@@ -6,7 +6,7 @@ const _select = (step, cols, selector, opt={})=>{
   const { byKey, noVals, throwError } = opt;
   const isArray = Array.isArray(selector);
   const bk = (byKey || !isArray) ? {} : null;
-  const bl = Promise.all(Object.keys(selector).map(x => {
+  const bl = Object.keys(selector).map(x => {
     // when selector is array it expect values to be the columns while for object its oposite
     const c = isArray ? selector[x] : x, as = isArray ? x : selector[x];
     const col = cols.get(c, throwError); if (!col) { return; }
@@ -15,8 +15,8 @@ const _select = (step, cols, selector, opt={})=>{
     const val = (noVals && !asref) ? step.raws[col] : step.pull(col);
     if (val == null) { return; } else if (isArray) { return bk ? bk[col] = val : val; } //filter simple scenario
     if (!asref) { return bk[typeof as === "string" ? as : col] = val; } //filter alias or another scimple scenario
-    bk[col] = col.separator ? Promise.all(val.map(v=>v.select(as, opt))) : val.select(as, opt); 
-  }));
+    bk[col] = col.separator ? val.map(v=>v.select(as, opt)) : val.select(as, opt); 
+  });
   return bk || bl;
 }
 

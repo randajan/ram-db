@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { Wrap } from "../../async/interfaces/Wrap";
+import { Wrap } from "../interfaces/Wrap";
 
 const { solid, virtual } = jet.prop;
 

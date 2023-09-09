@@ -1,8 +1,8 @@
 import jet from "@randajan/jet-core";
 import { vault, colsTraits, formatKey } from "../../uni/tools.js";
 
-import { Chop } from "../../async/privates/Chop.js";
-import { Col } from "../../async/interfaces/Col.js";
+import { Chop } from "../privates/Chop.js";
+import { Col } from "../interfaces/Col.js";
 
 
 const { solid, virtual } = jet.prop;

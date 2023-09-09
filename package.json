@@ -17,12 +17,13 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@randajan/jet-core": "^3.2.7",
+    "@randajan/jet-core": "^3.2.8",
     "@randajan/odata-server": "^2.1.14",
     "fs-extra": "^11.1.1"
   },
   "devDependencies": {
-    "@randajan/simple-lib": "2.1.2"
+    "@randajan/simple-lib": "2.1.2",
+    "esbuild-plugin-import-glob": "^0.1.1"
   },
   "files": [
     "dist",

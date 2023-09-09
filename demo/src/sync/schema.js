@@ -1,18 +1,19 @@
 import jet from "@randajan/jet-core";
-import ramdb from "../../dist/index.js";
-import testData from "../data/TISDB_export.json";
-import { nref } from "../../src/async.js";
+import { nref } from "../../../dist";
 
-export default ramdb("main", _=>{
-  const schema = {
+
+
+const schema = {
     sys_apps:{
-      url:{ isVirtual:true, formula:r=>`https://www.appsheet.com/start/${r("url_id")}` },
-      sys_ents:nref("sys_ents", "sys_app_default")
+      url:{ isVirtual:true, formula:r=>`https://www.appsheet.com/start/${r("url_id")}`, extra:{ test:"aaaa" } },
+      sys_ents:nref("sys_ents", "sys_app_default"),
+      test:{ type:"object", isVirtual:true, formula:_=>({ wtf:1 }) }
     },
     sys_ents:{
       sys_app_default:{ ref:"sys_apps" },
       options:{ separator:"; " },
-      label:{ isVirtual:true, isLabel:true, formula:r=>r("plural") }
+      label:{ isVirtual:true, isLabel:true, formula:r=>r("plural") },
+      is_happy: { type:"boolean", isVirtual:true, formula:_=>true }
     },
     sys_views:{
       id:{ isVirtual:true, formula:r=>jet.melt([r(["sys_ent", "id"]), r("key")], "_") },
@@ -24,7 +25,7 @@ export default ramdb("main", _=>{
       sys_ent:{ ref:"sys_ents" },
       sys_news_owner:{ separator:"; " },
       sys_news_supervizor:{ separator:"; " },
-      code:{ isVirtual:true, formula:r=>r("x")+(r("y")<10 ? "0" : "")+r("y") },
+      code:{ isVirtual:true, formula:r=>(r("x"))+(r("y")).padStart(2, "0") },
       label:{ isVirtual:true, isLabel:true, formula:r=>r("code") + " " + r("name") }
     },
     sys_rights:{
@@ -41,15 +42,26 @@ export default ramdb("main", _=>{
     },
     kin_contacts:{
       kin_loc_bill:{ ref:"kin_locs" },
-      history_contacts:nref("history_contacts", "kin_contact")
+      phone:{ separator:"; " }
     },
     book_items:{
       book_doc:{ ref:"book_docs" },
       price_m:{ type:"number" }
     },
+    book_series:{
+      book_docs:nref("book_docs", "book_serie")
+    },
+    case_tasks:{
+      case_order:{ref:"case_orders"},
+    },
     book_docs:{
+      case_order:{ref:"case_orders"},
+      book_items:nref("book_items", "book_doc"),
       is_our:{type:"boolean"},
-      book_items:nref("book_items", "book_doc")
+      is_anonym:{type:"boolean"},
+      book_serie:{ ref:"book_series" },
+      bank_acc:{ ref:"book_accs" },
+      case_order:{ ref:"case_orders" }
     },
     history_contacts:{
       kin_contact:{ ref:"kin_contacts" },
@@ -59,49 +71,48 @@ export default ramdb("main", _=>{
     book_accs:{
       id:{ isVirtual:true, isPrimary:true, formula:r=>(r("account_id"))+"/"+(r("bank_id")) }
     },
-    history_contacts:{
-      kin_contact:{ ref:"kin_contacts" },
-      version:{ type:"number" },
-      id:{ isVirtual:true, isPrimary:true, formula:r=>jet.melt([r(["kin_contact", "id"]), r("version")], "_") }
-    },
     kin_relations:{
       id:{ isVirtual:true, isPrimary:true, formula:r=>jet.melt([r(["kin_contact_from", "id"]), r(["kin_contact_to", "id"])], "_") }
+    },
+    case_orders:{
+      book_docs:nref("book_docs", "case_order"),
+      case_tasks:nref("case_tasks", "case_order")
+    },
+    kin_locs:{
+      duration:{ type:"duration", noNull:true },
+      distance:{ type:"number" }
     }
-
+  
   }
 
-  const global = (name, cols)=>{
-    if (schema[name]) { cols = {...cols, ...schema[name] }; }
 
+  export const getSchema = (name, rows)=>{
+    let cols = {};
+    for (const rid in rows) { for (const cid in rows[rid]) { if (!cols[cid]) { cols[cid] = {}; } } }
+
+    if (schema[name]) { cols = {...cols, ...schema[name] }; }
+  
     if (cols.id) {
       cols.id.isPrimary = true;
       cols.id.init = _=>jet.uid(12);
     } else {
       console.log(name);
     }
-
+  
     const up = cols.updater;
     if (up) { up.ref ="kin_contacts"; up.resetIf = true; }
     const cp = cols.creator;
     if (cp) { cp.ref = "kin_contacts"; cp.isReadonly = true; }
     const op = cols.owner;
     if (op) { op.ref = "kin_contacts"; }
-
+  
     const ut = cols.updated || cols.updated_at;
     if (ut) { ut.init = _=>new Date(); ut.resetIf = true; ut.type = "datetime"; }
     const ct = cols.created || cols.created_at;
     if (ct) { ct.init = _=>new Date(); ct.isReadonly = true; ct.type = "datetime"; }
-
+  
     cols._ent = { isVirtual:true, formula:_=>name, ref:"sys_ents" };
     cols._url = { isVirtual:true, formula:r=>`https://tis.itcan.cz/${r(["_ent","sys_app_default", "pathname"])}#control=${name}_Detail&row=${r.key}` };
-
+  
     return cols;
   }
-
-  return jet.map(testData, (rows, name)=>{
-    return {
-      cols:_=>global(name, jet.map(rows[0], _=>({}))),
-      rows:_=>rows,
-    }
-  });
-});
