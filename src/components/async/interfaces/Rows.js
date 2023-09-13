@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { vault } from "../../uni/tools.js";
+import { vault } from "../../uni/consts.js";
 import { Chop } from "../privates/Chop.js";
 import { Step } from "../privates/Step.js";
 import { Row } from "./Row.js";

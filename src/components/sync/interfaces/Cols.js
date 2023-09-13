@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { vault, colsTraits, formatKey } from "../../uni/tools.js";
+import { vault, colsTraits, formatKey } from "../../uni/consts.js";
 
 import { Chop } from "../privates/Chop.js";
 import { Col } from "../interfaces/Col.js";

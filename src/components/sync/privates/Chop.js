@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { formatKey, vault } from "../../uni/tools";
+import { formatKey, vault } from "../../uni/consts";
 import { Bundle } from "./Bundle";
 import { Transactions } from "./Transactions";
 

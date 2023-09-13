@@ -1,5 +1,5 @@
-import { nref, timestamps } from "./components/uni/temps";
-import { reductor, summary } from "./components/sync/temps";
+import { nref, timestamps, reform } from "./components/uni/tools";
+import { reductor, summary } from "./components/sync/tools";
 import { DB } from "./components/sync/interfaces/DB";
 
 
@@ -11,5 +11,6 @@ export {
     nref,
     timestamps,
     reductor,
-    summary
+    summary,
+    reform
 }

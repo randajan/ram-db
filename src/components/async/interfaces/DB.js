@@ -3,7 +3,7 @@ import { Table } from "../../uni/Table";
 import { Chop } from "../privates/Chop";
 import { Rows } from "./Rows";
 import { Cols } from "./Cols";
-import { numberPositive, vault } from "../../uni/tools";
+import { numberPositive, vault } from "../../uni/consts";
 
 const { solid, virtual } = jet.prop;
 
