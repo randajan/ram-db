@@ -33,7 +33,7 @@ export class DB extends Chop {
 
         const _p = vault.get(this.uid);
         _p.lastChange = Date.now();
-        virtual(this, "changed", _=>_p.lastChange);
+        virtual(this, "lastChange", _=>_p.lastChange);
         this.on("afterChange", _=>_p.lastChange = Date.now());
     }
 
