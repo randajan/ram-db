@@ -22,7 +22,15 @@ export class Col {
 
         virtual.all(this, {
             isPrimary: _ => _c.primary === name,
-            isLabel: _ => _c.label === name
+            isLabel: _ => _c.label === name,
+            cacheStamp: _=>{
+                switch (this.scope) {
+                    case "self": return 1;
+                    case "table": return table.lastChange;
+                    case "db": return db.lastChange;
+                    default: return 0; //case "global";
+                }
+            }
         });
 
         for (const tn in colTraits) {

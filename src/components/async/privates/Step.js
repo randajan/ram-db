@@ -37,10 +37,12 @@ export class Step {
   async pull(col) {
     if (!col) { return; }
 
-    const { db:{ lastChange }, vals, raws, vStamp, vSolid, before, wrap } = this;
-    const { isVirtual, noCache, init, resetIf, formula, isReadonly } = col;
+    const { vals, raws, vStamp, vSolid, before, wrap } = this;
+    const { isVirtual, cacheStamp, init, resetIf, formula, isReadonly } = col;
 
-    if (vals.hasOwnProperty(col) && (!isVirtual || vStamp[col] === lastChange)) { return vals[col]; } //revive cached value
+    if (vals.hasOwnProperty(col) && (!isVirtual || vStamp[col] === cacheStamp)) {
+      return vals[col]; //revive cached value
+    } 
 
     let raw = raws[col];
     const self = _ => col.toVal(raw, wrap);
@@ -56,12 +58,12 @@ export class Step {
     }
 
     const val = await self();
-    if (!noCache) { vals[col] = val; } //cache value
+    if (cacheStamp) {
+      vals[col] = val; //cache value
+      vStamp[col] = cacheStamp; //create cacheStamp
+    } 
 
-    if (!isVirtual || col.isPrimary) {
-      raws[col] = col.toRaw(val);
-      vStamp[col] = lastChange;
-    }
+    if (!isVirtual || col.isPrimary) { raws[col] = col.toRaw(val); }
 
     return val;
   };

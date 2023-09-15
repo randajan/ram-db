@@ -14,7 +14,7 @@ const schema = {
       sys_app_default:{ ref:"sys_apps" },
       options:{ separator:"; " },
       label:{ isVirtual:true, isLabel:true, formula:r=>r("plural") },
-      is_happy: { type:"boolean", isVirtual:true, formula:_=>true }
+      is_happy: { type:"boolean", scope:"global", isVirtual:true, formula:_=>true }
     },
     sys_views:{
       id:{ isVirtual:true, formula:async r=>jet.melt([await r(["sys_ent", "id"]), await r("key")], "_") },

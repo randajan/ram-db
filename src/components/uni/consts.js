@@ -4,6 +4,11 @@ const { solid } = jet.prop;
 
 export const vault = jet.vault("RamDBVault");
 
+export const eventsWhen = ["before", "after"];
+export const eventsRows = [].concat(
+    ...eventsWhen.map(w=>["set", "update", "remove"].map(c=>[w, c, w+String.jet.capitalize(c)]))
+);
+
 export const formatKey = (key, def)=>key != null ? String(key) : def;
 export const numberPositive = n=>n == null ? 0 : Math.max(0, Number.jet.to(n));
 export const functionOrNull = val=>val == null ? undefined : Function.jet.to(val);
@@ -41,12 +46,17 @@ export const colTraits = {
     ref: functionOrNull,
     display: numberPositive,
     separator: String.jet.to,
+    scope: jet.enumFactory(["global", "db", "table", "self"], {
+        before:raw=>String.jet.simplify(String.jet.to(raw)),
+        after:output=>output != null ? output : "self"
+    }),
     isVirtual: Boolean.jet.to,
     isTrusted: Boolean.jet.to,
-    noCache: Boolean.jet.to,
     noNull: Boolean.jet.to,
     extra: Object.jet.to
 };
+
+//scope: global, db, table, self
 
 
 const _sortBy = (colName, descending=false, list=[])=>{

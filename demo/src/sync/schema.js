@@ -13,7 +13,10 @@ const schema = {
       sys_app_default:{ ref:"sys_apps" },
       options:{ separator:"; " },
       label:{ isVirtual:true, isLabel:true, formula:r=>r("plural") },
-      is_happy: { type:"boolean", isVirtual:true, formula:_=>true }
+      is_happy: { type:"boolean", isVirtual:true, scope:"self", formula: r=>{
+        console.log(r.key, "RECALCULATE");
+        return true;
+      } }
     },
     sys_views:{
       id:{ isVirtual:true, formula:r=>jet.melt([r(["sys_ent", "id"]), r("key")], "_") },
