@@ -2,6 +2,7 @@ import jet from "@randajan/jet-core";
 import { formatKey, vault } from "../../uni/consts";
 import { Bundle } from "./Bundle";
 import { Transactions } from "./Transactions";
+import { evaluate } from "../tools";
 
 const { solid, virtual } = jet.prop;
 
@@ -66,6 +67,10 @@ export class Chop extends jet.types.Plex {
   async get(key, context, throwError = true) {
     await this.untilLoaded();
     return vault.get(this.uid).bundle.get(key, context, throwError);
+  }
+
+  async eval(selector, opt={}) {
+    return evaluate(this, selector, opt);
   }
 
   async count(context, throwError=false) {

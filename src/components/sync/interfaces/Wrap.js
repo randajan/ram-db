@@ -2,24 +2,6 @@ import jet from "@randajan/jet-core";
 
 const { solid, virtual } = jet.prop;
 
-const _select = (step, cols, selector, opt={})=>{
-  const { byKey, noVals, throwError } = opt;
-  const isArray = Array.isArray(selector);
-  const bk = (byKey || !isArray) ? {} : null;
-  const bl = Object.keys(selector).map(x => {
-    // when selector is array it expect values to be the columns while for object its oposite
-    const c = isArray ? selector[x] : x, as = isArray ? x : selector[x];
-    const col = cols.get(c, throwError); if (!col) { return; }
-    const asref = (!isArray && typeof as === "object");
-    if (asref && !col.ref) { throw Error(col.msg("selector looks for ref")); }
-    const val = (noVals && !asref) ? step.raws[col] : step.pull(col);
-    if (val == null) { return; } else if (isArray) { return bk ? bk[col] = val : val; } //filter simple scenario
-    if (!asref) { return bk[typeof as === "string" ? as : col] = val; } //filter alias or another scimple scenario
-    bk[col] = col.separator ? val.map(v=>v.select(as, opt)) : val.select(as, opt); 
-  });
-  return bk || bl;
-}
-
 export class Wrap extends jet.types.Plex {
 
   static is(any) { return any instanceof Wrap; }
@@ -38,12 +20,9 @@ export class Wrap extends jet.types.Plex {
       table,
       rows,
       get,
-      getRaw:(colName, throwError=true) => {
-        if (step.raws.hasOwnProperty(colName)) { return step.raws[colName]; }
-        const col = cols(colName, throwError);
-        if (col && col.isVirtual) { return col.toRaw(step.pull(col)); }
-      },
-      select:(selector, opt = {}) => _select(step, cols, selector, opt)
+      getRaw:(col, throwError=true) => step.getRaw(col, throwError),
+      select:(selector, opt = {}) => step.select(selector, opt),
+      eval:(selector, opt = {}) => step.eval(selector, opt)
     }, false);
 
     virtual.all(this, {

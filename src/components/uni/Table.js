@@ -39,6 +39,10 @@ export class Table {
 
   msg(text) { return this.db.msg(text, this.key); }
 
+  eval(selector, opt={}) {
+    return this.rows.eval(selector, opt);
+  }
+
   getKey() {
     return this.name;
   }

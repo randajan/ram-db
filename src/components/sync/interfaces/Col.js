@@ -1,5 +1,6 @@
 import jet from "@randajan/jet-core";
-import { vault, colTraits, colTo } from "../../uni/consts";
+import { vault, colTraits, colTo, colsTraits } from "../../uni/consts";
+import { evaluate } from "../tools";
 
 const { solid, virtual } = jet.prop;
 
@@ -54,6 +55,17 @@ export class Col {
             throw Error(this.msg(`unknown trait${unknownTraits.length > 1 ? "s" : ""} '${unknownTraits.join("', '")}'`));
         }
 
+    }
+
+    get(trait, throwError=true) {
+        if (trait === "name" || colTraits[trait]) { return this[trait]; }
+
+        console.log(colTraits);
+        if (throwError) { throw Error(`unknown trait '${trait}'`); }
+    }
+
+    eval(selector, opt={}) {
+        return evaluate(this, selector, opt);
     }
 
     msg(text) {

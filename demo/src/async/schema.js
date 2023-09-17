@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { nref, summary } from "../../../dist/async.js";
+import { nref, reform, summary } from "../../../dist/async.js";
 
 
 
@@ -43,7 +43,13 @@ const schema = {
     },
     kin_contacts:{
       kin_loc_bill:{ ref:"kin_locs" },
-      phone:{ separator:"; " }
+      phone:{ separator:"; " },
+      email:{ separator:"; " },
+      accounts:{ separator:"; " },
+      label:{ isLabel:true, isVirtual:true, display:2, formula: reform(
+        "alias,name,email,accounts,phone,in",
+        ([l, n, e, a, p, i], r)=>l || n || e[0] || a[0] || p[0] || i || r.key
+      )}
     },
     book_items:{
       "id": { isPrimary:true, init:_=>jet.uid() },

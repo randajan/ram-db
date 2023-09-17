@@ -4,6 +4,7 @@ import { Chop } from "../privates/Chop";
 import { Rows } from "./Rows";
 import { Cols } from "./Cols";
 import { numberPositive, vault } from "../../uni/consts";
+import { evaluate } from "../tools";
 
 const { solid, virtual } = jet.prop;
 
@@ -21,7 +22,7 @@ export class DB extends Chop {
                     if (silentSave !== true) { await bundle.run(when+"Save", [action, row]); }
                     if (when === "after") { await bundle.run(when+"Change", [action, row]); }
                 };
-                jet.map(tables, (stream, key) => bundle.set(new Table(this, key, { stream, Rows, Cols, onChange})));
+                jet.map(tables, (stream, key) =>{ bundle.set(new Table(this, key, { stream, Rows, Cols, onChange}))} );
             },
             childName: "table",
             defaultContext: "all",
@@ -35,6 +36,7 @@ export class DB extends Chop {
         _p.lastChange = Date.now();
         virtual(this, "lastChange", _=>_p.lastChange);
         this.on("afterChange", _=>_p.lastChange = Date.now());
+
     }
 
     async exist(name, throwError = false) {
