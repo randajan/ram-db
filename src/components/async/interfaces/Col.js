@@ -1,44 +1,52 @@
 import jet from "@randajan/jet-core";
-import { vault, colTraits, colTo, colsTraits } from "../../uni/consts";
+import { vault } from "../../uni/consts";
 import { evaluate } from "../tools";
+import { colTraits, colTo, } from "../traits";
 
-const { solid, virtual } = jet.prop;
+const { solid, virtual, cached } = jet.prop;
+
+const cacheStampFactory = async col=>{
+    const { db, table } = col;
+    const scope = await col.scope();
+    if (scope === "self") { return _=>1; }
+    if (scope === "table") { return _=>table.lastChange; }
+    if (scope === "db") { return _=>db.lastChange; }
+    if (scope === "global") { return _=>0; }
+    
+    const getLastChanges = tn=>db(tn).then(t=>t.lastChange);
+    return async _=>Math.max(...await Promise.all(scope.map(getLastChanges)));
+}
 
 export class Col {
 
     constructor(cols, id, name, traits) {
         const { db, table } = cols;
         const _c = vault.get(cols.uid);
+        const _p = {};
 
+        let _gcs;
         solid.all(this, {
             db,
             table,
             cols,
+            getCacheStamp: _=>(_gcs || (_gcs = cacheStampFactory(this))).then(gcs=>gcs())
         }, false);
 
         solid.all(this, {
             id,
             name
         });
-
+        
         virtual.all(this, {
             isPrimary: _ => _c.primary === name,
-            isLabel: _ => _c.label === name,
-            cacheStamp: _=>{
-                switch (this.scope) {
-                    case "self": return 1;
-                    case "table": return table.lastChange;
-                    case "db": return db.lastChange;
-                    default: return 0; //case "global";
-                }
-            }
+            isLabel: _ => _c.label === name
         });
 
         for (const tn in colTraits) {
-            let tv = colTraits[tn](traits[tn], traits);
-            if (tn === "display") { tv = tv || db.displayDefault; }
-            solid(this, tn, tv);
+            const trait = traits[tn];
+            if (tn === "ref") { solid(this, "_ref", trait); }
             delete traits[tn];
+            cached(this, _p, tn, _=>colTraits[tn](trait, this));
         }
 
         if (this.isVirtual && !this.formula) {
@@ -59,8 +67,6 @@ export class Col {
 
     async get(trait, throwError=true) {
         if (trait === "name" || colTraits[trait]) { return this[trait]; }
-
-        console.log(colTraits);
         if (throwError) { throw Error(`unknown trait '${trait}'`); }
     }
 

@@ -7,20 +7,21 @@ const schema = {
     sys_apps:{
       url:{ isVirtual:true, formula:async r=>`https://www.appsheet.com/start/${await r("url_id")}`, extra:{ test:"aaaa" } },
       sys_ents:nref("sys_ents", "sys_app_default"),
-      test:{ type:"object", isVirtual:true, formula:_=>({ wtf:1 }) },
+      test:{ type:"object", isVirtual:true, selector:"name", formula:name=>({ name }) },
       check:{ isVirtual:true, formula:async (r, cache)=>{ return cache.t = (cache.t || 0) + 1; } }
     },
     sys_ents:{
       sys_app_default:{ ref:"sys_apps" },
       options:{ separator:"; " },
-      label:{ isVirtual:true, isLabel:true, formula:r=>r("plural") },
-      is_happy: { type:"boolean", scope:"global", isVirtual:true, formula:_=>true }
+      label:{ isVirtual:true, isLabel:true, selector:"plural" },
+      is_happy: { type:"object", isVirtual:true, selector:"singular", formula:name=>({ name }) }
     },
     sys_views:{
-      id:{ isVirtual:true, formula:async r=>jet.melt([await r(["sys_ent", "id"]), await r("key")], "_") },
+      id:{ isVirtual:true, selector:["sys_ent", "key"], formula:s=>jet.melt(s, "_") },
       sys_ent:{ ref:"sys_ents" },
       name_prefix:{ init:true },
-      label:{ isVirtual:true, isLabel:true, formula:async r=>jet.melt([await r("name_prefix") ? await r(["sys_ent", "label"]) : "", await r("name")], " ") }
+      label:{ isVirtual:true, isLabel:true, formula:async r=>jet.melt([await r("name_prefix") ? await r(["sys_ent", "label"]) : "", await r("name")], " ") },
+      is_happy: { type:"object", isVirtual:true, selector:"sys_ent.is_happy", formula:v=>{ console.log("REGENERATED"); return v; } }
     },
     sys_states:{
       sys_ent:{ ref:"sys_ents" },

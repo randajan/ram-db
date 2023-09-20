@@ -20,3 +20,16 @@ export const timestamps = (doerRef, doerFormula, alternative=false)=>({
     ["created"+(alternative ? "" : "_at")]: { type: "datetime", init: _ => new Date(), isReadonly: true },
     creator: { ref:doerRef, init:doerFormula, isReadonly:true }
 });
+
+export const breachSelector = (selector, onOne, onMany)=>{
+    let alias, path;
+
+    const isArray = Array.isArray(selector);
+    if (!isArray) { [path, selector] = bite(selector, "."); }
+
+    if (path) { [alias, path] = bite(path, ":"); }
+    else if (!isArray && !selector.includes(",")) { [alias, selector] = bite(selector, ":"); }
+    else { return onMany(isArray ? selector : selector.split(",")); }
+
+    return onOne(alias, path, selector);
+}

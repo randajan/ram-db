@@ -12,9 +12,8 @@ const schema = {
     sys_ents:{
       sys_app_default:{ ref:"sys_apps" },
       options:{ separator:"; " },
-      label:{ isVirtual:true, isLabel:true, formula:r=>r("plural") },
-      is_happy: { type:"boolean", isVirtual:true, scope:"self", formula: r=>{
-        console.log(r.key, "RECALCULATE");
+      label:{ isVirtual:true, isLabel:true, selector:"plural" },
+      is_happy: { type:"boolean", isVirtual:true, formula: r=>{
         return true;
       } }
     },

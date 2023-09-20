@@ -4,7 +4,6 @@ import { Chop } from "../privates/Chop";
 import { Rows } from "./Rows";
 import { Cols } from "./Cols";
 import { numberPositive, vault } from "../../uni/consts";
-import { evaluate } from "../tools";
 
 const { solid, virtual } = jet.prop;
 

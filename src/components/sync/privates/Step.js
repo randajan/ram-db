@@ -39,7 +39,8 @@ export class Step {
     if (!col) { return; }
 
     const { vals, raws, vStamp, vSolid, before, wrap } = this;
-    const { isVirtual, cacheStamp, init, resetIf, formula, isReadonly } = col;
+    const { isVirtual, init, resetIf, formula, isReadonly } = col;
+    const cacheStamp = col.getCacheStamp();
 
     if (vals.hasOwnProperty(col) && (!isVirtual || vStamp[col] === cacheStamp)) {
       return vals[col]; //revive cached value
