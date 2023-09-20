@@ -9,7 +9,7 @@ export const nref = (tableName, colName, filter)=>{
         isTrusted:true,
         ref:tableName,
         separator:"; ",
-        scope:"db",
+        scope:tableName,
         formula:(row, cache)=>row.refs(tableName, colName, filter, cache)
     }
 };
