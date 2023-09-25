@@ -29,7 +29,8 @@ export class Col {
             db,
             table,
             cols,
-            getCacheStamp: _=>(_gcs || (_gcs = cacheStampFactory(this)))()
+            getCacheStamp: _=>(_gcs || (_gcs = cacheStampFactory(this)))(),
+            _ref:traits.ref
         }, false);
 
         solid.all(this, {
@@ -44,7 +45,6 @@ export class Col {
 
         for (const tn in colTraits) {
             const trait = traits[tn];
-            if (tn === "ref") { solid(this, "_ref", trait); }
             delete traits[tn];
             cached(this, _p, tn, _=>colTraits[tn](trait, this));
         }

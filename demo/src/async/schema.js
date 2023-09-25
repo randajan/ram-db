@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { nref, reform, summary } from "../../../dist/async.js";
+import { nref, summary } from "../../../dist/async.js";
 
 
 
@@ -47,10 +47,10 @@ const schema = {
       phone:{ separator:"; " },
       email:{ separator:"; " },
       accounts:{ separator:"; " },
-      label:{ isLabel:true, isVirtual:true, display:2, formula: reform(
-        "alias,name,email,accounts,phone,in",
-        ([l, n, e, a, p, i], r)=>l || n || e[0] || a[0] || p[0] || i || r.key
-      )}
+      label:{ isLabel:true, isVirtual:true, display:2,
+        selector:"alias,name,email,accounts,phone,in",
+        formula:([l, n, e, a, p, i], r)=>l || n || e[0] || a[0] || p[0] || i || r.key
+      }
     },
     book_items:{
       "id": { isPrimary:true, init:_=>jet.uid() },
@@ -185,7 +185,7 @@ const schema = {
       id:{ isVirtual:true, isPrimary:true, formula:async r=>jet.melt([await r(["kin_contact", "id"]), await r("version")], "_") }
     },
     book_accs:{
-      id:{ isVirtual:true, isPrimary:true, formula:async r=>(await r("account_id"))+"/"+(await r("bank_id")) }
+      id:{ isVirtual:true, isPrimary:true, formula:async r=>(await r("account_id"))+"/"+(await r("bank_id")) },
     },
     kin_relations:{
       id:{ isVirtual:true, isPrimary:true, formula:async r=>jet.melt([await r(["kin_contact_from", "id"]), await r(["kin_contact_to", "id"])], "_") }

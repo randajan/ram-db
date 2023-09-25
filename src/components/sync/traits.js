@@ -43,6 +43,7 @@ export const colTraits = {
     separator: String.jet.to,
     isVirtual: Boolean.jet.to,
     isTrusted: Boolean.jet.to,
+    isMorph:(val, col)=>typeof col._ref === "function",
     noNull: Boolean.jet.to,
     extra: Object.jet.to,
     scope: (raw, col)=>{
@@ -87,7 +88,7 @@ const collectDeps = (cols, selector, tables, scopes)=>{
             if (!Array.isArray(s)) { scopes.add(s); }
             else { for (const t of s) { tables.add(t); } }
             if (!c._ref) { return; }
-            if (typeof c._ref !== "string") { scopes.add("db"); return; } //selector found morph ref it should fall back to scope=db
+            if (c.isMorph) { scopes.add("db"); return; }
             if (!path) { return; }
             tables.add(c._ref);
             const tbl = cols.db(c._ref);

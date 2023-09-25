@@ -139,6 +139,7 @@ export class Rows extends Chop {
 
     chopByCol(colName, filter, cacheAs=true) {
       const c = this.table.cols(colName);
+      const toRaw = (v, r)=>(c.isMorph ? r.table.name + "$" : "") + c._toRaw(v);
 
       return this.addChop(
         typeof cacheAs == "string" ? cacheAs : colName,
@@ -148,10 +149,10 @@ export class Rows extends Chop {
             const wrap = row[isSet ? "live" : "saved"];
             if (filter && (filter(wrap)) === false) { return; }
             const val = wrap.get(colName);
-            if (!c.separator) { return c._toRaw(val); }
+            if (!c.separator) { return toRaw(val, row); }
             let res = [];
             for (const v of val) { 
-              const r = c._toRaw(v);
+              const r = toRaw(v, row);
               if (r != null) { res.push(r); }
             }
             return res;
