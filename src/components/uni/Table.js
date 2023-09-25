@@ -37,7 +37,7 @@ export class Table {
 
   }
 
-  msg(text) { return this.db.msg(text, this.key); }
+  msg(text) { return this.db.msg(text, this.name); }
 
   eval(selector, opt={}) {
     return this.rows.eval(selector, opt);
@@ -48,7 +48,7 @@ export class Table {
   }
 
   toString() {
-    return this.name || ""
+    return this.name || "";
   }
 
   toJSON() {
