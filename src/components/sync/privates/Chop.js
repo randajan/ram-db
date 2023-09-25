@@ -9,7 +9,7 @@ const { solid, virtual } = jet.prop;
 export class Chop extends jet.types.Plex {
 
   constructor(name, config = {}) {
-    const { stream, loader, parent, childName, getContext, defaultContext, maxAge, maxAgeError } = Object.jet.to(config);
+    const { stream, loader, parent, childName, getContext, defaultContext, maxAge, maxAgeError, extra } = Object.jet.to(config);
     const [uid, _p] = vault.set({
       isLoaded:false,
       loader,
@@ -34,6 +34,7 @@ export class Chop extends jet.types.Plex {
       parent,
       maxAge: Math.max(0, Number.jet.to(maxAge)),
       maxAgeError: Math.max(0, Number.jet.to(maxAgeError)),
+      extra: solid.all({}, Object.jet.to(extra))
     }, false);
 
     virtual.all(this, {
@@ -139,9 +140,9 @@ export class Chop extends jet.types.Plex {
     }
   }
 
-  addChop(name, opt={}) {
+  addChop(name, config={}) {
     const subs = vault.get(this.uid).subs; //sub chops
-    const { useCache, throwError, getContext, defaultContext, loader } = opt;
+    const { useCache, throwError, getContext, defaultContext, loader, extra } = config;
 
     name = formatKey(name);
 
@@ -163,7 +164,8 @@ export class Chop extends jet.types.Plex {
         chop.on("beforeReset", this.on("afterRemove", child=>bundle.remove(child)), false);
         this.on("beforeReset", _=>chop.reset(), false);
         if (loader) { loader(chop, bundle); }
-      }
+      },
+      extra
     });
 
     return (useCache !== false) ? subs[name] = sub : sub;

@@ -40,14 +40,16 @@ export class Wrap extends jet.types.Plex {
 
   }
 
-  chopByRef(tableName, colName, filter, cacheAs = true) {
+  chopByRef(tableName, colName, filter, cacheAs = true, morphSeparator = "$$") {
     const table = this.db.get(tableName);
-    return table.rows.chopByCol(colName, filter, cacheAs);
+    const chop = table.rows.chopByCol(colName, filter, cacheAs, morphSeparator);
+    if (chop.extra.isRef) { return chop; }
+    throw Error(this.table.msg(`chopByRef table('${tableName}') column('${colName}') failed because column is not ref`));
   }
 
   refs(tableName, colName, filter, cache = {}) {
     const chop = (cache.current || (cache.current = this.chopByRef(tableName, colName, filter, false)));
-    return chop.getList(this.key, false);
+    return chop.getList((chop.extra.isMorph ? this.table.name + chop.extra.morphSeparator : "") + this.key, false);
   }
 
   getKey() {

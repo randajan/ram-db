@@ -1,4 +1,4 @@
-import ramdb from "./async/fe";
+import ramdb from "./sync/fe";
 
 
 window.ramdb = ramdb;

@@ -49,7 +49,6 @@ export class Wrap extends jet.types.Plex {
 
   async refs(tableName, colName, filter, cache = {}) {
     const chop = await (cache.current || (cache.current = this.chopByRef(tableName, colName, filter, false)));
-    console.log(chop.extra);
     return chop.getList((chop.extra.isMorph ? this.table.name + chop.extra.morphSeparator : "") + this.key, false);
   }
 
