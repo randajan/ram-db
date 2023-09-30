@@ -1,7 +1,3 @@
-export const bite = (str, separator) => {
-    const x = str.indexOf(separator);
-    return x <= 0 ? [undefined, str] : [str.slice(0, x), str.slice(x + 1)];
-}
 
 export const nref = (tableName, colName, filter)=>{
     return {
@@ -25,10 +21,10 @@ export const breachSelector = (selector, onOne, onMany)=>{
     let alias, path;
 
     const isArray = Array.isArray(selector);
-    if (!isArray) { [path, selector] = bite(selector, "."); }
+    if (!isArray) { [path, selector] = String.jet.bite(selector, "."); }
 
-    if (path) { [alias, path] = bite(path, ":"); }
-    else if (!isArray && !selector.includes(",")) { [alias, selector] = bite(selector, ":"); }
+    if (path) { [alias, path] = String.jet.bite(path, ":"); }
+    else if (!isArray && !selector.includes(",")) { [alias, selector] = String.jet.bite(selector, ":"); }
     else { return onMany(isArray ? selector : selector.split(",")); }
 
     return onOne(alias, path, selector);
