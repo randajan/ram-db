@@ -39,7 +39,7 @@ export const colTraits = {
     selector:val=>(Array.isArray(val) || typeof val === "string") ? val : null,
     formula: functionWithCacheOrNull,
     ref: functionOrNull,
-    display: (val, col)=>numberPositive(val) || col.db.displayDefault,
+    display: (val, col)=>numberPositive(val, col.db.displayDefault),
     separator: String.jet.to,
     isVirtual: Boolean.jet.to,
     isTrusted: Boolean.jet.to,
