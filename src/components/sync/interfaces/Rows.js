@@ -27,6 +27,7 @@ const save = (bundle, row, silentSave) => {
       bundle.run("beforeUpdate", [row, undefined, silentSave]);
       bundle.run("afterUpdate", [row, undefined, silentSave]);
     }
+    row._markAsSaved();
   }
   if (keySaved && (rekey || remove)) { bundle.remove(row, true, silentSave); }
 
@@ -61,8 +62,6 @@ export class Rows extends Chop {
       table,
     }, false);
 
-    this.on("afterSet", row => row._markAsSaved());
-    this.on("afterUpdate", row => row._markAsSaved());
     table.db.on("afterReset", _p.recycle, false);
 
   }
@@ -131,7 +130,9 @@ export class Rows extends Chop {
     return super.addChop(name, {
       ...opt,
       loader: (chop, bundle) => {
-        const cleanUp = this.on("afterUpdate", row => { if (bundle.set(row, false)) { bundle.remove(row); } });
+        const cleanUp = this.on("afterUpdate", row => {
+          if (bundle.set(row, false)) { bundle.remove(row); }
+        });
         chop.on("beforeReset", cleanUp, false);
       }
     });

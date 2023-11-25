@@ -163,7 +163,7 @@ export class Bundle {
     const { list } = this.getData(context, throwError);
     const bk = byKey ? {} : null;
 
-    const bn = Array.jet.remapAsync(list, (child, key, stop)=>{
+    const bn = Array.jet.remap(list, (child, key, stop)=>{
       const r = callback(child, stop);
       if (bk && r !== undefined) { bk[child.getKey(false)] = r; } 
       return r;
