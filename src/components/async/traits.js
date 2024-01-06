@@ -18,15 +18,16 @@ const functionWithCacheOrNull = (trait, col)=>{
     return async row=>formula(await row.eval(selector), row, cache);
 }
 
-export const colTo = {
-    boolean:{val:Boolean.jet.to, raw:Boolean.jet.to},
-    string:{val:String.jet.to, raw:String.jet.to},
+export const colTo = jet.map({
+    boolean:{val:Boolean.jet.to},
+    string:{val:(v, c)=>String.jet.to(v).substr(0, c.max)},
     ref:{val:String, raw:v=>v.key || v},
-    number:{val:v=>Number.jet.round(Number.jet.to(v), 2), raw:v=>Number.jet.round(Number.jet.to(v), 2)},
-    datetime:{val:v=>v == null ? new Date() : new Date(v), raw:v=>v == null ? new Date() : new Date(v)},
-    duration:{val:v=>Math.max(0, Math.round(Number.jet.to(v))), raw:v=>Math.max(0, Math.round(Number.jet.to(v)))},
-    object:{val:v=>jet.json.from(v), raw:v=>jet.json.from(v)}
-}
+    number:{val:(v, c)=>Number.jet.round(Number.jet.frame(Number.jet.to(v), c.min, c.max), c.dec)},
+    datetime:{val:v=>v == null ? new Date() : new Date(v)},
+    duration:{val:v=>Math.max(0, Math.round(Number.jet.to(v)))},
+    object:{val:v=>jet.json.from(v)}
+}, t=>t.raw ? t : {...t, raw:t.val});
+
 
 export const colTraits = {
     type: jet.enumFactory(Object.keys(colTo), {
@@ -44,6 +45,9 @@ export const colTraits = {
     isVirtual: Boolean.jet.to,
     isTrusted: Boolean.jet.to,
     isMorph:(val, col)=>typeof col._ref === "function",
+    dec:(val, col)=>Math.round(numberPositive(val, col.db.decimalDefault)),
+    min:val=>val == null ? undefined : Number.jet.to(val),
+    max:val=>val == null ? undefined : Number.jet.to(val),
     noNull: Boolean.jet.to,
     extra: Object.jet.to,
     scope: (raw, col)=>{

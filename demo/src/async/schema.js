@@ -190,6 +190,10 @@ const schema = {
     kin_relations:{
       id:{ isVirtual:true, isPrimary:true, formula:async r=>jet.melt([await r(["kin_contact_from", "id"]), await r(["kin_contact_to", "id"])], "_") }
     },
+    kin_contacts:{
+      name:{ max:10 },
+      doc_lifespan:{ type:"number", dec:4, min:0, max:31 }
+    },
     case_orders:{
       book_docs:nref("book_docs", "case_order"),
       case_tasks:nref("case_tasks", "case_order")

@@ -13,7 +13,7 @@ const cacheStampFactory = col=>{
     if (scope === "db") { return _=>db.lastChange; }
     if (scope === "global") { return _=>0; }
     
-    const getLastChanges = tn=>db(tn).lastChange;
+    const getLastChanges = tn=>db(tn).then(t=>t.lastChange);
     return _=>Math.max(...scope.map(getLastChanges));
 }
 
@@ -29,7 +29,7 @@ export class Col {
             db,
             table,
             cols,
-            getCacheStamp: _=>(_gcs || (_gcs = cacheStampFactory(this)))(),
+            getCacheStamp: _=>(_gcs || (_gcs = cacheStampFactory(this))).then(gcs=>gcs()),
             _ref:traits.ref
         }, false);
 
@@ -81,7 +81,7 @@ export class Col {
     getKey() { return this.name; }
 
     _toRaw(val) {
-        if (val != null || this.noNull) { return colTo[this.type].raw(val); }
+        if (val != null || this.noNull) { return colTo[this.type].raw(val, this); }
     }
 
     toRaw(val) {
@@ -98,7 +98,7 @@ export class Col {
     }
 
     _toVal(raw, refName) {
-        if (raw != null || this.noNull) { raw = colTo[this.type].val(raw); }
+        if (raw != null || this.noNull) { raw = colTo[this.type].val(raw, this); }
         if (raw != null) { return refName ? (this.db(refName)).rows.get(raw, false) : raw; }
     }
 
@@ -129,4 +129,3 @@ export class Col {
     }
 
 }
-

@@ -81,7 +81,7 @@ export class Col {
     getKey() { return this.name; }
 
     _toRaw(val) {
-        if (val != null || this.noNull) { return colTo[this.type].raw(val); }
+        if (val != null || this.noNull) { return colTo[this.type].raw(val, this); }
     }
 
     toRaw(val) {
@@ -98,7 +98,7 @@ export class Col {
     }
 
     async _toVal(raw, refName) {
-        if (raw != null || this.noNull) { raw = colTo[this.type].val(raw); }
+        if (raw != null || this.noNull) { raw = colTo[this.type].val(raw, this); }
         if (raw != null) { return refName ? (await this.db(refName)).rows.get(raw, false) : raw; }
     }
 

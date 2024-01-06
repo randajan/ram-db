@@ -11,7 +11,7 @@ export class DB extends Chop {
 
     constructor(name, stream, config={}) {
         
-        const { displayDefault, maxAge, maxAgeError } = config;
+        const { displayDefault, decimalDefault, maxAge, maxAgeError } = config;
         super(name, {
             stream,
             loader: (self, bundle, tables) => {
@@ -30,6 +30,7 @@ export class DB extends Chop {
         });
 
         solid(this, "displayDefault", numberPositive(displayDefault));
+        solid(this, "decimalDefault", numberPositive(decimalDefault, 2));
 
         const _p = vault.get(this.uid);
         _p.lastChange = Date.now();

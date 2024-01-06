@@ -31,6 +31,6 @@ export const ramdb = ramdbConstructor("main", async (self)=>{
 
   return tbls;
 
-}, { displayDefault:1 });
+}, { displayDefault:1, decimalDefault:3 });
 
 export default ramdb;
