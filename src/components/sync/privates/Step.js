@@ -127,28 +127,16 @@ export class Step {
     if (c && c.isVirtual) { return c.toRaw(this.pull(c)); }
   }
 
-  select(selector, opt={}) {
-    console.warn(this.table.msg("select() is deprecated please use eval()"));
-    const { table: { cols } } = this;
-    const { byKey, noVals, throwError } = opt;
-    const isArray = Array.isArray(selector);
-    const bk = (byKey || !isArray) ? {} : null;
-    const bl = Object.keys(selector).map(x => {
-      // when selector is array it expect values to be the columns while for object its oposite
-      const c = isArray ? selector[x] : x, as = isArray ? x : selector[x];
-      const col = cols.get(c, throwError); if (!col) { return; }
-      const asref = (!isArray && typeof as === "object");
-      if (asref && !col.ref) { throw Error(col.msg("selector looks for ref")); }
-      const val = (noVals && !asref) ? this.raws[col] : this.pull(col);
-      if (val == null) { return; } else if (isArray) { return bk ? bk[col] = val : val; } //filter simple scenario
-      if (!asref) { return bk[typeof as === "string" ? as : col] = val; } //filter alias or another scimple scenario
-      bk[col] = col.separator ? val.map(v=>v.select(as, opt)) : val.select(as, opt); 
-    });
-    return bk || bl;
-  }
-
   eval(selector, opt={}) {
     return evaluate(this, selector, opt);
+  }
+
+  extract(noVals, filter) {
+    const { table: { cols } } = this;
+    return cols.map(c=>{
+      if (filter && !filter(c)) { return; }
+      return !noVals ? this.pull(c) : !c.isVirtual ? this.raws[c] : c.toRaw(this.pull(c));
+    }, { byKey:true });
   }
 
   remove() {

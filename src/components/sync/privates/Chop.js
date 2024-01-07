@@ -125,7 +125,6 @@ export class Chop extends jet.types.Plex {
       if (_p.isLoaded) { return; }
       _p.bundle.run("beforeLoad", [_p.bundle]);
       const data = _p.stream(this);
-      if (Promise.jet.is(data)) { throw Error(this.msg(`init failed - promise found at sync`)); }
       _p.loader(this, _p.bundle, data);
       _p.isLoaded = true;
       _p.bundle.run("afterLoad", [_p.bundle]);

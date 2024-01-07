@@ -12,7 +12,7 @@ const schema = {
     },
     sys_ents:{
       sys_app_default:{ ref:"sys_apps" },
-      options:{ separator:"; " },
+      options:{ separator:"; ", display:2 },
       label:{ isVirtual:true, isLabel:true, selector:"plural" },
       is_happy: { type:"object", isVirtual:true, selector:"singular", formula:name=>({ name }) }
     },
@@ -192,7 +192,7 @@ const schema = {
     },
     kin_contacts:{
       name:{ max:10 },
-      doc_lifespan:{ type:"number", dec:4, min:0, max:31 }
+      doc_lifespan:{ type:"number", dec:4, min:0, max:31 },
     },
     case_orders:{
       book_docs:nref("book_docs", "case_order"),

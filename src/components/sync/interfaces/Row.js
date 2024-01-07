@@ -24,7 +24,6 @@ export class Row extends jet.types.Plex {
       rows,
       get,
       getRaw: (col, throwError=true) => _p.live.getRaw(col, throwError),
-      select: (selector, opt={}) => _p.live.select(selector, opt),
       eval:(selector, opt = {}) => _p.live.eval(selector, opt),
       set: (vals, opt = { autoSave: true, resetOnError: true, throwError: true }) => push(vals, true, opt),
       update: (vals, opt = { autoSave: true, resetOnError: true, throwError: true }) => push(vals, false, opt),

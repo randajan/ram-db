@@ -127,28 +127,16 @@ export class Step {
     if (c && await c.isVirtual) { return c.toRaw(await this.pull(c)); }
   }
 
-  async select(selector, opt={}) {
-    console.warn(this.table.msg("select() is deprecated please use eval()"));
-    const { table: { cols } } = this;
-    const { byKey, noVals, throwError } = opt;
-    const isArray = Array.isArray(selector);
-    const bk = (byKey || !isArray) ? {} : null;
-    const bl = await Promise.all(Object.keys(selector).map(async x => {
-      // when selector is array it expect values to be the columns while for object its oposite
-      const c = isArray ? selector[x] : x, as = isArray ? x : selector[x];
-      const col = await cols.get(c, throwError); if (!col) { return; }
-      const asref = (!isArray && typeof as === "object");
-      if (asref && !col.ref) { throw Error(col.msg("selector looks for ref")); }
-      const val = (noVals && !asref) ? this.raws[col] : await this.pull(col);
-      if (val == null) { return; } else if (isArray) { return bk ? bk[col] = val : val; } //filter simple scenario
-      if (!asref) { return bk[typeof as === "string" ? as : col] = val; } //filter alias or another scimple scenario
-      bk[col] = col.separator ? await Promise.all(val.map(v=>v.select(as, opt))) : await val.select(as, opt); 
-    }));
-    return bk || bl;
-  }
-
   async eval(selector, opt={}) {
     return evaluate(this, selector, opt);
+  }
+
+  async extract(noVals, filter) {
+    const { table: { cols } } = this;
+    return cols.map(async c=>{
+      if (filter && !await filter(c)) { return; }
+      return !noVals ? this.pull(c) : !c.isVirtual ? this.raws[c] : c.toRaw(await this.pull(c));
+    }, { byKey:true });
   }
 
   remove() {

@@ -21,8 +21,9 @@ export class Wrap extends jet.types.Plex {
       rows,
       get,
       getRaw:(col, throwError=true) => step.getRaw(col, throwError),
-      select:(selector, opt = {}) => step.select(selector, opt),
-      eval:(selector, opt = {}) => step.eval(selector, opt)
+      eval:(selector, opt = {}) => step.eval(selector, opt),
+      getRaws:filter=>step.extract(true, filter),
+      getVals:filter=>step.extract(false, filter)
     }, false);
 
     virtual.all(this, {
