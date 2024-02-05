@@ -39,12 +39,13 @@ export class Step {
     if (!col) { return; }
 
     const { vals, raws, vStamp, vSolid, before, wrap } = this;
-    const { isVirtual, init, resetIf, formula, isReadonly } = col;
+    const { isVirtual, init, resetIf, formula, isReadonly, separator } = col;
     const cacheStamp = await col.getCacheStamp();
 
     if (vals.hasOwnProperty(col) && (!isVirtual || vStamp[col] === cacheStamp)) {
-      return vals[col]; //revive cached value
-    } 
+      const cval = vals[col];
+      return (separator && cval) ? [...cval] : cval; //revive cached value
+    }
 
     let raw = raws[col];
     const self = _ => col.toVal(raw, wrap);

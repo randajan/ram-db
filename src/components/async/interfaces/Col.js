@@ -86,15 +86,15 @@ export class Col {
 
     toRaw(val) {
         const { separator } = this;
-        if (!separator || val == null) { return this._toRaw(val); }
-        if (!Array.isArray(val)) { val = String(val).split(separator); }
+        if (!separator) { return this._toRaw(val); }
+        if (!Array.isArray(val)) { val = Array.jet.to(String.jet.to(val, separator)); }
         let raw = "";
         for (let v of val) {
             v = this._toRaw(v);           
             if (v == null || v == "") { continue; }
             raw += (raw ? separator : "") + v;
         }
-        return raw;
+        if (raw) { return raw; }
     }
 
     async _toVal(raw, refName) {

@@ -28,10 +28,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@randajan/jet-core@^3.2.14":
-  version "3.2.14"
-  resolved "https://registry.yarnpkg.com/@randajan/jet-core/-/jet-core-3.2.14.tgz#410cfc682a9823ce63ab613ad1c68bb1514fbe2b"
-  integrity sha512-ZdBawLskWAFuA7uK1ikByMecOHI/YGUh3FgPghCv+BPv5eIUDTz0lql0jz9PVbqWGq4wgrvQmE/O2cItjwew+g==
+"@randajan/jet-core@^3.2.19":
+  version "3.2.19"
+  resolved "https://registry.yarnpkg.com/@randajan/jet-core/-/jet-core-3.2.19.tgz#fbac30983d9bcf253bf9d9f2e064cf84019c0626"
+  integrity sha512-xlr5vXkZ8Id4jh5kWwfc9G162+L7m4kkf6mlyEYWquiu6cXqFPmigkor20nrtmA7RghTYemhoq+oCp1K9SO1Ig==
 
 "@randajan/odata-server@^2.1.14":
   version "2.1.14"
@@ -43,10 +43,10 @@
     path-to-regexp "6.2.1"
     xmlbuilder "15.1.1"
 
-"@randajan/simple-lib@2.1.2":
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/@randajan/simple-lib/-/simple-lib-2.1.2.tgz#6831aa49fc5351981859494ea84054db75d70034"
-  integrity sha512-6OgzYo2FUUWctCoMr0MAicvSvLenBNju1/j8cBWKVOyUaQSu3UEYQMme8PWhnH1La5wONsm6/fDCMnF+DgWtpg==
+"@randajan/simple-lib@^2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@randajan/simple-lib/-/simple-lib-2.1.4.tgz#5e63e7afa6d9bd12a326f09fcfae6ac5cc73e238"
+  integrity sha512-nMseLFI56MM/wotcAq3kXesZT59oCerf1YTLu/fGT9sCJiK9VeZKpoWypGXmvwPpSNkgfFBmBLTCA5nXzgXhjg==
   dependencies:
     app-root-path "^3.1.0"
     approot "^0.2.1"
@@ -688,10 +688,10 @@ fs-extra@^10.1.0:
     jsonfile "^6.0.1"
     universalify "^2.0.0"
 
-fs-extra@^11.1.1:
-  version "11.1.1"
-  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-11.1.1.tgz#da69f7c39f3b002378b0954bb6ae7efdc0876e2d"
-  integrity sha512-MGIE4HOvQCeUCzmlHs0vXpih4ysz4wg9qiSAu6cd42lVwPbTM1TjV7RusoyQqMmk/95gdQZX72u+YW+c3eEpFQ==
+fs-extra@^11.2.0:
+  version "11.2.0"
+  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-11.2.0.tgz#e70e17dfad64232287d01929399e0ea7c86b0e5b"
+  integrity sha512-PmDi3uwK5nFuXh7XDTlVnS17xJS7vW36is2+w3xcv8SVxiB4NyATf4ctkVY5bkSjX0Y4nbvZCq1/EjtEyr9ktw==
   dependencies:
     graceful-fs "^4.2.0"
     jsonfile "^6.0.1"
