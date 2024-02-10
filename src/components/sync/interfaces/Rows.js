@@ -39,9 +39,6 @@ export class Rows extends Chop {
       defaultContext: "all",
       stream,
       loader: (rows, bundle, data) => {
-        bundle.on("afterSet", row=>row._markAsSaved());
-        bundle.on("afterUpdate", row=>row._markAsSaved());
-
         for (let index in data) {
           const vals = data[index];
           if (!jet.isMapable(vals)) { return; }
@@ -63,6 +60,9 @@ export class Rows extends Chop {
       db: table.db,
       table,
     }, false);
+
+    this.on("afterSet", row=>row._markAsSaved());
+    this.on("afterUpdate", row=>row._markAsSaved());
 
     table.db.on("afterReset", _p.recycle, false);
 
