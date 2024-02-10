@@ -13,6 +13,7 @@ export const formatKey = (key, def)=>key != null ? String(key) : def;
 export const numberPositive = (num, def=0)=>num == null ? def : Math.max(0, Number.jet.to(num));
 export const functionOrNull = val=>val == null ? undefined : Function.jet.to(val);
 
+
 const _sortBy = (colName, descending=false, list=[])=>{
     const _sb = (colName, descending)=>_sortBy(colName, descending, list);
     solid(_sb, "list", list);
