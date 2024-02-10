@@ -27,7 +27,6 @@ const save = async (bundle, row, silentSave) => {
       await bundle.run("beforeUpdate", [row, undefined, silentSave]);
       await bundle.run("afterUpdate", [row, undefined, silentSave]);
     }
-    row._markAsSaved();
   }
   if (keySaved && (rekey || remove)) { await bundle.remove(row, true, silentSave); }
 
@@ -40,11 +39,15 @@ export class Rows extends Chop {
       defaultContext: "all",
       stream,
       loader: async (rows, bundle, data) => {
+        bundle.on("afterSet", row=>row._markAsSaved());
+        bundle.on("afterUpdate", row=>row._markAsSaved());
+
         for (let index in data) {
           const vals = data[index];
           if (!jet.isMapable(vals)) { return; }
           await Row.create(rows, _p.onSave).set(vals, { throwError: false, silentSave: true });
         }
+
       }
     });
 
