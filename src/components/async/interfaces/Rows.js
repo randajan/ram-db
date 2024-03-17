@@ -47,7 +47,7 @@ export class Rows extends Chop {
       }
     });
 
-    const _p = vault.get(this.uid);
+    const _p = vault.get(this);
     _p.onSave = (row, silentSave) => {
       if (this.isLoading) {
         return save(_p.bundle, row, silentSave);
@@ -63,8 +63,6 @@ export class Rows extends Chop {
 
     this.on("afterSet", row=>row._markAsSaved());
     this.on("afterUpdate", row=>row._markAsSaved());
-
-    table.db.on("afterReset", _p.recycle, false);
 
   }
 
@@ -90,7 +88,7 @@ export class Rows extends Chop {
 
   async addOrUpdate(vals, opt = { add: true, update: true, autoSave: true, resetOnError: true, throwError: true }) {
     const { table } = this;
-    const _p = vault.get(this.uid);
+    const _p = vault.get(this);
     await this.untilLoaded(); //await load
     await _p.transactions.last; //await any operation
 

@@ -10,7 +10,7 @@ import { Col } from "../interfaces/Col.js";
 const { solid, virtual } = jet.prop;
 
 const loader = async (cols, bundle, data) => {
-  const _p = vault.get(cols.uid);
+  const _p = vault.get(cols);
   const isArray = Array.isArray(data);
   const { list } = _p.bundle.getData();
 
@@ -57,8 +57,7 @@ export class Cols extends Chop {
       loader
     });
 
-    const _p = vault.get(this.uid);
-    table.db.on("afterReset", _p.recycle, false);
+    const _p = vault.get(this);
 
     solid.all(this, {
       db:table.db,

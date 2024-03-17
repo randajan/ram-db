@@ -13,7 +13,7 @@ const cacheStampFactory = col=>{
     if (scope === "db") { return _=>db.lastChange; }
     if (scope === "global") { return _=>0; }
     
-    const getLastChanges = tn=>db(tn).then(t=>t.lastChange);
+    const getLastChanges = tn=>db(tn).lastChange;
     return _=>Math.max(...scope.map(getLastChanges));
 }
 
@@ -21,7 +21,7 @@ export class Col {
 
     constructor(cols, id, name, traits) {
         const { db, table } = cols;
-        const _c = vault.get(cols.uid);
+        const _c = vault.get(cols);
         const _p = {};
 
         let _gcs;
@@ -29,7 +29,7 @@ export class Col {
             db,
             table,
             cols,
-            getCacheStamp: _=>(_gcs || (_gcs = cacheStampFactory(this))).then(gcs=>gcs()),
+            getCacheStamp: _=>(_gcs || (_gcs = cacheStampFactory(this)))(),
             _ref:traits.ref
         }, false);
 

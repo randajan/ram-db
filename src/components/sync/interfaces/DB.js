@@ -32,7 +32,7 @@ export class DB extends Chop {
         solid(this, "displayDefault", numberPositive(displayDefault));
         solid(this, "decimalDefault", numberPositive(decimalDefault, 2));
 
-        const _p = vault.get(this.uid);
+        const _p = vault.get(this);
         _p.lastChange = Date.now();
         virtual(this, "lastChange", _=>_p.lastChange);
         this.on("afterChange", _=>_p.lastChange = Date.now());

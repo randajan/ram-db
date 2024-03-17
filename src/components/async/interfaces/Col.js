@@ -21,7 +21,7 @@ export class Col {
 
     constructor(cols, id, name, traits) {
         const { db, table } = cols;
-        const _c = vault.get(cols.uid);
+        const _c = vault.get(cols);
         const _p = {};
 
         let _gcs;

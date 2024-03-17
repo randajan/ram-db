@@ -39,7 +39,7 @@ export class Step {
     if (!col) { return; }
 
     const { vals, raws, vStamp, vSolid, before, wrap } = this;
-    const { isVirtual, init, resetIf, formula, isReadonly } = col;
+    const { isVirtual, init, resetIf, formula, isReadonly, separator } = col;
     const cacheStamp = col.getCacheStamp();
 
     if (vals.hasOwnProperty(col) && (!isVirtual || vStamp[col] === cacheStamp)) {

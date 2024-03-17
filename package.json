@@ -17,12 +17,12 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@randajan/jet-core": "^3.2.19",
-    "@randajan/odata-server": "^2.1.14",
+    "@randajan/jet-core": "^3.3.0",
+    "@randajan/odata-server": "^2.1.16",
     "fs-extra": "^11.2.0"
   },
   "devDependencies": {
-    "@randajan/simple-lib": "^2.1.4",
+    "@randajan/simple-lib": "^2.2.1",
     "esbuild-plugin-import-glob": "^0.1.1"
   },
   "files": [
@@ -42,5 +42,8 @@
     "email": "jnranda@gmail.com",
     "url": "https://www.linkedin.com/in/randajan/"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@randajan/jet-core": "^3.3.0",
+    "@randajan/odata-server": "^2.1.16"
+  }
 }
