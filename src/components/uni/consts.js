@@ -1,13 +1,20 @@
 import jet from "@randajan/jet-core";
 
-const { solid } = jet.prop;
+const { solid, cached } = jet.prop;
 
 export const vault = new WeakMap();
 
-export const eventsWhen = ["before", "after"];
-export const eventsRows = [].concat(
-    ...eventsWhen.map(w=>["set", "update", "remove"].map(c=>[w, c, w+String.jet.capitalize(c)]))
-);
+const eventsWhen = ["before", "after"];
+export const events = cached.all({}, {}, {
+    primitive:_=>[].concat(
+        ...eventsWhen.map(w=>["set", "update", "remove"].map(c=>[w, c, w+String.jet.capitalize(c)]))
+    ),
+    extra:_=>[].concat(
+        ...eventsWhen.map(w=>["change", "save"].map(c=>[w, c, w+String.jet.capitalize(c)]))
+    )
+});
+
+
 
 export const formatKey = (key, def)=>key != null ? String(key) : def;
 export const numberPositive = (num, def=0)=>num == null ? def : Math.max(0, Number.jet.to(num));

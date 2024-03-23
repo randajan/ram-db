@@ -48,15 +48,17 @@ export class Bundle {
     if (throwError) { throw Error(this.msg(`${action}(...) failed - key undefined`));}
   }
 
-  on(event, callback, repeat=true) {
+  on(event, callback, opt={}) {
     if (!jet.isRunnable(callback)) { throw Error(this.msg(`on(...) require callback`)); }
-
+    const { once, bufferMs, maxQueueMs, maxQueueSize } = opt;
     const { handlers } = this;
     const list = (handlers[event] || (handlers[event] = []));
 
     let remove;
-    const cb = repeat ? callback : async (...args)=>{ await callback(...args); remove(); }
-    if (event.startsWith("before")) { list.push(cb); } else { list.unshift(cb) }
+    let cb = once ? async (...args)=>{ await callback(...args); remove(); } : callback;
+    cb = bufferMs ? jet.buffer(cb, bufferMs, maxQueueMs, maxQueueSize) : cb;
+    
+    if (event.startsWith("before")) { list.push(cb); } else { list.unshift(cb); }
 
     return remove = _ => {
       const id = list.indexOf(cb);
@@ -69,19 +71,18 @@ export class Bundle {
     const handlers = this.handlers[event];
     if (!handlers?.length) { return true; }
     const isBefore = event.startsWith("before");
-    try {
-      for (let i=handlers.length; i>=0; i--) {
-        const cb = handlers[i];
-        try { if (cb) { await cb(...args); } } catch(err) {
-          if (isBefore) { throw err; }
-          else if (throwError) { console.warn(this.msg(err?.message || "unknown error"), err?.stack); }
-        }
+
+    for (let i=handlers.length-1; i>=0; i--) {
+      const cb = handlers[i];
+      if (!cb) { continue; }
+      try { await cb(...args); } catch(err) {
+        if (isBefore && throwError) { throw err; }
+        else if (isBefore) { return false; }
+        else if (throwError) { console.warn(this.msg(err?.message || "unknown error"), err?.stack); }
       }
-      return true;
-    } catch(err) {
-      if (throwError) { throw err; }
-      return false;
     }
+    
+    return true;
   }
 
   async reset(throwError=true) {

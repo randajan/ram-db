@@ -43,7 +43,7 @@
     "url": "https://www.linkedin.com/in/randajan/"
   },
   "dependencies": {
-    "@randajan/jet-core": "^3.3.0",
+    "@randajan/jet-core": "^3.3.1",
     "@randajan/odata-server": "^2.1.16"
   }
 }

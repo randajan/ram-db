@@ -15,13 +15,7 @@ export class DB extends Chop {
         super(name, {
             stream,
             loader: (self, bundle, tables) => {
-                const onChange = async (when, action, row, silentSave)=>{
-                    if (row.rows.state === "loading") { return; }
-                    if (when === "before") { await bundle.run(when+"Change", [action, row]); }
-                    if (silentSave !== true) { await bundle.run(when+"Save", [action, row]); }
-                    if (when === "after") { await bundle.run(when+"Change", [action, row]); }
-                };
-                jet.map(tables, (stream, key) =>{ bundle.set(new Table(this, key, { stream, Rows, Cols, onChange}))} );
+                jet.map(tables, (stream, key) =>{ bundle.set(new Table(this, key, { bundle, stream, Rows, Cols })); });
             },
             childName: "table",
             defaultContext: "all",
@@ -29,14 +23,15 @@ export class DB extends Chop {
             maxAgeError
         });
 
-        solid(this, "displayDefault", numberPositive(displayDefault));
-        solid(this, "decimalDefault", numberPositive(decimalDefault, 2));
-
         const _p = vault.get(this);
         _p.lastChange = Date.now();
-        virtual(this, "lastChange", _=>_p.lastChange);
+
         this.on("afterChange", _=>_p.lastChange = Date.now());
 
+        virtual(this, "lastChange", _=>_p.lastChange);
+        solid(this, "displayDefault", numberPositive(displayDefault));
+        solid(this, "decimalDefault", numberPositive(decimalDefault, 2));
+        
     }
 
     async exist(name, throwError = false) {

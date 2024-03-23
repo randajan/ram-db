@@ -16,7 +16,11 @@ export class Chop extends jet.types.Plex {
       isLoaded:false,
       loader,
       stream: jet.isRunnable(stream) ? stream : _ => stream,
-      transactions:new Transactions(_=>{ if (this.maxAgeError) { setTimeout(_=>this.reset(), this.maxAgeError); } }),
+      transactions:new Transactions(_=>{
+        if (!this.maxAgeError) { return; }
+        clearTimeout(_p.intError);
+        _p.intError = setTimeout(_=>this.reset(), this.maxAgeError);
+      }),
       bundle:new Bundle(
         parent?.name,
         name,
@@ -44,14 +48,23 @@ export class Chop extends jet.types.Plex {
     });
 
     _p.bundle.on("beforeReset", _=>{
+      clearTimeout(_p.intError);
+      clearTimeout(_p.intAge);
       _p.isLoaded = false;
       _p.transactions.reset();
     });
 
+    _p.bundle.on("afterLoad", _=>{
+      if (this.maxAge) {
+        clearTimeout(_p.intAge);
+        _p.intAge = setTimeout(_=>this.reset(), this.maxAge);
+      }
+    });
+
   }
 
-  on(event, callback, repeat=true) {
-    return vault.get(this).bundle.on(event, callback, repeat);
+  on(event, callback, opt={}) {
+    return vault.get(this).bundle.on(event, callback, opt);
   }
 
   msg(text, key, context) {
@@ -121,13 +134,11 @@ export class Chop extends jet.types.Plex {
 
     return _p.transactions.execute("loading", async _=>{
       if (_p.isLoaded) { return; }
-      await _p.bundle.run("beforeLoad", [_p.bundle]);
+      await _p.bundle.run("beforeLoad", [this]);
       const data = await _p.stream(this);
-      //if (Promise.jet.is(data)) { throw Error(this.msg(`init failed - promise found at sync`)); }
       await _p.loader(this, _p.bundle, data);
       _p.isLoaded = true;
-      await _p.bundle.run("afterLoad", [_p.bundle]);
-      if (this.maxAge) { setTimeout(_=>this.reset(), this.maxAge); }
+      await _p.bundle.run("afterLoad", [this]);
     }, { stopOnError:false });
   }
 
@@ -158,9 +169,9 @@ export class Chop extends jet.types.Plex {
       defaultContext,
       loader: async (chop, bundle) =>{
         await this.map(child =>bundle.set(child));
-        chop.on("beforeReset", this.on("afterSet", async child=>bundle.set(child)), false);
-        chop.on("beforeReset", this.on("afterRemove", async child=>bundle.remove(child)), false);
-        this.on("beforeReset", _=>chop.reset(), false);
+        chop.on("beforeReset", this.on("afterSet", async child=>bundle.set(child)), { once:true });
+        chop.on("beforeReset", this.on("afterRemove", async child=>bundle.remove(child)), { once:true });
+        this.on("beforeReset", _=>chop.reset(), { once:true });
         if (loader) { loader(chop, bundle); }
       },
       extra

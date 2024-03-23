@@ -9,14 +9,18 @@ const { solid, virtual } = jet.prop;
 export class Chop extends jet.types.Plex {
 
   constructor(name, config = {}) {
-    const { stream, loader, parent, childName, getContext, defaultContext, maxAge, maxAgeError, extra } = Object.jet.to(config);
+    const { stream, loader, parent, childName, getContext, defaultContext, maxAge, maxAgeError, extra } = Object.jet.to(config);    
     super((...args) => this.get(...args));
 
     const _p = {
       isLoaded:false,
       loader,
       stream: jet.isRunnable(stream) ? stream : _ => stream,
-      transactions:new Transactions(_=>{ if (this.maxAgeError) { setTimeout(_=>this.reset(), this.maxAgeError); } }),
+      transactions:new Transactions(_=>{
+        if (!this.maxAgeError) { return; }
+        clearTimeout(_p.intError);
+        _p.intError = setTimeout(_=>this.reset(), this.maxAgeError);
+      }),
       bundle:new Bundle(
         parent?.name,
         name,
@@ -44,14 +48,23 @@ export class Chop extends jet.types.Plex {
     });
 
     _p.bundle.on("beforeReset", _=>{
+      clearTimeout(_p.intError);
+      clearTimeout(_p.intAge);
       _p.isLoaded = false;
       _p.transactions.reset();
     });
 
+    _p.bundle.on("afterLoad", _=>{
+      if (this.maxAge) {
+        clearTimeout(_p.intAge);
+        _p.intAge = setTimeout(_=>this.reset(), this.maxAge);
+      }
+    });
+
   }
 
-  on(event, callback, repeat=true) {
-    return vault.get(this).bundle.on(event, callback, repeat);
+  on(event, callback, opt={}) {
+    return vault.get(this).bundle.on(event, callback, opt);
   }
 
   msg(text, key, context) {
@@ -121,12 +134,11 @@ export class Chop extends jet.types.Plex {
 
     return _p.transactions.execute("loading", _=>{
       if (_p.isLoaded) { return; }
-      _p.bundle.run("beforeLoad", [_p.bundle]);
+      _p.bundle.run("beforeLoad", [this]);
       const data = _p.stream(this);
       _p.loader(this, _p.bundle, data);
       _p.isLoaded = true;
-      _p.bundle.run("afterLoad", [_p.bundle]);
-      if (this.maxAge) { setTimeout(_=>this.reset(), this.maxAge); }
+      _p.bundle.run("afterLoad", [this]);
     }, { stopOnError:false });
   }
 
@@ -157,9 +169,9 @@ export class Chop extends jet.types.Plex {
       defaultContext,
       loader: (chop, bundle) =>{
         this.map(child =>bundle.set(child));
-        chop.on("beforeReset", this.on("afterSet", child=>bundle.set(child)), false);
-        chop.on("beforeReset", this.on("afterRemove", child=>bundle.remove(child)), false);
-        this.on("beforeReset", _=>chop.reset(), false);
+        chop.on("beforeReset", this.on("afterSet", child=>bundle.set(child)), { once:true });
+        chop.on("beforeReset", this.on("afterRemove", child=>bundle.remove(child)), { once:true });
+        this.on("beforeReset", _=>chop.reset(), { once:true });
         if (loader) { loader(chop, bundle); }
       },
       extra

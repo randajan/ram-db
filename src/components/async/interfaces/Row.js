@@ -16,6 +16,14 @@ export class Row extends jet.types.Plex {
       return (await _p.live.push(vals, force)) && (opt.autoSave === false || await this.save(opt));
     }
 
+    const markAsSaved = _=>{
+      if (!_p.saving) { return }
+      const nextStep = Step.create(table, _p.live);
+      _p.saved = _p.live.retire();
+      _p.live = nextStep;
+      _p.saving = false;
+    }
+
     super(get);
 
     solid.all(this, {
@@ -31,18 +39,11 @@ export class Row extends jet.types.Plex {
       remove: async (opt = { autoSave: true, resetOnError: true, throwError: true }) => {
         return _p.live.remove() && (opt.autoSave === false || await this.save(opt));
       },
-      _markAsSaved:_=>{
-        if (!_p.saving) { return false; }
-        const nextStep = Step.create(table, _p.live);
-        _p.saved = _p.live.retire();
-        _p.live = nextStep;
-        return true;
-      },
       save: async (opt = { resetOnError: true, throwError: true, silentSave:false }) => {
         if (!this.isDirty) { return true; }
         try {
           _p.saving = true;
-          await onSave(this, opt.silentSave === true);
+          await onSave(this, { markAsSaved, silentSave:opt.silentSave === true });
           _p.saving = false;
           return true;
         } catch (err) {

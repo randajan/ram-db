@@ -133,10 +133,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@randajan/jet-core@^3.3.0":
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/@randajan/jet-core/-/jet-core-3.3.0.tgz#afbe765d54c1a97ca396a4f90c29031d37e97f6c"
-  integrity sha512-nRSGMgnGKv7iQkxgjJGvUmaO1JdLSFbh0kwPZ1tMyTTMv9R84CAZQSKT1EZa6XVcBBTLn1s9cm6p6wIwxEJo/g==
+"@randajan/jet-core@^3.3.1":
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/@randajan/jet-core/-/jet-core-3.3.1.tgz#7e03f9b06c9f8cba65381af8e6565ae3a560a89a"
+  integrity sha512-RkUFkkXc81GYklIYbG1yFo3EVRk6v77nrtrhlyutpruJb1CBsZ+r6lWaSZzCbu3JD6gJs9mWjPucZK7bcBlQng==
 
 "@randajan/odata-server@^2.1.16":
   version "2.1.16"

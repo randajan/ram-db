@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { vault } from "../../uni/consts.js";
+import { events, vault } from "../../uni/consts.js";
 import { Chop } from "../privates/Chop.js";
 import { Step } from "../privates/Step.js";
 import { Row } from "./Row.js";
@@ -12,28 +12,11 @@ const initStep = (table, vals) => {
   return step;
 }
 
-const save = (bundle, row, silentSave) => {
-  const keySaved = row.key;
-  const wasRemoved = row.isRemoved;
-  const key = row.live.key;
-  const isRemoved = row.live.isRemoved;
 
-  const rekey = key !== keySaved;
-  const remove = isRemoved !== wasRemoved;
-
-  if (key && !isRemoved) {
-    if (rekey) { bundle.set(row, true, silentSave); }
-    else {
-      bundle.run("beforeUpdate", [row, undefined, silentSave]);
-      bundle.run("afterUpdate", [row, undefined, silentSave]);
-    }
-  }
-  if (keySaved && (rekey || remove)) { bundle.remove(row, true, silentSave); }
-
-}
 
 export class Rows extends Chop {
   constructor(table, stream) {
+
     super(`${table.name}.rows`, {
       childName: "row",
       defaultContext: "all",
@@ -48,21 +31,49 @@ export class Rows extends Chop {
     });
 
     const _p = vault.get(this);
-    _p.onSave = (row, silentSave) => {
-      if (this.isLoading) {
-        return save(_p.bundle, row, silentSave);
-      } else {
-        return _p.transactions.execute("saving", _ => save(_p.bundle, row, silentSave));
+
+    const save = (row, opt) => {
+      const keySaved = row.key;
+      const wasRemoved = row.isRemoved;
+      const key = row.live.key;
+      const isRemoved = row.live.isRemoved;
+    
+      const rekey = key !== keySaved;
+      const remove = isRemoved !== wasRemoved;
+    
+      if (key && !isRemoved) {
+        if (rekey) { _p.bundle.set(row, true, opt); }
+        else {
+          _p.bundle.run("beforeUpdate", [row, undefined, opt]);
+          _p.bundle.run("afterUpdate", [row, undefined, opt]);
+        }
       }
+      if (keySaved && (rekey || remove)) { _p.bundle.remove(row, true, opt); }
+    
     }
 
+    _p.onSave = (row, opt={}) => this.isLoading ? save(row, opt) : _p.transactions.execute("saving", _ => save(row, opt));
+
     solid.all(this, {
-      db: table.db,
+      db:table.db,
       table,
     }, false);
 
-    this.on("afterSet", row=>row._markAsSaved());
-    this.on("afterUpdate", row=>row._markAsSaved());
+    //last step before saving is marking row as saved
+    this.on("beforeSet", (row, ctx, opt)=>opt.markAsSaved());
+    this.on("beforeUpdate", (row, ctx, opt)=>opt.markAsSaved());
+
+    //translate primitive events to extra events
+    for (const [when, action, name] of events.primitive) {
+      this.on(name, (row, ctx, opt)=>{
+        if (this.state === "loading" || opt.silentSave) { return; }
+        return _p.bundle.run(when+"Save", [action, row.live]);
+      });
+      this.on(name, row=>{
+        if (this.state === "loading") { return; }
+        return _p.bundle.run(when+"Change", [action, row.live]);
+      });
+    }
 
   }
 
@@ -130,9 +141,7 @@ export class Rows extends Chop {
     return super.addChop(name, {
       ...opt,
       loader: (chop, bundle) => {
-        const cleanUp = this.on("afterUpdate", row => {
-          if (bundle.set(row, false)) { bundle.remove(row); }
-        });
+        const cleanUp = this.on("afterUpdate", row => { if (bundle.set(row, false)) { bundle.remove(row); } });
         chop.on("beforeReset", cleanUp, false);
       }
     });
