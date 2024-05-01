@@ -1,5 +1,5 @@
-node_modules
-demo/build
-demo/data
-dist
-tmp
+/node_modules
+/demo/dist
+/demo/data
+/dist
+/tmp

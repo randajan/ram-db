@@ -1,4 +1,5 @@
 import jet from "@randajan/jet-core";
+import * as _ from "@randajan/jet-core/eachSync";
 import { formatKey } from "../../uni/consts";
 
 const { solid, virtual } = jet.prop;
@@ -159,31 +160,17 @@ export class Bundle {
     if (throwError) { throw Error(this.msg(`get failed - not exist`, key, ctx)); }
   }
 
-  map(callback, opt={}) {
-    const { context, byKey, orderBy, throwError } = opt;
+  async map(callback, opt={}) {
+    const { context, throwError, filter, orderBy, stopable, paralelAwait, byKey } = opt;
+    const { list, index } = this.getData(context, throwError);
+    const optPass = { filter, orderBy, stopable, paralelAwait };
+    return byKey ? _.map(index, callback, optPass) : _.list(list, callback, optPass);
+  }
+
+  async find(checker, opt={}) {
+    const { context, throwError, filter, orderBy, stopable, paralelAwait, byKey } = opt;
     const { list } = this.getData(context, throwError);
-    const bk = byKey ? {} : null;
-
-    const bn = Array.jet.remapAsync(list, (child, key, stop)=>{
-      const r = callback(child, stop);
-      if (bk && r !== undefined) { bk[child.getKey(false)] = r; } 
-      return r;
-    }, ...(orderBy || []));
-
-    return bk || bn;
-  }
-
-  filter(checker, opt={}) {
-    return this.map((child, stop) => {
-      if (checker(child, stop)) { return child; }
-    }, opt);
-  }
-
-  find(checker, opt={}) {
-    opt.byKey = false;
-    return (this.map((child, stop) => {
-      if (checker(child)) { return stop(child); }
-    }, opt))[0];
+    return _.find(list, checker, { filter, orderBy, stopable, paralelAwait });
   }
 
 }

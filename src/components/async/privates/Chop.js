@@ -110,11 +110,6 @@ export class Chop extends jet.types.Plex {
     return vault.get(this).bundle.map(callback, opt);
   }
 
-  async filter(checker, opt={}) {
-    await this.untilLoaded();
-    return vault.get(this).bundle.filter(checker, opt);
-  }
-
   async find(checker, opt={}) {
     await this.untilLoaded();
     return vault.get(this).bundle.find(checker, opt);

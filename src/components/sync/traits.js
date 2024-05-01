@@ -1,4 +1,5 @@
 import jet from "@randajan/jet-core";
+import { map } from "@randajan/jet-core/eachSync";
 import { functionOrNull, numberPositive } from "../uni/consts";
 import { breachSelector } from "../uni/tools";
 
@@ -18,7 +19,7 @@ const functionWithCacheOrNull = (trait, col)=>{
     return row=>formula(row.eval(selector), row, cache);
 }
 
-export const colTo = jet.map({
+export const colTo = map({
     boolean:{val:Boolean.jet.to},
     string:{val:(v, c)=>String.jet.to(v).substr(0, c.max)},
     ref:{val:String, raw:v=>v.key || v},

@@ -1,4 +1,5 @@
 import jet from "@randajan/jet-core";
+import { each } from "@randajan/jet-core/eachSync";
 import { Table } from "../../uni/Table";
 import { Chop } from "../privates/Chop";
 import { Rows } from "./Rows";
@@ -15,7 +16,7 @@ export class DB extends Chop {
         super(name, {
             stream,
             loader: (self, bundle, tables) => {
-                jet.map(tables, (stream, key) =>{ bundle.set(new Table(this, key, { bundle, stream, Rows, Cols })); });
+                each(tables, (stream, ctx) =>{ bundle.set(new Table(this, ctx.key, { bundle, stream, Rows, Cols })); });
             },
             childName: "table",
             defaultContext: "all",
