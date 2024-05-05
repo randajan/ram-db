@@ -16,13 +16,7 @@ export class Row extends jet.types.Plex {
       return (_p.live.push(vals, force)) && (opt.autoSave === false || this.save(opt));
     }
 
-    const markAsSaved = _=>{
-      if (!_p.saving) { return }
-      const nextStep = Step.create(table, _p.live);
-      _p.saved = _p.live.retire();
-      _p.live = nextStep;
-      _p.saving = false;
-    }
+    const markAsSaved = _=>{ _p.saved = (_p.live = Step.create(table, _p.live)).before; }
 
     super(get);
 
@@ -42,11 +36,12 @@ export class Row extends jet.types.Plex {
       save: (opt = { resetOnError: true, throwError: true, silentSave:false }) => {
         if (!this.isDirty) { return true; }
         try {
-          _p.saving = true;
-          onSave(this, { markAsSaved, silentSave:opt.silentSave === true });
-          _p.saving = false;
+          _p.live.lock();
+          onSave(this, { throwError:true, silentSave:opt.silentSave === true }, markAsSaved);
+          _p.saved?.retire(); // for duration of on("after...") effects row.saved.before is still present
           return true;
         } catch (err) {
+          _p.live.unlock();
           if (opt.resetOnError !== false) { this.reset(); }
           if (opt.throwError !== false) { throw err; }
           console.warn(this.msg(err?.message || "unknown error"), err?.stack);

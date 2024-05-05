@@ -12,8 +12,6 @@ const initStep = (table, vals) => {
   return step;
 }
 
-
-
 export class Rows extends Chop {
   constructor(table, stream) {
 
@@ -32,7 +30,7 @@ export class Rows extends Chop {
 
     const _p = vault.get(this);
 
-    const save = (row, opt) => {
+    const save = (row, opt={}, afterEffect) => {
       const keySaved = row.key;
       const wasRemoved = row.isRemoved;
       const key = row.live.key;
@@ -42,36 +40,33 @@ export class Rows extends Chop {
       const remove = isRemoved !== wasRemoved;
     
       if (key && !isRemoved) {
-        if (rekey) { _p.bundle.set(row, true, opt); }
+        if (rekey) { _p.bundle.set(row, opt, afterEffect); }
         else {
-          _p.bundle.run("beforeUpdate", [row, undefined, opt]);
-          _p.bundle.run("afterUpdate", [row, undefined, opt]);
+          _p.bundle.run("beforeUpdate", [row, undefined], opt);
+          if (afterEffect) { afterEffect(row, undefined, opt); }
+          _p.bundle.run("afterUpdate", [row, undefined], opt);
         }
       }
-      if (keySaved && (rekey || remove)) { _p.bundle.remove(row, true, opt); }
+      if (keySaved && (rekey || remove)) { _p.bundle.remove(row, opt, afterEffect); }
     
     }
 
-    _p.onSave = (row, opt={}) => this.isLoading ? save(row, opt) : _p.transactions.execute("saving", _ => save(row, opt));
+    _p.onSave = (...args) => this.isLoading ? save(...args) : _p.transactions.execute("saving", _ => save(...args));
 
     solid.all(this, {
       db:table.db,
       table,
     }, false);
 
-    //last step before saving is marking row as saved
-    this.on("beforeSet", (row, ctx, opt)=>opt.markAsSaved());
-    this.on("beforeUpdate", (row, ctx, opt)=>opt.markAsSaved());
-
     //translate primitive events to extra events
     for (const [when, action, name] of events.primitive) {
       this.on(name, (row, ctx, opt)=>{
         if (this.state === "loading" || opt.silentSave) { return; }
-        return _p.bundle.run(when+"Save", [action, row.live]);
+        return _p.bundle.run(when+"Save", [action, row], opt);
       });
-      this.on(name, row=>{
+      this.on(name, (row, ctx, opt)=>{
         if (this.state === "loading") { return; }
-        return _p.bundle.run(when+"Change", [action, row.live]);
+        return _p.bundle.run(when+"Change", [action, row], opt);
       });
     }
 
@@ -141,8 +136,8 @@ export class Rows extends Chop {
     return super.addChop(name, {
       ...opt,
       loader: (chop, bundle) => {
-        const cleanUp = this.on("afterUpdate", row => { if (bundle.set(row, false)) { bundle.remove(row); } });
-        chop.on("beforeReset", cleanUp, false);
+        chop.on("afterReset", this.on("beforeUpdate", row=>bundle.remove(row)), false);
+        chop.on("afterReset", this.on("afterUpdate", row=>bundle.set(row)), false);
       }
     });
   }
@@ -158,10 +153,9 @@ export class Rows extends Chop {
       typeof cacheAs == "string" ? cacheAs : colName,
       {
         useCache: cacheAs,
-        getContext: (row, isSet) => {
-          const wrap = row[isSet ? "live" : "saved"];
-          if (filter && (filter(wrap)) === false) { return; }
-          const val = wrap.get(colName);
+        getContext: row => {
+          if (filter && (filter(row)) === false) { return; }
+          const val = row.saved?.get(colName);
           if (!separator) { return toRaw(val, row); }
           let res = [];
           for (const v of val) {

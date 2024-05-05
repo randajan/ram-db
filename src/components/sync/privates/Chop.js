@@ -47,7 +47,7 @@ export class Chop extends jet.types.Plex {
       isLoading:_=>_p.transactions.state === "loading"
     });
 
-    _p.bundle.on("beforeReset", _=>{
+    _p.bundle.on("afterReset", _=>{
       clearTimeout(_p.intError);
       clearTimeout(_p.intAge);
       _p.isLoaded = false;
@@ -164,9 +164,9 @@ export class Chop extends jet.types.Plex {
       defaultContext,
       loader: (chop, bundle) =>{
         this.map(child =>bundle.set(child));
-        chop.on("beforeReset", this.on("afterSet", child=>bundle.set(child)), { once:true });
-        chop.on("beforeReset", this.on("afterRemove", child=>bundle.remove(child)), { once:true });
-        this.on("beforeReset", _=>chop.reset(), { once:true });
+        chop.on("afterReset", this.on("afterSet", child=>bundle.set(child)), { once:true });
+        chop.on("afterReset", this.on("afterRemove", child=>bundle.remove(child)), { once:true });
+        this.on("afterReset", _=>chop.reset(), { once:true });
         if (loader) { loader(chop, bundle); }
       },
       extra

@@ -18,7 +18,7 @@ export class Table {
     cached.all(this, _p, {
       cols:_=>{
         const cols = new Cols(this, _p.stream.cols);
-        bundle.on("beforeReset", _=>cols.reset(), { once:true });
+        bundle.on("afterReset", _=>cols.reset(), { once:true });
         return cols;
       },
       rows:_=>{
@@ -26,10 +26,10 @@ export class Table {
 
         for (const [when, action, name] of events.extra) {
           const cleanUp = rows.on(name, (standardAction, rowLive)=>bundle.run(name, [standardAction, rowLive]));
-          rows.on("beforeReset", cleanUp, { once:true });
+          rows.on("afterReset", cleanUp, { once:true });
         }
 
-        bundle.on("beforeReset", _=>rows.reset(), { once:true });
+        bundle.on("afterReset", _=>rows.reset(), { once:true });
         rows.on("afterChange", _=>_p.lastChange = Date.now());
         return rows;
       }

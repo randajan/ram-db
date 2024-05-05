@@ -68,7 +68,8 @@ export class Bundle {
     }
   }
 
-  run(event, args=[], throwError=true) {
+  run(event, args=[], opt={}) {
+    const throwError = opt.throwError !== false;
     const handlers = this.handlers[event];
     if (!handlers?.length) { return true; }
     const isBefore = event.startsWith("before");
@@ -76,7 +77,7 @@ export class Bundle {
     for (let i=handlers.length-1; i>=0; i--) {
       const cb = handlers[i];
       if (!cb) { continue; }
-      try { cb(...args); } catch(err) {
+      try { cb(...args, opt); } catch(err) {
         if (isBefore && throwError) { throw err; }
         else if (isBefore) { return false; }
         else if (throwError) { console.warn(this.msg(err?.message || "unknown error"), err?.stack); }
@@ -87,60 +88,65 @@ export class Bundle {
   }
 
   reset(throwError=true) {
-    if (!this.run("beforeReset", [], throwError)) { return false; }
+    const opt = { throwError };
+    if (!this.run("beforeReset", [], opt)) { return false; }
     for (let i in this.data) { delete this.data[i]; }
-    return this.run("afterReset", [], throwError);
+    return this.run("afterReset", [], opt);
   }
 
-  _set(context, key, child, throwError = true, opt) {
-    const { context:ctx, index, list } = this.getData(context, throwError, true);
+  _set(context, key, child, opt={}, afterEffect) {
+    const { context:ctx, index, list } = this.getData(context, opt.throwError, true);
     
     if (index.hasOwnProperty(key)) {
-      if (throwError) { throw Error(this.msg(`set(...) failed - duplicate`, key, ctx)); }
+      if (opt.throwError !== false) { throw Error(this.msg(`set(...) failed - duplicate`, key, ctx)); }
       return false;
     }
 
-    if (!(this.run("beforeSet", [child, ctx, opt], throwError))) { return false; }
+    if (!(this.run("beforeSet", [child, ctx], opt))) { return false; }
     
     list.push(index[key] = child);
 
-    return this.run("afterSet", [child, ctx, opt], throwError);
+    if (afterEffect) { afterEffect(child, ctx, opt); }
+
+    return this.run("afterSet", [child, ctx], opt);
   }
 
-  set(child, throwError = true, opt) {
+  set(child, opt={}, afterEffect) {
     const context = this.getContext(child, true);
-    const key = this.validateKey(child.getKey(true), "set", throwError);
-    if (!Array.isArray(context)) { return this._set(context, key, child, throwError, opt); }
+    const key = this.validateKey(child.getKey(true), "set", opt.throwError);
+    if (!Array.isArray(context)) { return this._set(context, key, child, opt, afterEffect); }
     let ok = true;
-    for (const ctx of context) { ok = (this._set(ctx, key, child, throwError, opt)) && ok; }
+    for (const ctx of context) { ok = (this._set(ctx, key, child, opt, afterEffect)) && ok; }
     return ok;
   }
 
-  _remove(context, key, child, throwError = true, opt) {
-    const { context:ctx, index, list } = this.getData(context, throwError);
+  _remove(context, key, child, opt={}, afterEffect) {
+    const { context:ctx, index, list } = this.getData(context, opt.throwError);
     const id = list.indexOf(child);
 
     if (id < 0) {
-      if (throwError) { throw Error(this.msg(`remove(...) failed - missing`, key, ctx)); }
+      if (opt.throwError !== false) { throw Error(this.msg(`remove(...) failed - missing`, key, ctx)); }
       return false;
     }
 
-    if (!(this.run("beforeRemove", [child, ctx, opt], throwError))) { return false; }
+    if (!(this.run("beforeRemove", [child, ctx], opt))) { return false; }
 
     if (list.length === 1) { delete this.data[ctx]; } else {
       list.splice(id, 1);
       delete index[key];
     }
+
+    if (afterEffect) { afterEffect(child, ctx, opt); }
     
-    return this.run("afterRemove", [child, ctx, opt], throwError);
+    return this.run("afterRemove", [child, ctx], opt);
   }
 
-  remove(child, throwError = true, opt) {
+  remove(child, opt={}, afterEffect) {
     const context = this.getContext(child, false);
-    const key = this.validateKey(child.getKey(false), "remove", throwError);
-    if (!Array.isArray(context)) { return this._remove(context, key, child, throwError, opt); }
+    const key = this.validateKey(child.getKey(false), "remove", opt.throwError);
+    if (!Array.isArray(context)) { return this._remove(context, key, child, opt, afterEffect); }
     let ok = true;
-    for (const ctx of context) { ok = (this._remove(ctx, key, child, throwError, opt)) && ok; }
+    for (const ctx of context) { ok = (this._remove(ctx, key, child, opt, afterEffect)) && ok; }
     return ok;
   }
 
@@ -160,17 +166,17 @@ export class Bundle {
     if (throwError) { throw Error(this.msg(`get failed - not exist`, key, ctx)); }
   }
 
-  async map(callback, opt={}) {
-    const { context, throwError, filter, orderBy, stopable, paralelAwait, byKey } = opt;
+  map(callback, opt={}) {
+    const { context, throwError, filter, orderBy, stopable, byKey } = opt;
     const { list, index } = this.getData(context, throwError);
-    const optPass = { filter, orderBy, stopable, paralelAwait };
+    const optPass = { filter, orderBy, stopable};
     return byKey ? _.map(index, callback, optPass) : _.list(list, callback, optPass);
   }
 
-  async find(checker, opt={}) {
-    const { context, throwError, filter, orderBy, stopable, paralelAwait, byKey } = opt;
+  find(checker, opt={}) {
+    const { context, throwError, filter, orderBy, stopable } = opt;
     const { list } = this.getData(context, throwError);
-    return _.find(list, checker, { filter, orderBy, stopable, paralelAwait });
+    return _.find(list, checker, { filter, orderBy, stopable });
   }
 
 }
