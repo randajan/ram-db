@@ -16,7 +16,7 @@ export class Row extends jet.types.Plex {
       return (await _p.live.push(vals, force)) && (opt.autoSave === false || await this.save(opt));
     }
 
-    const markAsSaved = _=>{ _p.saved = (_p.live = Step.create(table, _p.live)).before; }
+    const markAsSaved = _=>{ _p.live = Step.create(table, _p.saved = _p.live); }
 
     super(get);
 
@@ -38,7 +38,7 @@ export class Row extends jet.types.Plex {
         try {
           _p.live.lock();
           await onSave(this, { throwError:true, silentSave:opt.silentSave === true }, markAsSaved);
-          _p.saved?.retire(); // for duration of on("after...") effects row.saved.before is still present
+          _p.saved.retire(); // for duration of on("after...") effects row.saved.before is still present
           return true;
         } catch (err) {
           _p.live.unlock();

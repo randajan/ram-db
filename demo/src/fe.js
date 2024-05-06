@@ -1,4 +1,4 @@
-import ramdb from "./sync/fe";
+import ramdb from "./async/fe";
 import jet from "@randajan/jet-core";
 
 
