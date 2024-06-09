@@ -121,11 +121,11 @@ export class RamDBAdapter {
 
 
 export default (ramdb, options={})=>{
-    const { filter, returnVals, fakeRemove } = options;
+    const { filter, returnVals, fakeRemove, typesTable } = options;
 
     const _filter = jet.isRunnable(filter) ? filter : null;
 
-    const _adapter = options.adapter = new RamDBAdapter(ramdb, returnVals, fakeRemove);
+    const _adapter = options.adapter = new RamDBAdapter(ramdb, returnVals, fakeRemove, typesTable);
     options.model = _adapter.generateModel.bind(_adapter);
 
     options.filter = async (context, entity, prop)=>{
