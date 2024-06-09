@@ -15,11 +15,12 @@ const { solid } = jet.prop;
 
 export class RamDBAdapter {
 
-    constructor(ramdb, returnVals, fakeRemove) {
+    constructor(ramdb, returnVals, fakeRemove, typesTable={}) {
         solid.all(this, {
             ramdb,
             fakeRemove:String.jet.to(fakeRemove),
-            returnVals:jet.isRunnable(returnVals) ? returnVals : _=>returnVals
+            returnVals:jet.isRunnable(returnVals) ? returnVals : _=>returnVals,
+            typesTable:{...ramdbToODataType, ...typesTable}
         }, false);
     }
 
@@ -35,7 +36,7 @@ export class RamDBAdapter {
 
             for (const { name, type, isPrimary } of await cols.getList()) {
                 const prop = entityType[name] = {};
-                prop.type = ramdbToODataType[type];
+                prop.type = this.typesTable[type];
                 if (await isPrimary) { prop.key = true; }
             }
 

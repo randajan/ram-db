@@ -133,15 +133,15 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@randajan/jet-core@^4.0.9":
-  version "4.0.9"
-  resolved "https://registry.yarnpkg.com/@randajan/jet-core/-/jet-core-4.0.9.tgz#8d2a2b3447bb4e60f0c154a17e30c6cda11294be"
-  integrity sha512-m5E1VUnUey1L7yNdBDJEI/jK5xMig99169Zl1rOd5rq9OOH+sfz6JzWqxpQbMVgFmfBcENLEuomFXXtfu1Q88Q==
+"@randajan/jet-core@^4.1.0":
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/@randajan/jet-core/-/jet-core-4.1.0.tgz#21dc6b01b342f321dcf4f93aff82686e71dce021"
+  integrity sha512-pzSeyTmDgioSZZ4xLLqjpBGT35XY1uMcLsBhOuLYnItx/qmi8KGzZDgNGwVkvF+4m2eWTQQa03+kS/AI8Ve3bg==
 
-"@randajan/odata-server@^2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@randajan/odata-server/-/odata-server-2.2.0.tgz#9de98d3a6f50b2d815de234f016817245c7e4c2e"
-  integrity sha512-5uRfhkLtI+buhYSYFEfL8MEiF2PSThLHRzgZYCfYEvmE1l5d3KA8/YV5gpohuNhDrb0qqQgEXej7UGPv7QffuQ==
+"@randajan/odata-server@^2.3.1":
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/@randajan/odata-server/-/odata-server-2.3.1.tgz#f16ca51b975cfc93f671b927350cd6e19b0aaefc"
+  integrity sha512-eQngHV2rKZjtIPJCVoaLVKbvnMxSkK3uSriFBvCF7yRyoG9IfU1oFX09K0CQGCTHsBKSmT/KKv2DFE+lEc7TDA==
   dependencies:
     methods "1.1.2"
     odata-parser "^1.4.1"
