@@ -1,145 +1,166 @@
-import { toStr } from "../../uni/consts";
-import { isFce, toFce, toStr, wrapFce } from "../../uni/formats";
-import { Record } from "../class/Record";
+import { isFce, toArr, toFce, toStr, wrapFce } from "../../uni/formats";
 
 
 export class Bundle {
 
-  constructor(parentName, name, getGroup) {
+    constructor(id, getGroups) {
 
-    this.name = toStr(name);
+        this.id = toStr(id);
+        if (!this.id) { throw Error(this.msg("critical error - missing id")); }
 
-    if (!this.name) { throw Error(this.msg("critical error - missing name")); }
+        this.groupsByRecId = new Map(); // recId -> groups
+        this.recsByGroupId = new Map(); // groupId -> recs
 
-    this.fullName = parentName ? (parentName + "." + this.name) : this.name;
-    this.rawData = {};
-    this.handlers = {};
-    this.getGroup = wrapFce(toStr, toFce(getGroup));
-
-  }
-
-  msg(text, id, group) {
-    const { fullName } = this;
-    id = toStr(id);
-    group = toStr(group);
-    let msg = fullName || "";
-    if (group) { msg += ` group('${group}')`; }
-    if (id) { msg += ` record('${id}')`; }
-    if (text) { msg += " "+text; }
-    return msg.trim();
-  }
-
-  getRawData(group, throwError=true, autoCreate=false) {
-    const { rawData } = this;
-    if (rawData[group]) { return rawData[group]; }
-    if (autoCreate) { return rawData[group] = { index:{}, list:[] }; }
-    if (throwError) { throw Error(this.msg(`not found`, undefined, group)); }
-    return { index:{}, list:[] }
-  };
-
-  validateId(id, throwError=true, action="validateId") {
-    if (id = toStr(id)) { return id; }
-    if (throwError) { throw Error(this.msg(`${action}(...) failed - id undefined`));}
-  }
-
-  on(event, callback, onlyOnce=false) {
-    if (!isFce(callback)) { throw Error(this.msg(`on(...) require callback`)); }
-    const { handlers } = this;
-    const list = (handlers[event] || (handlers[event] = []));
-
-    let remove;
-    const cb = onlyOnce ? (...args)=>{ callback(...args); remove(); } : callback;
-    
-    list.unshift(cb);
-
-    return remove = _ => {
-      const id = list.indexOf(cb);
-      if (id >= 0) { list.splice(id, 1); }
-      return callback;
-    }
-  }
-
-  run(event, args=[], throwError = true) {
-    const handlers = this.handlers[event];
-    if (!handlers?.length) { return true; }
-
-    for (let i=handlers.length-1; i>=0; i--) {
-      const cb = handlers[i];
-      if (cb) { cb(...args, throwError); }
-    }
-    
-    return true;
-  }
-
-  reset(throwError=true) {
-    for (let i in this.rawData) { delete this.rawData[i]; }
-    return this.run("reset", [], throwError);
-  }
-
-  _addOne(group, id, rec, throwError=true) {
-    const { index, list } = this.getRawData(group, throwError, true);
-    
-    if (index.hasOwnProperty(id)) {
-      if (throwError) { throw Error(this.msg(`add(...) failed - duplicate`, id, group)); }
-      return false;
+        this.handlers = {};
+        this.getGroups = wrapFce(toArr, toFce(getGroups, [undefined]));
     }
 
-    list.push(index[id] = rec);
-
-    return this.run("add", [rec, group], throwError);
-  }
-
-  add(rec, throwError=true) {
-    const group = this.getGroup(rec);
-    const id = this.validateId(rec.id, throwError, "add");
-    if (!Array.isArray(group)) { return this._addOne(group, id, rec, throwError); }
-    let ok = true;
-    for (const g of group) { ok = this._addOne(g, id, rec, throwError) && ok; }
-    return ok;
-  }
-
-  _removeOne(group, id, rec, throwError=true) {
-    const { index, list } = this.getRawData(group, throwError);
-    const id = list.indexOf(rec);
-
-    if (id < 0) {
-      if (throwError) { throw Error(this.msg(`remove(...) failed - missing`, id, group)); }
-      return false;
+    msg(text, recId, groupId) {
+        recId = toStr(recId);
+        let msg = this.id;
+        if (groupId) { msg += ` group('${groupId}')`; }
+        if (recId) { msg += ` rec('${recId}')`; }
+        if (text) { msg += " " + text; }
+        return msg.trim();
     }
 
-    if (list.length === 1) { delete this.rawData[group]; } else {
-      list.splice(id, 1);
-      delete index[id];
+    prepareRecs(groupId, autoCreate = false, throwError = true) {
+        let recs = this.recsByGroupId.get(groupId);
+        if (recs) { return recs; }
+        if (autoCreate) { this.recsByGroupId.set(groupId, recs = new Map()); }
+        else if (throwError) { throw Error(this.msg(`not found`, undefined, groupId)); }
+        return recs;
+    };
+
+    validateRecId(recId, throwError = true, action = "validateRecId") {
+        if (recId = toStr(recId)) { return recId; }
+        if (throwError) { throw Error(this.msg(`${action}(...) failed - id undefined`)); }
     }
-    
-    return this.run("remove", [rec, group], throwError);
-  }
 
-  remove(rec, throwError=true) {
-    const group = this.getGroup(rec);
-    const id = this.validateId(rec.id, throwError, "remove");
-    if (!Array.isArray(group)) { return this._removeOne(group, id, rec, throwError); }
-    let ok = true;
-    for (const g of group) { ok = (this._removeOne(g, id, rec, throwError)) && ok; }
-    return ok;
-  }
+    on(event, callback, onlyOnce = false) {
+        if (!isFce(callback)) { throw Error(this.msg(`on(...) require callback`)); }
+        const { handlers } = this;
+        const list = (handlers[event] || (handlers[event] = []));
 
-  getBy(group, id, throwError = true) {
-    const group = toStr(group);
-    const { index } = this.getRawData(group, throwError);
-    id = this.validateId(id, throwError, "get");
-    if (Record.is(index[id])) { return index[id]; }
-    if (throwError) { throw Error(this.msg(`get failed - not exist`, id, group)); }
-  }
+        let remove;
+        const cb = onlyOnce ? (...args) => { callback(...args); remove(); } : callback;
 
-  get(id, throwError = true) { return this.getBy("", id, throwError); }
+        list.unshift(cb);
 
-  getAllBy(group, throwError=true) {
-    const group = toStr(group);
-    const { list } = this.getRawData(group, throwError);
-    return list;
-  }
+        return remove = _ => {
+            const x = list.indexOf(cb);
+            if (x >= 0) { list.splice(x, 1); }
+            return callback;
+        }
+    }
 
-  getAll(throwError=false) { return this.getAllBy("", throwError); }
+    run(event, args = []) {
+        const handlers = this.handlers[event];
+        if (!handlers?.length) { return true; }
+
+        for (let i = handlers.length - 1; i >= 0; i--) {
+            try { if (handlers[i]) { handlers[i](...args); } }
+            catch(err) { console.error(err); }
+        }
+
+        return true;
+    }
+
+    reset() {
+        this.groupsByRecId.clear();
+        this.dataByGroupId.clear();
+        return this.run("reset", []);
+    }
+
+    add(rec, throwError = true) {
+        const recId = this.validateRecId(rec.id, throwError, "add");
+        if (!recId) { return false; }
+
+        const currents = this.groupsByRecId.get(recId);
+        if (currents) {
+            if (throwError) { throw Error(this.msg(`add(...) failed - duplicate`, recId)); }
+            return false;
+        }
+
+        const valids = this.getGroups(rec);
+        const results = new Set();
+        for (const groupId of valids) {
+            if (results.has(groupId)) { continue; }
+            const recs = this.prepareRecs(groupId, true);
+            recs.set(recId, rec);
+            results.add(groupId);
+        }
+
+        this.groupsByRecId.set(recId, results);
+
+        return this.run("add", [rec]);
+    }
+
+    remove(rec, throwError = true) {
+        const recId = this.validateRecId(rec.id, throwError, "remove");
+        if (!recId) { return false; }
+
+        const currents = this.groupsByRecId.get(recId);
+        if (!currents) {
+            if (throwError) { throw Error(this.msg(`remove(...) failed - missing`, recId)); }
+            return false;
+        }
+
+        for (const groupId of currents) {
+            const recs = this.prepareRecs(groupId, false);
+            if (recs.size <= 1) { this.recsByGroupId.delete(groupId); }
+            else { recs.delete(recId); }
+        }
+
+        this.groupsByRecId.delete(recId);
+
+        return this.run("remove", [rec]);
+    }
+
+    update(rec, throwError=true) {
+        const recId = this.validateRecId(rec.id, throwError, "update");
+        if (!recId) { return false; }
+
+        const currents = this.groupsByRecId.get(recId);
+        if (!currents) {
+            if (throwError) { throw Error(this.msg(`update(...) failed - missing`, recId)); }
+            return false;
+        }
+
+        const valids = this.getGroups(rec);
+        const results = new Set();
+
+        //add
+        for (const groupId of valids) {
+            if (results.has(groupId)) { continue; }
+            if (currents.has(groupId)) { currents.delete(groupId); }
+            else {
+                const recs = this.prepareRecs(groupId, true);
+                recs.set(recId, rec);
+            }
+            results.add(groupId);
+        }
+
+        //delete
+        for (const groupId of currents) {
+            const recs = this.prepareRecs(groupId);
+            if (recs.size <= 1) { this.recsByGroupId.delete(groupId); }
+            else { recs.delete(recId); }
+        }
+
+        this.groupsByRecId.set(recId, results);
+
+        return this.run("update", [rec]);
+    }
+
+    get(groupId, recId, throwError = true) {
+        recId = this.validateRecId(recId, throwError, "get");
+        if (!recId) { return; }
+
+        const recs = this.prepareRecs(groupId, false, throwError);
+        return recs?.get(recId);
+    }
+
+    gets(groupId, throwError = true) { return this.prepareRecs(groupId, throwError); }
 
 }
