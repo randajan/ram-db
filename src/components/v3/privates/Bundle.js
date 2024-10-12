@@ -11,7 +11,7 @@ export class Bundle {
         this.groupsByRecId = new Map(); // recId -> groups
         this.recsByGroupId = new Map(); // groupId -> recs
 
-        this.handlers = {};
+        this.handlers = [];
         this.getGroups = wrapFce(toArr, toFce(getGroups, [undefined]));
     }
 
@@ -37,29 +37,28 @@ export class Bundle {
         if (throwError) { throw Error(this.msg(`${action}(...) failed - id undefined`)); }
     }
 
-    on(event, callback, onlyOnce = false) {
+    on(callback, onlyOnce = false) {
         if (!isFce(callback)) { throw Error(this.msg(`on(...) require callback`)); }
         const { handlers } = this;
-        const list = (handlers[event] || (handlers[event] = []));
 
         let remove;
         const cb = onlyOnce ? (...args) => { callback(...args); remove(); } : callback;
 
-        list.unshift(cb);
+        handlers.unshift(cb);
 
         return remove = _ => {
-            const x = list.indexOf(cb);
-            if (x >= 0) { list.splice(x, 1); }
+            const x = handlers.indexOf(cb);
+            if (x >= 0) { handlers.splice(x, 1); }
             return callback;
         }
     }
 
-    run(event, args = []) {
-        const handlers = this.handlers[event];
+    run(event, rec) {
+        const { handlers}  = this;
         if (!handlers?.length) { return true; }
 
         for (let i = handlers.length - 1; i >= 0; i--) {
-            try { if (handlers[i]) { handlers[i](...args); } }
+            try { if (handlers[i]) { handlers[i](event, rec); } }
             catch(err) { console.error(err); }
         }
 
@@ -69,7 +68,7 @@ export class Bundle {
     reset() {
         this.groupsByRecId.clear();
         this.dataByGroupId.clear();
-        return this.run("reset", []);
+        return this.run("reset");
     }
 
     add(rec, throwError = true) {
@@ -93,7 +92,7 @@ export class Bundle {
 
         this.groupsByRecId.set(recId, results);
 
-        return this.run("add", [rec]);
+        return this.run("add", rec);
     }
 
     remove(rec, throwError = true) {
@@ -114,7 +113,7 @@ export class Bundle {
 
         this.groupsByRecId.delete(recId);
 
-        return this.run("remove", [rec]);
+        return this.run("remove", rec);
     }
 
     update(rec, throwError=true) {
@@ -150,7 +149,7 @@ export class Bundle {
 
         this.groupsByRecId.set(recId, results);
 
-        return this.run("update", [rec]);
+        return this.run("update", rec);
     }
 
     get(groupId, recId, throwError = true) {

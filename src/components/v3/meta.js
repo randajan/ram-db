@@ -1,161 +1,115 @@
 
+export const meta = {
+    "_ents": {
+        "_ents": { },
+        "_cols": { },
+        "_types": { }
+    },
+    "_types": {
+        "string": { },
+        "boolean": { },
+        "number": { },
+        "datetime": { },
+        "duration": { },
+        "function": { },
+        "object": { },
+        "any": { },
+        "ref": { }
+    },
+    "_cols": {
+        "_ents-_ent":{
+            ent: "_ents _ents", name: "_ent", type: "_types ref", ref:"_ents",
+            writable: 0, readable: 1, required: 1,
+        },
+        "_ents-id":{
+            ent: "_ents _ents", name: "id", type: "_types string",
+            writable: 0, readable: 1, required: 1,
+        },
+        "_ents-isMeta":{
+            ent: "_ents _ents", name: "isMeta", type: "_types boolean",
+            writable: 0, readable: 1, required: 0,
+        },
 
-export const meta = [
-    { _ent:"_ents", id: "_ents", isMeta: true },
-    { _ent:"_ents", id: "_cols", isMeta: true },
-    { _ent:"_ents", id: "_types", isMeta: true },
+        //_types
+        "_types-_ent":{
+            ent: "_ents _types", name: "_ent", type: "_types ref", ref:"_ents",
+            writable: 0, readable: 1, required: 1,
+        },
+        "_types-id":{
+            ent: "_ents _types", name: "id", type: "_types string",
+            writable: 0, readable: 1, required: 1,
+        },
+        "_types-isMeta":{
+            ent: "_ents _types", name: "isMeta", type: "_types boolean",
+            writable: 0, readable: 1, required: 0,
+        },
 
-    { _ent:"_types", id: "string", isMeta: true },
-    { _ent:"_types", id: "boolean", isMeta: true },
-    { _ent:"_types", id: "number", isMeta: true },
-    { _ent:"_types", id: "datetime", isMeta: true },
-    { _ent:"_types", id: "duration", isMeta: true },
-    { _ent:"_types", id: "function", isMeta: true },
-    { _ent:"_types", id: "object", isMeta: true },
-    { _ent:"_types", id: "any", isMeta: true },
-    { _ent:"_types", id: "ref", isMeta: true },
-
-    //_ents
-    {
-        _ent:"_cols",
-        id: "_ents-_ent", isMeta: true, ent: "_ents",
-        name: "_ent", type: "string",
-        writable: 0, readable: 1, required: 1,
-    },
-    {
-        _ent:"_cols",
-        id: "_ents-id", isMeta: true, isPrimary: true, ent: "_ents",
-        name: "id", type: "string",
-        writable: 0, readable: 1, required: 1,
-    },
-    {
-        _ent:"_cols",
-        id: "_ents-isMeta", isMeta: true, ent: "_ents",
-        name: "isMeta", type: "boolean",
-        writable: 0, readable: 1, required: 0,
-    },
-
-    //_types
-    {
-        _ent:"_cols",
-        id: "_types-_ent", isMeta: true, ent: "_ents",
-        name: "_ent", type: "string",
-        writable: 0, readable: 1, required: 1,
-    },
-    {
-        _ent:"_cols",
-        id: "_types-id", isMeta: true, isPrimary: true, ent: "_types",
-        name: "id", type: "string",
-        writable: 0, readable: 1, required: 1,
-    },
-    {
-        _ent:"_cols",
-        id: "_types-isMeta", isMeta: true, ent: "_types",
-        name: "isMeta", type: "boolean",
-        writable: 0, readable: 1, required: 0,
-    },
-
-    //_cols
-    {
-        _ent:"_cols",
-        id: "_cols-_ent", isMeta: true, ent: "_ents",
-        name: "_ent", type: "string",
-        writable: 0, readable: 1, required: 1,
-    },
-    {
-        _ent:"_cols",
-        id: "_cols-id", isMeta: true, isPrimary: true, ent: "_cols",
-        name: "id", type: "string",
-        writable: 0, readable: 1, required: 1,
-    },
-    {
-        _ent:"_cols",
-        id: "_cols-isMeta", isMeta: true, ent: "_cols",
-        name: "isMeta", type: "boolean",
-        writable: 0, readable: 1, required: 0,
-    },
-    {
-        _ent:"_cols",
-        id: "_cols-isPrimary", isMeta: true, ent: "_cols",
-        name: "isPrimary", type: "boolean",
-        writable: 0, readable: 1, required: 0,
-    },
-    {
-        _ent:"_cols",
-        id: "_cols-ent", isMeta: true, ent: "_cols",
-        name: "ent", type: "ref", ref: "_ents",
-        writable: 0, readable: 1, required: 1,
-    },
-    {
-        _ent:"_cols",
-        id: "_cols-name", isMeta: true, ent: "_cols",
-        name: "name", type: "string",
-        writable: 0, readable: 1, required: 0,
-    },
-    {
-        _ent:"_cols",
-        id: "_cols-type", isMeta: true, ent: "_cols",
-        name: "type", type: "ref", ref: "_types",
-        writable: 1, readable: 1, required: 0
-    },
-    {
-        _ent:"_cols",
-        id: "_cols-separator", isMeta: true, ent: "_cols",
-        name: "separator", type: "string",
-        writable: 1, readable: 1, required: 0
-    },
-    {
-        _ent:"_cols",
-        id: "_cols-readable", isMeta: true, ent: "_cols",
-        name: "readable", type: "number",
-        writable: 1, readable: 1, required: 0,
-        min: 0
-    },
-    {
-        _ent:"_cols",
-        id: "_cols-writable", isMeta: true, ent: "_cols",
-        name: "writable", type: "number",
-        writable: 1, readable: 1, required: 0,
-        min: 0
-    },
-    {
-        _ent:"_cols",
-        id: "_cols-required", isMeta: true, ent: "_cols",
-        name: "required", type: "number",
-        writable: 1, readable: 1, required: 0,
-        min: 0
-    },
-    {
-        _ent:"_cols",
-        id: "_cols-initial", isMeta: true, ent: "_cols",
-        name: "initial", type: "any", //Type should be defined as a function
-        writable: 1, readable: 1, required: 0
-    },
-    {
-        _ent:"_cols",
-        id: "_cols-fallback", isMeta: true, ent: "_cols",
-        name: "fallback", type: "any", //Type should be defined as a function
-        writable: 1, readable: 1, required: 0,
-    },
-    {
-        _ent:"_cols",
-        id: "_cols-decimal", isMeta: true, ent: "_cols",
-        name: "decimal", type: "number",
-        writable: 1, readable: 1, required: 0,
-        decimal: 0, min: 0
-    },
-    {
-        _ent:"_cols",
-        id: "_cols-min", isMeta: true, ent: "_cols",
-        name: "min", type: "number",
-        writable: 1, readable: 1, required: 0,
-        //decimal:_=>r.decimal //decimal should be defined as a function
-    },
-    {
-        _ent:"_cols",
-        id: "_cols-max", isMeta: true, ent: "_cols",
-        name: "max", type: "number", separator: null,
-        writable: 1, readable: 1, required: 0,
-        //decimal:_=>r.decimal, min:_=>r.min //decimal & min should be defined as a function
+        //_cols
+        "_cols-_ent":{
+            ent: "_ents _cols", name: "_ent", type: "_types ref", ref:"_ents",
+            writable: 0, readable: 1, required: 1,
+        },
+        "_cols-id":{
+            ent: "_ents _cols", name: "id", type: "_types string",
+            writable: 0, readable: 1, required: 1,
+        },
+        "_cols-isMeta":{
+            ent: "_ents _cols", name: "isMeta", type: "_types boolean",
+            writable: 0, readable: 1, required: 0,
+        },
+        "_cols-ent":{
+            ent: "_ents _cols", name: "ent", type: "_types ref", ref: "_ents",
+            writable: 0, readable: 1, required: 1,
+        },
+        "_cols-name":{
+            ent: "_ents _cols", name: "name", type: "_types string",
+            writable: 0, readable: 1, required: 0,
+        },
+        "_cols-type":{
+            ent: "_ents _cols", name: "type", type: "_types ref", ref: "_types",
+            writable: 1, readable: 1, required: 0
+        },
+        "_cols-isList":{
+            ent: "_ents _cols", name: "isList", type: "_types boolean",
+            writable: 1, readable: 1, required: 0
+        },
+        "_cols-readable":{
+            ent: "_ents _cols", name: "readable", type: "_types number",
+            writable: 1, readable: 1, required: 0,
+            min: 0
+        },
+        "_cols-writable":{
+            ent: "_ents _cols", name: "writable", type: "_types number",
+            writable: 1, readable: 1, required: 0,
+            min: 0
+        },
+        "_cols-required":{
+            ent: "_ents _cols", name: "required", type: "_types number",
+            writable: 1, readable: 1, required: 0,
+            min: 0
+        },
+        "_cols-initial":{
+            ent: "_ents _cols", name: "initial", type: "_types any", //Type should be defined as a function
+            writable: 1, readable: 1, required: 0
+        },
+        "_cols-fallback":{
+            ent: "_ents _cols", name: "fallback", type: "_types any", //Type should be defined as a function
+            writable: 1, readable: 1, required: 0,
+        },
+        "_cols-decimal":{
+            ent: "_ents _cols", name: "decimal", type: "_types number",
+            writable: 1, readable: 1, required: 0,
+            decimal: 0, min: 0
+        },
+        "_cols-min":{
+            ent: "_ents _cols", name: "min", type: "_types number",
+            writable: 1, readable: 1, required: 0,
+            //decimal:_=>r.decimal //decimal should be defined as a function
+        },
+        "_cols-max":{
+            ent: "_ents _cols", name: "max", type: "_types number",
+            writable: 1, readable: 1, required: 0,
+            //decimal:_=>r.decimal, min:_=>r.min //decimal & min should be defined as a function
+        }
     }
-]
+}
