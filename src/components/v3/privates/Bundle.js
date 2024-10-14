@@ -3,7 +3,7 @@ import { isFce, toArr, toFce, toStr, wrapFce } from "../../uni/formats";
 
 export class Bundle {
 
-    constructor(id, opt={}, parent) {
+    constructor(id, opt={}) {
         id = toStr(id);
         if (!id) { throw Error(this.msg("critical error - missing id")); }
 
@@ -13,14 +13,25 @@ export class Bundle {
 
         jet.prop.solid.all(this, {
             id,
-            parent,
             isMultiGroup,
             _handlers:[],
-            _groupsByRecId:new Map(), // recId -> groups
+            _groupIdsByRec:new Map(), // rec -> groupIds
             _recsByGroupId:new Map(), // groupId -> recs
             _group:!isMultiGroup ? toFce(group) : wrapFce(toArr, toFce(group, [undefined])),
             _init:init,
             _filter:toFce(filter, true),
+        });
+        
+        this.on(event=>{
+            console.log(this.id, event);
+            if (event === "batchStart") { this._batchLevel += 1;}
+            else if (event === "batchEnd") {
+                this._batchLevel = Math.max(0, this._batchLevel-1);
+                if (!this._batchLevel) {
+                    for (const args of this._queue) { this._run(...args); }
+                    this._queue = [];
+                }
+            }
         });
     }
 
@@ -77,7 +88,7 @@ export class Bundle {
 
     _run(event, rec, ctx) {
         const { _handlers, _batchLevel, _queue }  = this;
-        if (_batchLevel) { _queue.push([event, rec, ctx]); return true; }
+        if (_batchLevel && !event.startsWith("batch")) { _queue.push([event, rec, ctx]); return true; }
         if (!_handlers?.length) { return true; }
 
         for (let i = _handlers.length - 1; i >= 0; i--) {
@@ -88,33 +99,23 @@ export class Bundle {
         return true;
     }
 
-    batch(exe) {
-        if (!isFce(exe)) { return exe; }
-        this._batchLevel += 1;
-        const result = exe(this);
-        this._batchLevel = Math.max(0, this._batchLevel-1);
-        if (!this._batchLevel) {
-            for (const args of this._queue) { this._run(...args); }
-            this._queue = [];
-        }
-        return result;
-    }
-
     reset(ctx) {
-        const { _recsByGroupId, _groupsByRecId, _init } = this;
-        _groupsByRecId.clear();
+        const { _recsByGroupId, _groupIdsByRec, _init } = this;
+        _groupIdsByRec.clear();
         _recsByGroupId.clear();
+        this._reseting = true;
+        _init(this, ctx);
+        this._reseting = false;
         this._run("reset", undefined, ctx);
-        this.batch(_init);
         return true;
     }
 
     add(rec, throwError = true, ctx) {
-        const { isMultiGroup, _groupsByRecId, _filter, _group } = this;
+        const { isMultiGroup, _groupIdsByRec, _filter, _group } = this;
         const recId = this.validateRecId(rec.id, throwError, "add");
         if (!recId || !_filter(rec)) { return false; }
 
-        if (_groupsByRecId.has(recId)) {
+        if (_groupIdsByRec.has(rec)) {
             if (throwError) { throw Error(this.msg(`add(...) failed - duplicate`, recId)); }
             return false;
         }
@@ -130,28 +131,28 @@ export class Bundle {
                 results.add(groupId);
             }
     
-            _groupsByRecId.set(recId, results);
+            _groupIdsByRec.set(rec, results);
         } else {
             const recs = this._prepareRecs(valid, true);
             recs.set(recId, rec);
 
-            _groupsByRecId.set(recId, valid);
+            _groupIdsByRec.set(rec, valid);
         }
 
         return this._run("add", rec, ctx);
     }
 
     remove(rec, throwError = true, ctx) {
-        const { isMultiGroup, _groupsByRecId, _filter } = this;
+        const { isMultiGroup, _groupIdsByRec, _filter } = this;
         const recId = this.validateRecId(rec.id, throwError, "remove");
         if (!recId) { return false; }
 
-        if (!_groupsByRecId.has(recId)) {
+        if (!_groupIdsByRec.has(rec)) {
             if (throwError && _filter(rec)) { throw Error(this.msg(`remove(...) failed - missing`, recId)); }
             return false;
         }
 
-        const current = _groupsByRecId.get(recId);
+        const current = _groupIdsByRec.get(rec);
         if (isMultiGroup) {
             for (const groupId of current) { this._deleteRec(groupId, recId); }
         } else {
@@ -159,23 +160,23 @@ export class Bundle {
         }
         
 
-        _groupsByRecId.delete(recId);
+        _groupIdsByRec.delete(rec);
 
         return this._run("remove", rec, ctx);
     }
 
     update(rec, throwError=true, ctx) {
-        const { isMultiGroup, _groupsByRecId, _group, _filter } = this;
+        const { isMultiGroup, _groupIdsByRec, _group, _filter } = this;
         const recId = this.validateRecId(rec.id, throwError, "update");
         if (!recId) { return false; }
 
-        if (!_groupsByRecId.has(recId)) {
+        if (!_groupIdsByRec.has(rec)) {
             if (throwError && _filter(rec)) { throw Error(this.msg(`update(...) failed - missing`, recId)); }
             return false;
         }
 
         const valid = _group(rec);
-        const current = _groupsByRecId.get(recId);
+        const current = _groupIdsByRec.get(rec);
         if (isMultiGroup) {
             const results = new Set();
 
@@ -191,12 +192,12 @@ export class Bundle {
     
             for (const groupId of current) { this._deleteRec(groupId, recId); }
     
-            _groupsByRecId.set(recId, results);
+            _groupIdsByRec.set(rec, results);
         } else if (valid !== current) {
             const recs = this._prepareRecs(valid, true);
             recs.set(recId, rec);
             this._deleteRec(current, recId);
-            _groupsByRecId.set(recId, valid);
+            _groupIdsByRec.set(rec, valid);
         }
 
         return this._run("update", rec, ctx);
@@ -215,13 +216,21 @@ export class Bundle {
     chop(id, opt={}) {
         id = toStr(id);
         if (!id) { throw Error(this.msg("critical error - chop missing id")); }
-        const chop = new Bundle(this.id + "." + id, opt, this);
+
+        opt.init = (chop, ctx)=>{
+            for (const [rec] of this._groupIdsByRec) { chop.add(rec, true, ctx); }
+        };
+        
+        const chop = new Bundle(this.id + "." + id, opt);
+
         this.on((event, rec, ctx)=>{
             if (event === "reset") { return chop.reset(ctx); }
+            if (this._reseting) { return; }
             if (event === "add") { return chop.add(rec, true, ctx); }
             if (event === "remove") { return chop.remove(rec, true, ctx); }
             if (event === "update") { return chop.update(rec, true, ctx); }
         });
+
         return chop;
     }
 }

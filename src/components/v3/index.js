@@ -21,7 +21,44 @@ export const testV3 = _=> {
                 };
             }
         }
-        
+    });
+
+    db.on((event, rec)=>{
+        if (!rec || refId(rec._ent) != "_ents") { return; }
+
+        if (event === "add") {
+            db.add({
+                _ent:`_ents _cols`, id:`${rec.id}-_ent`,
+                ent: `_ents ${rec.id}`, name: "_ent", type: "_types ref", ref:"_ents",
+                writable: 0, readable: 1, required: 1, isMeta:true,
+            });
+            db.add({
+                _ent:`_ents _cols`, id:`${rec.id}-id`,
+                ent: `_ents ${rec.id}`, name: "id", type: "_types string",
+                writable: 0, readable: 1, required: 1, isMeta:true,
+            });
+
+            return;
+        }
+
+        if (event === "remove") {
+            for (const col of cols.gets(rec.id)) { db.remove(col); };
+        }
+    })
+
+    const cols = db.chop("cols", {
+        group:rec=>refId(rec.ent),
+        filter:rec=>refId(rec._ent) == "_cols",
+    });
+
+    //new column appear in the database
+    cols.on((event, rec)=>{
+        if (event === "add") { defineColumn(rec); }
+    });
+
+    const refs = cols.chop("refs", {
+        group:rec=>refId(rec.ent),
+        filter:rec=>rec.type.id === "ref"
     });
 
     const defineColumn = (col)=>{
@@ -36,17 +73,10 @@ export const testV3 = _=> {
             }
         }
     }
-
-    const cols = db.chop("cols", {
-        group:rec=>refId(rec.ent),
-        filter:rec=>refId(rec._ent) == "_cols",
-    });
     
-    //new column appeared in the database
-    cols.on((event, rec)=>{
-        if (event === "add") { defineColumn(rec); }
-    });
+
 
     window.db = db;
     window.dbCols = cols;
+    window.colRef = refs;
 }

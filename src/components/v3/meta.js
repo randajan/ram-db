@@ -17,42 +17,18 @@ export const meta = {
         "ref": { }
     },
     "_cols": {
-        "_ents-_ent":{
-            ent: "_ents _ents", name: "_ent", type: "_types ref", ref:"_ents",
-            writable: 0, readable: 1, required: 1,
-        },
-        "_ents-id":{
-            ent: "_ents _ents", name: "id", type: "_types string",
-            writable: 0, readable: 1, required: 1,
-        },
         "_ents-isMeta":{
             ent: "_ents _ents", name: "isMeta", type: "_types boolean",
             writable: 0, readable: 1, required: 0,
         },
 
         //_types
-        "_types-_ent":{
-            ent: "_ents _types", name: "_ent", type: "_types ref", ref:"_ents",
-            writable: 0, readable: 1, required: 1,
-        },
-        "_types-id":{
-            ent: "_ents _types", name: "id", type: "_types string",
-            writable: 0, readable: 1, required: 1,
-        },
         "_types-isMeta":{
             ent: "_ents _types", name: "isMeta", type: "_types boolean",
             writable: 0, readable: 1, required: 0,
         },
 
         //_cols
-        "_cols-_ent":{
-            ent: "_ents _cols", name: "_ent", type: "_types ref", ref:"_ents",
-            writable: 0, readable: 1, required: 1,
-        },
-        "_cols-id":{
-            ent: "_ents _cols", name: "id", type: "_types string",
-            writable: 0, readable: 1, required: 1,
-        },
         "_cols-isMeta":{
             ent: "_ents _cols", name: "isMeta", type: "_types boolean",
             writable: 0, readable: 1, required: 0,
