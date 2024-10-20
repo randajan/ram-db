@@ -1,10 +1,10 @@
 import { vault } from "../../uni/consts";
 
 import { toArr, toFce, toStr, wrapFce } from "../../uni/formats";
-import { addRec } from "./sticks/addRec";
-import { onEvent } from "./sticks/eventHandlers";
-import { getRec, getRecs } from "./sticks/_bits";
-import { resetRecs } from "./sticks/resetRecs";
+import { addRec } from "./static/addRec";
+import { onEvent } from "./static/eventHandlers";
+import { getRec, getRecs } from "./static/_bits";
+import { resetRecs } from "./static/resetRecs";
 
 
 const enumerable = true;

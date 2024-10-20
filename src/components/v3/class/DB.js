@@ -1,14 +1,18 @@
-import { defineColumn } from "../columns";
+
 import { Chop } from "./Chop";
-import { addRec } from "./sticks/addRec";
-import { removeRec } from "./sticks/removeRec";
-import { updateRec } from "./sticks/updateRec";
+import { addRec } from "./static/addRec";
+import { removeRec } from "./static/removeRec";
+import { updateRec } from "./static/updateRec";
 
 import { toRefId } from "../../uni/formats";
 import { meta } from "../meta";
-
+import { createRecord, isRecord } from "../interfaces/records";
+import { createColumn } from "../interfaces/columns";
 
 export class DB extends Chop {
+
+    static isRecord(any, db) { return isRecord(any, db); }
+
     constructor(id, opt={}) {
 
         super(id, {
@@ -48,7 +52,7 @@ export class DB extends Chop {
         });
     
         cols.on((event, rec)=>{
-            if (event === "add") { defineColumn(this, rec); }
+            if (event === "add") { createColumn(this, rec); }
         });
 
         Object.defineProperties(this, {
@@ -57,15 +61,18 @@ export class DB extends Chop {
 
     }
 
-    add(rec, ctx) {
-        return addRec(this, rec, ctx);
+    isRecord(any) { return isRecord(any, this); }
+
+    add(data, ctx) {
+        const record = createRecord(this, data);
+        return addRec(this, record, ctx);
     }
 
-    remove(rec, ctx) {
-        return removeRec(this, rec, ctx);
+    remove(record, ctx) {
+        return removeRec(this, record, ctx);
     }
 
-    update(rec, ctx) {
-        return updateRec(this, rec, ctx);
+    update(record, data, ctx) {
+        return updateRec(this, record, ctx);
     }
 }
