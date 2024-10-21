@@ -13,17 +13,15 @@ export const addRec = (chop, rec, ctx)=>{
 
         for (const groupId of valid) {
             if (results.has(groupId)) { continue; }
-            if (setRec(chop, recsByGroupId, groupId, rec)) {
-                results.add(groupId);
-            };
+            setRec(chop, recsByGroupId, groupId, rec);
+            results.add(groupId);
         }
 
         groupIdsByRec.set(rec, results);
 
-    } else if (setRec(chop, recsByGroupId, valid, rec)) {
-
+    } else {
+        setRec(chop, recsByGroupId, valid, rec)
         groupIdsByRec.set(rec, valid);
-
     }
 
     return runEvent(handlers, childs, state, "add", rec, ctx);

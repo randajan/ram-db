@@ -7,13 +7,13 @@ export const meta = {
         "_types": { }
     },
     "_types": {
-        "string": { to:(v, c)=>toStr(v, "").substr(0, c.max) },
-        "boolean": { to:(v, c)=>toBol(v) },
-        "number": { to:(v, c)=>toNum(v, c.min, c.max, c.dec) },
-        "datetime": { to:(v, c)=>toDate(v, c.min, c.max) },
-        "duration": { to:(v, c)=>toNum(v, c.min > 0 ? c.min : 0, c.max, 0) },
-        "function": { to:(v, c)=>parseFce(v) },
-        "object": { to:(v, c)=>typeof v == "string" ? JSON.parse(v) : {} },
+        "string": { setter:(v, c)=>toStr(v, "").substr(0, c.max) },
+        "boolean": { setter:(v, c)=>toBol(v) },
+        "number": { setter:(v, c)=>toNum(v, c.min, c.max, c.dec) },
+        "datetime": { setter:(v, c)=>toDate(v, c.min, c.max) },
+        "duration": { setter:(v, c)=>toNum(v, c.min > 0 ? c.min : 0, c.max, 0) },
+        "function": { setter:(v, c)=>parseFce(v) },
+        "object": { setter:(v, c)=>typeof v == "string" ? JSON.parse(v) : {} },
         "ref": { },
         "any": { }
     },
@@ -28,9 +28,13 @@ export const meta = {
             ent: "_types", name: "isMeta", type: "boolean",
             writable: 0, readable: 1,
         },
-        "_types-to":{
-            ent: "_types", name: "to", type: "function",
-            writable: 0, readable: 1, fallback:_=>_
+        "_types-setter":{
+            ent: "_types", name: "setter", type: "function",
+            writable: 0, readable: 1, fallback:v=>v
+        },
+        "_types-getter":{
+            ent: "_types", name: "getter", type: "function",
+            writable: 0, readable: 1, fallback:v=>v
         },
 
         //_cols

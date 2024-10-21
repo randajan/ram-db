@@ -11,11 +11,10 @@ const prepareRecs = (chop, recsByGroupId, groupId, throwError = true, autoCreate
 export const deleteRec = (chop, recsByGroupId, groupId, rec)=>{
     const recs = prepareRecs(recsByGroupId, groupId, true, false);
 
-    if (!recs?.has(rec.id)) { throw Error(chop.msg(`delete(...) failed - missing`, rec.id, groupId));}
+    if (!recs?.has(rec.id)) { throw Error(chop.msg(`delete(...) critical fail - inconsistency`, rec.id, groupId));}
 
     if (recs.size <= 1) { recsByGroupId.delete(groupId); }
     else { recs.delete(rec.id); }
-    return true;
 }
 
 export const setRec = (chop, recsByGroupId, groupId, rec)=>{
@@ -23,13 +22,10 @@ export const setRec = (chop, recsByGroupId, groupId, rec)=>{
 
     const current = recs.get(rec.id);
 
-    if (current === rec) { return true; }
+    if (!current) { recs.set(rec.id, rec); return; }
+    if (current === rec) { return; }
 
-    if (current) { throw Error(chop.msg(`add(...) failed - duplicate`, rec.id, groupId)); }
-
-    recs.set(rec.id, rec);
-
-    return true;
+    throw Error(chop.msg(`add(...) failed - duplicate`, rec.id, groupId));
 }
 
 

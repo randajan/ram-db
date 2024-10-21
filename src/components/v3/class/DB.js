@@ -73,6 +73,9 @@ export class DB extends Chop {
     }
 
     update(record, data, ctx) {
-        return updateRec(this, record, ctx);
+        //set:to=>current[name] = setter(row, to, current[name])
+        console.log(record, data);
+        const groupUpdated = updateRec(this, record, ctx);
+        return groupUpdated;
     }
 }
