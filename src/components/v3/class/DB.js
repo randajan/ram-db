@@ -8,6 +8,7 @@ import { toRefId } from "../../uni/formats";
 import { meta } from "../meta";
 import { createRecord, isRecord } from "../interfaces/records";
 import { createColumn } from "../interfaces/columns";
+import { pushToRecord } from "../interfaces/traits";
 
 export class DB extends Chop {
 
@@ -74,8 +75,8 @@ export class DB extends Chop {
 
     update(record, data, ctx) {
         //set:to=>current[name] = setter(row, to, current[name])
-        console.log(record, data);
-        const groupUpdated = updateRec(this, record, ctx);
-        return groupUpdated;
+        const changed = pushToRecord(this, record, data);
+        if (changed.size) { updateRec(this, record, ctx); }
+        return changed;
     }
 }

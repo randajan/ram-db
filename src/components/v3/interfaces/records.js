@@ -1,7 +1,6 @@
-import { vault } from "../../uni/consts";
 import { toRefId } from "../../uni/formats";
 import { getRecs } from "../class/static/_bits";
-import { setColumn } from "./columns";
+import { setTrait } from "./traits";
 
 export const _records = new WeakMap();
 
@@ -11,20 +10,22 @@ export const isRecord = (any, db)=>{
 }
 
 export const createRecord = (db, data)=>{
-    const _p = {
+    const record = {...data};
+
+    const _rec = {
         db,
+        record,
+        pull:{},
+        columns:{},
         current:{...data}
     };
 
-    const record = {...data};
-    _records.set(record, _p);
+    _records.set(record, _rec);
 
     const cols = getRecs(db.cols, toRefId(record._ent));
 
     if (cols) {
-        for (const [_, col] of cols) {
-            setColumn(record, _p, col, _records.get(col));
-        }
+        for (const [_, col] of cols) { setTrait(_rec, _records.get(col)); }
     }
 
     return record;
