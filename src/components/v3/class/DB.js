@@ -1,18 +1,15 @@
 
 import { Chop } from "./Chop";
-import { addRec } from "./static/addRec";
-import { removeRec } from "./static/removeRec";
-import { updateRec } from "./static/updateRec";
+import { afterAdd } from "../effects/afterAdd";
+import { afterRemove } from "../effects/afterRemove";
+import { afterUpdate } from "../effects/afterUpdate";
 
 import { toRefId } from "../../uni/formats";
 import { meta } from "../meta";
-import { createRecord, isRecord } from "../interfaces/records";
-import { createColumn } from "../interfaces/columns";
-import { pushToRecord } from "../interfaces/traits";
+import { createRecord, getRecPriv } from "./Record";
+import { defineColumn } from "../interfaces/columns";
 
 export class DB extends Chop {
-
-    static isRecord(any, db) { return isRecord(any, db); }
 
     constructor(id, opt={}) {
 
@@ -53,7 +50,7 @@ export class DB extends Chop {
         });
     
         cols.on((event, rec)=>{
-            if (event === "add") { createColumn(this, rec); }
+            if (event === "add") { defineColumn(this, rec); }
         });
 
         Object.defineProperties(this, {
@@ -62,21 +59,18 @@ export class DB extends Chop {
 
     }
 
-    isRecord(any) { return isRecord(any, this); }
+    isRecord(any, throwError=false) { return !!getRecPriv(this, any, throwError) }
 
     add(data, ctx) {
         const record = createRecord(this, data);
-        return addRec(this, record, ctx);
+        return afterAdd(this, record, ctx);
     }
 
     remove(record, ctx) {
-        return removeRec(this, record, ctx);
+        return afterRemove(this, record, ctx);
     }
 
-    update(record, data, ctx) {
-        //set:to=>current[name] = setter(row, to, current[name])
-        const changed = pushToRecord(this, record, data);
-        if (changed.size) { updateRec(this, record, ctx); }
-        return changed;
+    update(record, input, ctx) {
+        return getRecPriv(this, record).update(input, ctx);
     }
 }

@@ -1,9 +1,9 @@
-import { vault } from "../../../uni/consts";
+import { vault } from "../../uni/consts";
 import { deleteRec, setRec } from "./_bits";
 import { runEvent } from "./eventHandlers";
 
 
-export const updateRec = (chop, rec, ctx)=>{
+export const afterUpdate = (chop, rec, ctx)=>{
     const { isMultiGroup, recsByGroupId, groupIdsByRec, group, filter, handlers, childs, state } = vault.get(chop);
 
     const current = groupIdsByRec.get(rec);

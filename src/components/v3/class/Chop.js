@@ -1,10 +1,10 @@
 import { vault } from "../../uni/consts";
 
 import { toArr, toFce, toStr, wrapFce } from "../../uni/formats";
-import { addRec } from "./static/addRec";
-import { onEvent } from "./static/eventHandlers";
-import { getRec, getRecs } from "./static/_bits";
-import { resetRecs } from "./static/resetRecs";
+import { afterAdd } from "../effects/afterAdd";
+import { onEvent } from "../effects/eventHandlers";
+import { getRec, getRecs } from "../effects/_bits";
+import { afterReset } from "../effects/afterReset";
 
 
 const enumerable = true;
@@ -45,7 +45,7 @@ export class Chop {
         if (parent) {
             const _pp = vault.get(parent);
             _p.init = (_, ctx)=>{
-                for (const [rec] of _pp.groupIdsByRec) { addRec(this, rec, false, ctx); }
+                for (const [rec] of _pp.groupIdsByRec) { afterAdd(this, rec, false, ctx); }
             }
             _pp.childs.add(this);
         }
@@ -66,7 +66,7 @@ export class Chop {
     }
 
     reset(ctx) {
-        return resetRecs(this, ctx);
+        return afterReset(this, ctx);
     }
 
     get(groupId, recId, throwError = false) {

@@ -1,25 +1,25 @@
-import { vault } from "../../../uni/consts";
-import { isFce } from "../../../uni/formats";
-import { addRec } from "./addRec";
-import { removeRec } from "./removeRec";
-import { resetRecs } from "./resetRecs";
-import { updateRec } from "./updateRec";
+import { vault } from "../../uni/consts";
+import { isFce } from "../../uni/formats";
+import { afterAdd } from "./afterAdd";
+import { afterRemove } from "./afterRemove";
+import { afterReset } from "./afterReset";
+import { afterUpdate } from "./afterUpdate";
 
 
 export const runEvent = (handlers, childs, state, event, rec, ctx)=>{
 
     if (childs.size && state === "ready") {
         if (event === "reset") {
-            for (const child of childs) { resetRecs(child, ctx); }
+            for (const child of childs) { afterReset(child, ctx); }
         }
         else if (event === "add") {
-            for (const child of childs) { addRec(child, rec, ctx); }
+            for (const child of childs) { afterAdd(child, rec, ctx); }
         }
         else if (event === "remove") {
-            for (const child of childs) { removeRec(child, rec, ctx); }
+            for (const child of childs) { afterRemove(child, rec, ctx); }
         }
         else if (event === "update") {
-            for (const child of childs) { updateRec(child, rec, ctx); }
+            for (const child of childs) { afterUpdate(child, rec, ctx); }
         }
     }
 

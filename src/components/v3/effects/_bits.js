@@ -1,4 +1,4 @@
-import { vault } from "../../../uni/consts";
+import { vault } from "../../uni/consts";
 
 const prepareRecs = (chop, recsByGroupId, groupId, throwError = true, autoCreate = false)=>{
     let recs = recsByGroupId.get(groupId);
