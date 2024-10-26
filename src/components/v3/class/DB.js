@@ -50,7 +50,9 @@ export class DB extends Chop {
         });
     
         cols.on((event, rec)=>{
-            if (event === "add") { defineColumn(this, rec); }
+            if (event === "add" || event === "update") { defineColumn(this, rec); }
+            console.log(event);
+            
         });
 
         Object.defineProperties(this, {

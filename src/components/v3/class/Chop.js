@@ -52,11 +52,9 @@ export class Chop {
 
     }
 
-    msg(text, recId, groupId) {
-        recId = toStr(recId);
+    msg(text, details={}) {
         let msg = this.id;
-        if (groupId) { msg += ` group('${groupId}')`; }
-        if (recId) { msg += ` rec('${recId}')`; }
+        for (let i in details) { msg += ` ${i}[${details[i]}]`; }
         if (text) { msg += " " + text; }
         return msg.trim();
     }

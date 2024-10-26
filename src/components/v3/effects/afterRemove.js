@@ -8,7 +8,7 @@ export const afterRemove = (chop, rec, ctx)=>{
 
     const current = groupIdsByRec.get(rec);
     if (!current) {
-        if (filter(rec)) { throw Error(chop.msg(`remove(...) failed - missing`, rec.id)); }
+        if (filter(rec)) { throw Error(chop.msg(`remove(...) failed - missing`, { row:rec.id })); }
         return false;
     }
 

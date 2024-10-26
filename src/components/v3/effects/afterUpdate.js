@@ -8,7 +8,7 @@ export const afterUpdate = (chop, rec, ctx)=>{
 
     const current = groupIdsByRec.get(rec);
     if (!current) {
-        if (filter(rec)) { throw Error(chop.msg(`update(...) failed - missing`, rec.id)); }
+        if (filter(rec)) { throw Error(chop.msg(`update(...) failed - missing`, { row:rec.id })); }
         return false;
     }
 
@@ -30,8 +30,7 @@ export const afterUpdate = (chop, rec, ctx)=>{
 
         groupIdsByRec.set(rec, results);
 
-    } else {
-        if (valid === current) { return false; }
+    } else if (valid !== current) {
         setRec(chop, recsByGroupId, valid, rec);
         deleteRec(chop, recsByGroupId, current, rec);
         groupIdsByRec.set(rec, valid);

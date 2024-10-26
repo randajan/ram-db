@@ -11,6 +11,8 @@ const createTraits = (db, col)=>{
     const _setter = type.setter || meta._types[typeId]?.setter || (v=>v);
     const _getter = type.getter || meta._types[typeId]?.getter || (v=>v);
 
+    if (typeId == "function") { console.log(col.name, _setter); }
+
     const getter = typeId == "ref" ? from=>db.get(ref, from, false) : _getter;
 
     const setter = (to, current, before)=>{
