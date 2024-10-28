@@ -31,19 +31,42 @@ export const toDate = (val, min, max)=>{
     return new Date(toNum(x.getTime(), min, max));
 }
 
+const _arg = /^[a-zA-Z_$][a-zA-Z_$0-9]*$/;
 const parseFceArgs = (args)=>{
-    if (!args) { return; }
-    if (args.startsWith("(")) { args = args.slice(1, -1); }
-    return args.trim().split(/\s*,\s*/);
+    if (args) { args = args.trim(); }
+    if (!args) { return []; }
+
+    if (!args.startsWith("(")) { return _arg.test(args) ? [args] : undefined; }
+    if (!args.endsWith(")")) { return; }
+
+    args = args.slice(1, -1).trim(); //remove braces;
+    if (!args) { return []; }
+
+    let result = [];
+    for (let a of args.split(",")) {
+        a = a.trim();
+        if (!_arg.test(a)) { return; }
+        result.push(a);
+    }
+
+    return result;
 }
+
 export const parseFce = (val)=>{
     const t = typeof val;
     if (t === "function") { return val; }
-    if (t !== "string") { return ()=>{}; }
+    if (t !== "string") { return _=>val; }
 
-    const frags = val.split("=>");
-    const args = parseFceArgs(frags.length > 1 ? frags.shift() : null);
-    const body = "return "+frags.join("=>").trim();
+    const frags = val.trim().split("=>");
+    if (frags.length <= 1) { return _=>val; }
 
-    return !args ? new Function(body) : new Function(args, body);
+    const args = parseFceArgs(frags.shift());
+    if (!args) { return _=>val; }
+
+    let body = frags.join("=>").trim();
+    if (!body.startsWith("{")) { body = "return "+body; }
+    else if (!body.endsWith("}")) { return _=>val; }
+    else { body = body.slice(1, -1).trim(); }
+
+    return new Function(args, body);
 }

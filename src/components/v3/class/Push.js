@@ -1,5 +1,6 @@
 import { toRefId } from "../../uni/formats";
 import { getRecs } from "../effects/_bits";
+import { getColsPriv } from "./Columns";
 import { getRecPriv } from "./Record";
 
 
@@ -7,65 +8,84 @@ import { getRecPriv } from "./Record";
 
 export class Push {
 
-    constructor(_rec, input) {
-
-        const { db, values } = _rec;
-        
+    constructor(_rec) {
         Object.defineProperties(this, {
-            db:{value:db},
             _rec:{value:_rec},
-            input:{value:input},
-            errors:{value:new Map()},
-            pending:{value:new Set()},
-            pendingReal:{value:new Set()},
-            changed:{value:new Set()},
-            output:{value:{...values}}
+            isPending:{get:_=>!!this.pending?.size}
         });
-
-        const columns = getRecs(db.cols, toRefId(values._ent));
-
-        for (const [_, col] of columns) {
-            const _col = getRecPriv(db, col);
-            const { name, formula, noCache, writable, isMeta } = _col.values;
-            const real = input.hasOwnProperty(name);
-
-            if (real) {
-                if (formula) { this.errors.set(name, `it has formula`); continue; }
-                if (!writable) { this.errors.set(name, `it's readonly`); continue; }
-                if (isMeta && values.isMeta) { this.errors.set(name, `because it's meta`); continue; }
-                this.pendingReal.add(_col);
-            } else if (!formula || noCache) { continue; }
-
-            this.pending.add(_col);
-        }
-
-        if (!this.pendingReal.size) { this.errors.set(undefined, "nothing to update"); }
     }
 
-    pull(_col) {
-        const { _rec, pending, output, input, changed } = this;
-        const { values:{ name }, traits:{ setter } } = _col;
-        const { current, before } = _rec;
+    prepare(input, isSet=false, isInit=false) {
+        const { values } = this._rec;
 
-        const from = output[name];
-        if (!pending.has(_col)) { return from; }
-        pending.delete(_col);
+        this.input = input;
+        const output = this.output = {}
+        const errors = this.errors = new Map();
+        const pending = this.pending = new Set();
+        const pendingReal = this.pendingReal = new Set();
+        this.changed = new Set();
 
-        const to = output[name] = setter(input[name], current, before);
-        if (to !== from) { changed.add(name); }
-        return to;
+        const _ent = toRefId(values._ent);
+        if (!_ent) { errors.set("_ent", "is required"); return; }
+
+        const _cols = getColsPriv(_ent);
+        if (!_cols) { errors.set("_ent", "invalid"); return; }
+
+        for (const _col of _cols) {
+            const { name, formula, noCache, isMeta } = _col.values;
+            const real = input.hasOwnProperty(name);
+            const meta = (isMeta && values.isMeta);
+
+            if (real) {
+                if (formula) { errors.set(name, `has formula`); continue; }
+                if (!isInit && meta) { errors.set(name, `is meta`); continue; }
+            }
+
+            if (formula && noCache) { continue; }
+            if (isInit && meta) { output[name] = values[name]; continue; }
+            if (formula) { pending.add(_col); continue; }
+
+            if (isSet || real) { pendingReal.add(_col); pending.add(_col); continue; }
+            output[name] = values[name];
+        }
+
+        if (!pendingReal.size) { errors.set(undefined, "blank"); }
     }
 
     execute() {
-        if (this.errors.size) { return; }
+        if (this.errors.size) { return false; }
         for (const _col of this.pendingReal) { this.pull(_col); }
         for (const _col of this.pending) { this.pull(_col); }
         if (this.errors.size) { this.changed.clear(); }
+        return !!this.changed.size;
     }
 
-    getResult() {
-        const { changed, errors } = this;
+    pull(_col) {
+        const { _rec, pending, output, input, changed, errors } = this;
+        const { values:{ name }, traits:{ setter } } = _col;
+        
+        if (pending.has(_col)) {
+            try { output[name] = setter(input[name], _rec, _rec.initializing);}
+            catch(err) { errors.set(name, err.message); }
+            pending.delete(_col);
+            if (output[name] !== _rec.values[name]) { changed.add(name); }
+        }
+
+        return output[name];
+    }
+
+    close() {
+        const { _rec:{current}, changed, errors } = this;
+
+        delete this.input;
+        delete this.errors;
+        delete this.pending;
+        delete this.pendingReal;
+        delete this.changed;
+        delete this.output;
+
         return {
+            current,
             changed,
             errors
         }

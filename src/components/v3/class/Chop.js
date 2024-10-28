@@ -3,7 +3,7 @@ import { vault } from "../../uni/consts";
 import { toArr, toFce, toStr, wrapFce } from "../../uni/formats";
 import { afterAdd } from "../effects/afterAdd";
 import { onEvent } from "../effects/eventHandlers";
-import { getRec, getRecs } from "../effects/_bits";
+import { getAllRecs, getRec, getRecs } from "../effects/_bits";
 import { afterReset } from "../effects/afterReset";
 
 
@@ -21,7 +21,6 @@ export class Chop {
             state:"pending",
             handlers:[],
             childs:new Set(),
-            recordIds:new Set(),
             groupIdsByRec:new Map(), // rec -> groupIds
             recsByGroupId:new Map(), // groupId -> recs
             group:!isMultiGroup ? toFce(group) : wrapFce(toArr, toFce(group, [undefined])),
@@ -36,7 +35,7 @@ export class Chop {
             childs:{ get:_=>[..._p.childs]},
             id:{enumerable, value:id},
             state:{enumerable, get:_=>_p.state},
-            size:{enumerable, get:_=>_p.recordIds.size},
+            size:{enumerable, get:_=>_p.groupIdsByRec.size},
             isMultiGroup:{enumerable, value:isMultiGroup}
         });
 
@@ -79,6 +78,10 @@ export class Chop {
     getList(groupId, throwError = false) {
         const recs = getRecs(this, groupId, throwError);
         return recs ? recs.values() : []; 
+    }
+
+    getAll() {
+        return getAllRecs(this).keys();
     }
 
     chop(id, opt={}) {

@@ -46,3 +46,5 @@ export const getRecs = (chop, groupId, throwError = false)=>{
     const { recsByGroupId } = vault.get(chop);
     return prepareRecs(chop, recsByGroupId, groupId, throwError, false);
 }
+
+export const getAllRecs = chop=>vault.get(chop).groupIdsByRec;

@@ -2,12 +2,12 @@
 import { Chop } from "./Chop";
 import { afterAdd } from "../effects/afterAdd";
 import { afterRemove } from "../effects/afterRemove";
-import { afterUpdate } from "../effects/afterUpdate";
 
 import { toRefId } from "../../uni/formats";
-import { meta } from "../meta";
-import { createRecord, getRecPriv } from "./Record";
-import { defineColumn } from "../interfaces/columns";
+import { meta, metaEnt, metaId } from "../meta";
+import { createRec, getRecPriv } from "./Record";
+import { setColumn, removeColumn } from "./Columns";
+import { getAllRecs, getRecs } from "../effects/_bits";
 
 export class DB extends Chop {
 
@@ -18,7 +18,7 @@ export class DB extends Chop {
             init:_=>{
                 for (const _ent in meta) {
                     for (const id in meta[_ent]) {
-                        this.add({_ent, id, isMeta:true, ...meta[_ent][id]});
+                        createRec(this, {_ent, id, isMeta:true, ...meta[_ent][id]});
                     };
                 }
             }
@@ -30,29 +30,35 @@ export class DB extends Chop {
         });
 
         this.on((event, rec)=>{
-            if (!rec || toRefId(rec._ent) != "_ents") { return; }
+            if (event === "reset") {
+                const _recs = [];
+                for (const [rec] of getAllRecs(this)) {
+                    _recs.push(getRecPriv(this, rec).prepareInit());
+                }
+                for (const _rec of _recs) {
+                    console.log(_rec.init());
+                }
+            }
+        });
+
+        this.on((event, rec)=>{
+            const _ent = toRefId(rec?._ent);
+            if (_ent != "_ents") { return; }
+
+            const { id } = rec;
     
             if (event === "remove") {
-                for (const col of cols.getList(rec.id)) { this.remove(col); };
+                for (const col of cols.getList(id)) { this.remove(col); };
             }
             else if (event === "add") {
-                this.add({
-                    _ent:`_cols`, id:`${rec.id}-_ent`,
-                    ent: rec.id, name: "_ent", type: "ref", ref:"_ents",
-                    writable: 0, readable: 1, required: 1, isMeta:true,
-                });
-                this.add({
-                    _ent:`_cols`, id:`${rec.id}-id`,
-                    ent: rec.id, name: "id", type: "string",
-                    writable: 0, readable: 1, required: 1, isMeta:true,
-                });
+                this.add(metaId(id, id === "_cols" ? r=>toRefId(r.ent) + "-" + r.name : undefined));
+                this.add(metaEnt(id));
             }
         });
     
         cols.on((event, rec)=>{
-            if (event === "add" || event === "update") { defineColumn(this, rec); }
-            console.log(event);
-            
+            if (event === "add" || event === "update") { setColumn(this, rec); }
+            else if (event === "remove") { removeColumn(this, rec); }
         });
 
         Object.defineProperties(this, {
@@ -61,11 +67,10 @@ export class DB extends Chop {
 
     }
 
-    isRecord(any, throwError=false) { return !!getRecPriv(this, any, throwError) }
+    isRecord(any, throwError=false) { return !!getRecPriv(this, any, throwError); }
 
-    add(data, ctx) {
-        const record = createRecord(this, data);
-        return afterAdd(this, record, ctx);
+    add(values, ctx) {
+        return createRec(this, values, ctx);
     }
 
     remove(record, ctx) {

@@ -8,7 +8,7 @@ import { afterUpdate } from "./afterUpdate";
 
 export const runEvent = (handlers, childs, state, event, rec, ctx)=>{
 
-    if (childs.size && state === "ready") {
+    if (childs.size && state !== "init") {
         if (event === "reset") {
             for (const child of childs) { afterReset(child, ctx); }
         }

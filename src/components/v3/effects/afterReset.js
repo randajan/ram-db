@@ -10,8 +10,10 @@ export const afterReset = (chop, ctx)=>{
     
     _p.state = "init";
     init(chop, ctx);
-    _p.state = "ready";
 
+    _p.state = "reset";
     runEvent(handlers, childs, _p.state, "reset", undefined, ctx);
+
+    _p.state = "ready";
     return true;
 }
