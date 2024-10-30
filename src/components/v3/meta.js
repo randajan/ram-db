@@ -1,8 +1,10 @@
+import { fceNone, fcePass, fceTrue } from "../uni/consts";
 import { parseFce, toBol, toDate, toNum, toStr } from "../uni/formats"
 
-const fceBlank = v=>v;
-const isRequired = _=>true;
-const isReadonly = _=>true;
+const getter = fcePass;
+const setter = fcePass;
+const isRequired = fceTrue;
+const isReadonly = fceTrue;
 
 export const meta = {
     "_ents": {
@@ -11,19 +13,19 @@ export const meta = {
         "_types": { }
     },
     "_types": {
-        "string": { setter:(v, c)=>toStr(v, "").substr(0, c.max), getter:fceBlank },
-        "boolean": { setter:(v, c)=>toBol(v), getter:fceBlank },
-        "number": { setter:(v, c)=>toNum(v, c.min, c.max, c.dec), getter:fceBlank },
-        "datetime": { setter:(v, c)=>toDate(v, c.min, c.max), getter:fceBlank },
-        "duration": { setter:(v, c)=>toNum(v, c.min > 0 ? c.min : 0, c.max, 0), getter:fceBlank },
-        "function": { setter:(v, c)=>parseFce(v), getter:fceBlank },
-        "object": { setter:(v, c)=>typeof v == "string" ? JSON.parse(v) : {}, getter:fceBlank },
-        "ref": { setter:fceBlank, getter:fceBlank },
-        "any": { setter:fceBlank, getter:fceBlank }
+        "string": { setter:(v, c)=>toStr(v, "").substr(0, c.max), getter },
+        "boolean": { setter:(v, c)=>toBol(v), getter },
+        "number": { setter:(v, c)=>toNum(v, c.min, c.max, c.dec), getter },
+        "datetime": { setter:(v, c)=>toDate(v, c.min, c.max), getter },
+        "duration": { setter:(v, c)=>toNum(v, c.min > 0 ? c.min : 0, c.max, 0), getter },
+        "function": { setter:(v, c)=>parseFce(v), getter },
+        "object": { setter:(v, c)=>typeof v == "string" ? JSON.parse(v) : {}, getter },
+        "ref": { setter, getter },
+        "any": { setter, getter }
     },
     "_cols": {
         "_ents-isMeta":{
-            ent: "_ents", name: "isMeta", type: "boolean", isReadonly
+            ent: "_ents", name: "isMeta", type: "boolean", isReadonly,
         },
 
         //_types
@@ -31,10 +33,10 @@ export const meta = {
             ent: "_types", name: "isMeta", type: "boolean", isReadonly
         },
         "_types-setter":{
-            ent: "_types", name: "setter", type: "function", isReadonly, fallback:fceBlank
+            ent: "_types", name: "setter", type: "function", isReadonly, fallback:_=>setter
         },
         "_types-getter":{
-            ent: "_types", name: "getter", type: "function", isReadonly, fallback:fceBlank
+            ent: "_types", name: "getter", type: "function", isReadonly, fallback:_=>getter
         },
 
         //_cols
@@ -48,7 +50,7 @@ export const meta = {
             ent: "_cols", name: "name", type: "string", isReadonly, isRequired
         },
         "_cols-type":{
-            ent: "_cols", name: "type", type: "ref", ref: "_types", fallback:"any"
+            ent: "_cols", name: "type", type: "ref", ref: "_types", fallback:_=>"any"
         },
         "_cols-ref":{
             ent: "_cols", name: "ref", type: "ref", ref: "_ents",
@@ -62,11 +64,17 @@ export const meta = {
         "_cols-isRequired":{
             ent: "_cols", name: "isRequired", type: "function"
         },
-        "_cols-initial":{
-            ent: "_cols", name: "initial", type: "function", //Type should be defined as a function
+        "_cols-resetIf":{
+            ent:"_cols", name:"resetIf", type:"function"
+        },
+        "_cols-init":{
+            ent: "_cols", name: "init", type: "function", //Type should be defined as a function
         },
         "_cols-fallback":{
-            ent: "_cols", name: "fallback", type: "any", //Type should be defined as a function
+            ent: "_cols", name: "fallback", type: "function", //Type should be defined as a function
+        },
+        "_cols-validator":{
+            ent: "_cols", name: "validator", type:"function"
         },
         "_cols-decimal":{
             ent: "_cols", name: "decimal", type: "number", decimal: 0, min: 0
@@ -85,6 +93,9 @@ export const meta = {
         "_cols-noCache":{
             ent: "_cols", name: "noCache", type: "boolean",
         },
+        "_cols-omitChange":{
+            ent: "_cols", name: "omitChange", type:"boolean"
+        }
     }
 }
 

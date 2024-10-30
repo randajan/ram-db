@@ -77,7 +77,12 @@ export class DB extends Chop {
         return afterRemove(this, record, ctx);
     }
 
+    set(record, input, ctx) {
+        return getRecPriv(this, record).update(input, ctx, true);
+    }
+
     update(record, input, ctx) {
         return getRecPriv(this, record).update(input, ctx);
     }
+
 }

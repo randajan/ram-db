@@ -61,14 +61,14 @@ class RecordPrivate {
             set:_=>{ throw new Error(this.msg("for update use db.update(...) interface", {column:name})) }
         };
 
-        if (isVirtual) { prop.get = _=>t.getter(t.setter(undefined, this)); }
+        if (isVirtual) { prop.get = _=>t.getter(t.setter(this, this.values, this.values[name])); }
         else { prop.get = _=>t.getter(this.push.isPending ? this.push.pull(_col) : this.values[name]); }
         Object.defineProperty(current, name, prop);
 
         if (!isVirtual) { prop.get = _=>t.getter(this.values[name]); }
         Object.defineProperty(before, name, prop);
 
-        if (!initializing) { this.values[name] = t.setter(this.values[name], this, true); }
+        if (!initializing) { t.setter(this, this.values, this.values[name], true); }
     }
 
     removeColumn(name) {
@@ -80,24 +80,24 @@ class RecordPrivate {
 
     prepareInit() {
         const { initializing, push, values } = this;
-        if (initializing) { push.prepare(values, true, true); }
+        if (initializing) { push.prepare(values, true); }
         return this;
     }
 
     init() {
         const { push } = this;
-        if (push.execute()) { this.values = push.output; }
+        this.values = push.execute();
         delete this.initializing;
         return push.close();
     }
 
-    update(input, ctx) {
+    update(input, ctx, isSet=false) {
         const { push } = this;
 
-        push.prepare(input);
-        
-        if (push.execute()) {
-            this.values = push.output;
+        push.prepare(input, isSet);
+        this.values = push.execute();
+
+        if (push.isChanged) {
             afterUpdate(this.db, this.current, ctx);
         }
 

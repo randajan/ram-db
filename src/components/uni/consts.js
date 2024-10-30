@@ -31,4 +31,6 @@ const _sortBy = (colName, descending=false, list=[])=>{
 
 export const sortBy = (colName, descending=false)=>_sortBy(colName, descending);
 
-
+export const fcePass = v=>v;
+export const fceNone = ()=>{};
+export const fceTrue = _=>true;
