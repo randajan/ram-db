@@ -7,7 +7,7 @@ export const afterAdd = (chop, rec, ctx)=>{
     const { isMultiGroup, recsByGroupId, groupIdsByRec, filter, group, handlers, childs, state } = vault.get(chop);
     if (!filter(rec)) { return false; }
 
-    const valid = group(rec);
+    const valid = chop.getGroup(rec);
     if (isMultiGroup) {
         const results = new Set();
 

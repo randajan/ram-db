@@ -15,6 +15,7 @@ export class DB extends Chop {
     constructor(id, opt={}) {
 
         super(id, {
+            autoReset:false,
             group:rec=>toRefId(rec._ent),
             init:_=>{
                 for (const _ent in meta) {
@@ -25,9 +26,8 @@ export class DB extends Chop {
             }
         });
 
-        const cols = this.chop("cols", {
+        const _cols = this.chop("_cols", {
             group:rec=>toRefId(rec.ent),
-            filter:rec=>toRefId(rec._ent) == "_cols",
         });
 
         this.on((event, rec)=>{
@@ -49,7 +49,7 @@ export class DB extends Chop {
             const { id } = rec;
     
             if (event === "remove") {
-                for (const col of cols.getList(id)) { removeRec(col, ctx, true); };
+                for (const col of _cols.getList(id)) { removeRec(col, ctx, true); };
             }
             else if (event === "add") {
                 this.add(metaId(id, id === "_cols" ? r=>toRefId(r.ent) + "-" + r.name : undefined), ctx);
@@ -57,14 +57,17 @@ export class DB extends Chop {
             }
         });
     
-        cols.on((event, rec)=>{
+        _cols.on((event, rec)=>{
             if (event === "add" || event === "update") { setColumn(this, rec); }
             else if (event === "remove") { removeColumn(this, rec); }
         });
 
         solids(this, {
-            cols
-        })
+            _cols
+        });
+
+
+        this.reset();
 
     }
 

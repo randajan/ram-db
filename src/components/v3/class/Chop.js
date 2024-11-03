@@ -8,15 +8,14 @@ import { afterReset } from "../effects/afterReset";
 import { solids, virtuals } from "@randajan/props";
 
 
-const enumerable = true;
 export class Chop {
 
     constructor(id, opt={}, parent) {
         id = toStr(id);
         if (!id) { throw Error(this.msg("critical error - missing id")); }
 
-        const { init, group, filter, isMultiGroup=false } = opt;
-        if (parent) { id = parent.id + "." + id; }
+        const { init, group, autoReset=true, isMultiGroup=false } = opt;
+        const filter = toFce(opt.filter, true);
 
         const _p = {
             state:"pending",
@@ -24,14 +23,21 @@ export class Chop {
             childs:new Set(),
             groupIdsByRec:new Map(), // rec -> groupIds
             recsByGroupId:new Map(), // groupId -> recs
-            group:!isMultiGroup ? toFce(group) : wrapFce(toArr, toFce(group, [undefined])),
             isMultiGroup,
             init:toFce(init),
-            filter:toFce(filter, true),
+            filter:parent ? rec=>(parent.getGroup(rec) === id && filter(rec)) : filter,
         }
 
-        solids(this, { db:parent?.db || this, parent }, false);
-        solids(this, { id, isMultiGroup });
+        solids(this, {
+            db:parent?.db || this,
+            parent,
+            getGroup:!isMultiGroup ? toFce(group) : wrapFce(toArr, toFce(group, [undefined]))
+        }, false);
+
+        solids(this, {
+            id:parent ? (parent.id + "." + id) : id,
+            isMultiGroup
+        });
 
         virtuals(this, {
             state:_=>_p.state,
@@ -48,6 +54,8 @@ export class Chop {
             }
             _pp.childs.add(this);
         }
+
+        if (autoReset) { this.reset(); }
 
     }
 

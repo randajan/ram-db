@@ -56,7 +56,7 @@ class RecordPrivate {
         this.values = values;
         this.state = "pending"; //ready, removed;
 
-        const cols = getRecs(db.cols, _ent);
+        const cols = getRecs(db._cols, _ent);
         if (cols) { for (const [_, col] of cols) { this.addColumn(_records.get(col)); } }
 
         _records.set(current, this);

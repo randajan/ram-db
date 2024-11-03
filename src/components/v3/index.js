@@ -7,8 +7,6 @@ export const testV3 = _=> {
 
     const db = new DB("db");
 
-    db.reset();
-
     window.db = db;
 }
 

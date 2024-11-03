@@ -12,7 +12,7 @@ export const afterUpdate = (chop, rec, ctx)=>{
         return false;
     }
 
-    const valid = group(rec);
+    const valid = chop.getGroup(rec);
 
     if (isMultiGroup) {
         const results = new Set();
