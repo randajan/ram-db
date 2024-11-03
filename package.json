@@ -19,7 +19,8 @@
   "peerDependencies": {
     "@randajan/jet-core": "^4.1.0",
     "@randajan/odata-server": "^2.3.1",
-    "@randajan/queue": "^0.1.3",
+    "@randajan/props": "^0.1.2",
+    "@randajan/queue": "^0.1.6",
     "fs-extra": "^11.2.0"
   },
   "devDependencies": {
@@ -42,5 +43,6 @@
     "name": "Jan Randa",
     "email": "jnranda@gmail.com",
     "url": "https://www.linkedin.com/in/randajan/"
-  }
+  },
+  "dependencies": {}
 }

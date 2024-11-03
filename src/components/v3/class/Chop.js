@@ -5,6 +5,7 @@ import { afterAdd } from "../effects/afterAdd";
 import { onEvent } from "../effects/eventHandlers";
 import { getAllRecs, getRec, getRecs } from "../effects/_bits";
 import { afterReset } from "../effects/afterReset";
+import { solids, virtuals } from "@randajan/props";
 
 
 const enumerable = true;
@@ -29,14 +30,13 @@ export class Chop {
             filter:toFce(filter, true),
         }
 
-        Object.defineProperties(this, {
-            db:{value:parent?.db || this},
-            parent:{value:parent},
-            childs:{ get:_=>[..._p.childs]},
-            id:{enumerable, value:id},
-            state:{enumerable, get:_=>_p.state},
-            size:{enumerable, get:_=>_p.groupIdsByRec.size},
-            isMultiGroup:{enumerable, value:isMultiGroup}
+        solids(this, { db:parent?.db || this, parent }, false);
+        solids(this, { id, isMultiGroup });
+
+        virtuals(this, {
+            state:_=>_p.state,
+            size:_=>_p.groupIdsByRec.size,
+            childs:_=>[..._p.childs],
         });
 
         vault.set(this, _p);

@@ -1,7 +1,10 @@
+import { cacheds, solids } from "@randajan/props";
 import { toRefId } from "../../uni/formats";
-import { getRecs } from "../effects/_bits";
+import { getRec, getRecs } from "../effects/_bits";
 import { afterAdd } from "../effects/afterAdd";
+import { afterRemove } from "../effects/afterRemove";
 import { afterUpdate } from "../effects/afterUpdate";
+import { meta } from "../meta";
 import { Push } from "./Push";
 
 const _records = new WeakMap();
@@ -9,34 +12,51 @@ const _records = new WeakMap();
 export const getRecPriv = (db, any, throwError=true)=>{
     const _p = _records.get(any);
     if (_p && (!db || db === _p.db)) { return _p; }
-    if (throwError) { throw db.msg("is not record", {row:toRefId(any)}); };
+    if (throwError) { throw Error(db.msg("is not record", {row:toRefId(any)})); };
 }
 
-export const createRec = (db, values, ctx)=>{
-    const _rec = new RecordPrivate(db, values);
-    if (db.state !== "ready") { return afterAdd(db, _rec.current, ctx); }
-    const result = _rec.prepareInit().init();
-    afterAdd(db, _rec.current, ctx);
-    return result;
+const createRec = (db, values)=>new RecordPrivate(db, values);
+
+export const addRec = (db, values, ctx)=>{
+    let res = createRec(db, values);
+    if (db.state === "ready") { res = res.prepareInit().init(); }
+    afterAdd(db, res.current, ctx);
+    return res;
 }
+
+export const addOrSetRec = (db, values, ctx, isUpdate)=>{
+    const _rec = createRec(db, values).prepareInit();
+    const { _ent, id } = _rec.current;
+
+    const brother = getRec(db, toRefId(_ent), id);
+    if (brother) { return getRecPriv(db, brother).set(values, ctx, isUpdate); }
+
+    const res = _rec.init();
+    afterAdd(db, res.current, ctx);
+    return res;
+}
+
+export const removeRec = (record, ctx, force)=>getRecPriv(this, record).remove(ctx, force);
 
 class RecordPrivate {
 
     constructor(db, values) {
+        const _ent = values._ent = toRefId(values._ent);
+        const isMeta = values.isMeta && meta.hasOwnProperty(_ent);
+
         const current = {...values}; //interface
         const before = {}; //interface
 
-        Object.defineProperties(this, {
-            db:{value:db},
-            current:{value:current},
-            before:{value:before},
-            push:{value:new Push(this)}
+        solids(this, {
+            db, current, before,
+            push:new Push(this),
+            isMeta,
         });
 
-        this.values = {...values};
-        this.initializing = true;
+        this.values = values;
+        this.state = "pending"; //ready, removed;
 
-        const cols = getRecs(db.cols, toRefId(current._ent));
+        const cols = getRecs(db.cols, _ent);
         if (cols) { for (const [_, col] of cols) { this.addColumn(_records.get(col)); } }
 
         _records.set(current, this);
@@ -51,7 +71,8 @@ class RecordPrivate {
     }
 
     addColumn(_col) {
-        const { current, before, initializing } = this;
+        const { current, before, state } = this;
+
         const { name, formula, noCache } = _col.current;
         const t = _col.traits;
         const isVirtual = (formula != null && noCache != null);
@@ -68,7 +89,7 @@ class RecordPrivate {
         if (!isVirtual) { prop.get = _=>t.getter(this.values[name]); }
         Object.defineProperty(before, name, prop);
 
-        if (!initializing) { t.setter(this, this.values, this.values[name], true); }
+        if (state === "ready") { t.setter(this, this.values, this.values[name], true); }
     }
 
     removeColumn(name) {
@@ -79,29 +100,45 @@ class RecordPrivate {
     }
 
     prepareInit() {
-        const { initializing, push, values } = this;
-        if (initializing) { push.prepare(values, true); }
+        const { state, push, values } = this;
+        if (state === "pending") { push.prepare(values); }
         return this;
     }
 
     init() {
         const { push } = this;
         this.values = push.execute();
-        delete this.initializing;
+        this.state = "ready";
         return push.close();
     }
 
-    update(input, ctx, isSet=false) {
-        const { push } = this;
+    set(input, ctx, isUpdate=false, force=false) {
+        const { db, current, push } = this;
 
-        push.prepare(input, isSet);
+        push.prepare(input, isUpdate);
         this.values = push.execute();
 
         if (push.isChanged) {
-            afterUpdate(this.db, this.current, ctx);
+            afterUpdate(db, current, ctx);
         }
 
         return push.close();
+    }
+
+    remove(ctx, force=false) {
+        const { db, current, isMeta } = this;
+        const errors = new Map();
+        if (!force && isMeta) { errors.set(undefined, "is meta"); }
+        else {
+            this.state = "removed";
+            _records.delete(this);
+            afterRemove(db, current, ctx);
+        }
+        
+        return solids({}, {
+            isDone:!errors.size,
+            errors
+        });
     }
 
 }

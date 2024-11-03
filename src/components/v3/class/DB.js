@@ -5,9 +5,10 @@ import { afterRemove } from "../effects/afterRemove";
 
 import { toRefId } from "../../uni/formats";
 import { meta, metaEnt, metaId } from "../meta";
-import { createRec, getRecPriv } from "./Record";
+import { addOrSetRec, addRec, getRecPriv, removeRec } from "./Record";
 import { setColumn, removeColumn } from "./Columns";
-import { getAllRecs, getRecs } from "../effects/_bits";
+import { getAllRecs, getRec, getRecs } from "../effects/_bits";
+import { solid, solids } from "@randajan/props";
 
 export class DB extends Chop {
 
@@ -18,7 +19,7 @@ export class DB extends Chop {
             init:_=>{
                 for (const _ent in meta) {
                     for (const id in meta[_ent]) {
-                        createRec(this, {_ent, id, isMeta:true, ...meta[_ent][id]});
+                        addRec(this, {_ent, id, isMeta:true, ...meta[_ent][id]});
                     };
                 }
             }
@@ -41,18 +42,18 @@ export class DB extends Chop {
             }
         });
 
-        this.on((event, rec)=>{
+        this.on((event, rec, ctx)=>{
             const _ent = toRefId(rec?._ent);
             if (_ent != "_ents") { return; }
 
             const { id } = rec;
     
             if (event === "remove") {
-                for (const col of cols.getList(id)) { this.remove(col); };
+                for (const col of cols.getList(id)) { removeRec(col, ctx, true); };
             }
             else if (event === "add") {
-                this.add(metaId(id, id === "_cols" ? r=>toRefId(r.ent) + "-" + r.name : undefined));
-                this.add(metaEnt(id));
+                this.add(metaId(id, id === "_cols" ? r=>toRefId(r.ent) + "-" + r.name : undefined), ctx);
+                this.add(metaEnt(id), ctx);
             }
         });
     
@@ -61,28 +62,51 @@ export class DB extends Chop {
             else if (event === "remove") { removeColumn(this, rec); }
         });
 
-        Object.defineProperties(this, {
-            cols:{value:cols}
-        });
+        solids(this, {
+            cols
+        })
 
     }
 
     isRecord(any, throwError=false) { return !!getRecPriv(this, any, throwError); }
 
-    add(values, ctx) {
-        return createRec(this, values, ctx);
-    }
-
     remove(record, ctx) {
-        return afterRemove(this, record, ctx);
+        return removeRec(record, ctx);
     }
 
-    set(record, input, ctx) {
-        return getRecPriv(this, record).update(input, ctx, true);
+    add(values, ctx) {
+        return addRec(this, values, ctx);
     }
 
-    update(record, input, ctx) {
-        return getRecPriv(this, record).update(input, ctx);
+    addOrSet(values, ctx) {
+        return addOrSetRec(this, values, ctx);
+    }
+
+    addOrUpdate(values, ctx) {
+        return addOrSetRec(this, values, ctx, true);
+    }
+
+    set(record, values, ctx) {
+        return getRecPriv(this, record).set(values, ctx);
+    }
+
+    update(record, values, ctx) {
+        return getRecPriv(this, record).set(values, ctx, true);
+    }
+
+    removeBy(groupId, recId, ctx) {
+        const rec = this.get(groupId, recId);
+        if (rec) { return this.remove(rec, ctx); }
+    }
+
+    setBy(groupId, recId, values, ctx) {
+        const rec = this.get(groupId, recId);
+        if (rec) { return this.set(rec, values, ctx); }
+    }
+
+    updateBy(groupId, recId, values, ctx) {
+        const rec = this.get(groupId, recId);
+        if (rec) { return this.update(rec, values, ctx); }
     }
 
 }
