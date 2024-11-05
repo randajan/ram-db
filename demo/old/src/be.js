@@ -1,7 +1,7 @@
 import jet from "@randajan/jet-core";
-import ramdb from "./async/async";
+import ramdb from "./async/async.js";
 
-import odataServer from "../../dist/api/odata.js";
+import odataServer from "../../../dist/api/odata.js
 
 import responder from "@randajan/odata-server/express";
 

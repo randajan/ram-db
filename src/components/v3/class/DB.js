@@ -14,6 +14,8 @@ export class DB extends Chop {
 
     constructor(id, opt={}) {
 
+        const { init } = opt;
+
         super(id, {
             autoReset:false,
             group:rec=>toRefId(rec._ent),
@@ -23,6 +25,7 @@ export class DB extends Chop {
                         addRec(this, {_ent, id, isMeta:true, ...meta[_ent][id]});
                     };
                 }
+                init(this); //this was done before meta columns was properly initialized
             }
         });
 
@@ -34,10 +37,14 @@ export class DB extends Chop {
             if (event === "reset") {
                 const _recs = [];
                 for (const [rec] of getAllRecs(this)) {
-                    _recs.push(getRecPriv(this, rec).prepareInit());
+                    const _rec = getRecPriv(this, rec);
+                    if (_rec.state === "ready") { console.log(_rec.values); }
+                    _recs.push(_rec.prepareInit());
                 }
                 for (const _rec of _recs) {
-                    console.log(_rec.init());
+                    if (!_rec) { continue; } //because some rows was already ready - IDK why
+                    const resp = _rec.init(); //init responses
+                    if (!resp.isDone) { console.log(resp); }
                 }
             }
         });

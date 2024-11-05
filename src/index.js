@@ -5,12 +5,12 @@ import { DB } from "./components/sync/interfaces/DB";
 
 export default (name, stream, config={}) => new DB(name, stream, config);
 
-import { testV3 } from "./components/v3/index.js";
+import { DB as DBv3 } from "./components/v3/index.js";
 
 export {
     nref,
     timestamps,
     reductor,
     summary,
-    testV3
+    DBv3
 }

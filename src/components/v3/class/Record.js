@@ -1,4 +1,4 @@
-import { cacheds, solids } from "@randajan/props";
+import { cacheds, solid, solids } from "@randajan/props";
 import { toRefId } from "../../uni/formats";
 import { getRec, getRecs } from "../effects/_bits";
 import { afterAdd } from "../effects/afterAdd";
@@ -44,8 +44,10 @@ class RecordPrivate {
         const _ent = values._ent = toRefId(values._ent);
         const isMeta = values.isMeta && meta.hasOwnProperty(_ent);
 
-        const current = {...values}; //interface
-        const before = {}; //interface
+        const magic = { toString:_=>values.id, toJSON:_=>values.id }
+
+        const current = solids({...values}, magic, false); //interface
+        const before = solids({}, magic, false); //interface
 
         solids(this, {
             db, current, before,
@@ -101,7 +103,8 @@ class RecordPrivate {
 
     prepareInit() {
         const { state, push, values } = this;
-        if (state === "pending") { push.prepare(values); }
+        if (state !== "pending") { return; }
+        push.prepare(values);
         return this;
     }
 
@@ -112,7 +115,7 @@ class RecordPrivate {
         return push.close();
     }
 
-    set(input, ctx, isUpdate=false, force=false) {
+    set(input, ctx, isUpdate=false) {
         const { db, current, push } = this;
 
         push.prepare(input, isUpdate);

@@ -21,11 +21,15 @@ export const meta = {
         "function": { setter:(v, c)=>parseFce(v), getter },
         "object": { setter:(v, c)=>typeof v == "string" ? JSON.parse(v) : {}, getter },
         "ref": { setter, getter },
+        "nref": { setter, getter },
         "any": { setter, getter }
     },
     "_cols": {
         "_ents-isMeta":{
             ent: "_ents", name: "isMeta", type: "boolean", isReadonly,
+        },
+        "_ents-cols":{
+            ent: "_ents", name: "cols", type: "nref", ref:"_cols", parent:"_cols-ent", noCache:true,
         },
 
         //_types
@@ -54,6 +58,9 @@ export const meta = {
         },
         "_cols-ref":{
             ent: "_cols", name: "ref", type: "ref", ref: "_ents",
+        },
+        "_cols-parent":{
+            ent: "_cols", name: "parent", type: "ref", ref: "_cols",
         },
         "_cols-isList":{
             ent: "_cols", name: "isList", type: "boolean",

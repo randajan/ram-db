@@ -22,7 +22,7 @@ const createSetter = _col=>{
     const col = _col.current;
     const v = _col.values;
 
-    const { name, formula, validator, isReadonly, resetIf, init, fallback, isRequired } = col;
+    const { name, ref, parent, formula, validator, isReadonly, resetIf, init, fallback, isRequired } = col;
     const { setter } = (meta._types[v.type] || col.type);
 
     const typize = v=>v == null ? undefined : setter(v, col);

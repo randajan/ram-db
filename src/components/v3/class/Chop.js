@@ -88,8 +88,18 @@ export class Chop {
         return recs ? recs.values() : []; 
     }
 
-    getAll() {
-        return getAllRecs(this).keys();
+    map(callback) {
+        const result = [];
+        const recs = getAllRecs(this);
+        for (const [rec] of recs) {
+            const r = callback(rec);
+            if (r !== undefined) { result.push(r); }
+        }
+        return result;
+    }
+
+    export() {
+        return this.map(rec=>({...rec}));
     }
 
     chop(id, opt={}) {

@@ -24,8 +24,12 @@
     "fs-extra": "^11.2.0"
   },
   "devDependencies": {
+    "@randajan/bifrost": "^1.4.2",
+    "@randajan/queue": "^0.1.6",
     "@randajan/simple-lib": "^2.3.1",
-    "esbuild-plugin-import-glob": "^0.1.1"
+    "esbuild-plugin-import-glob": "^0.1.1",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1"
   },
   "files": [
     "dist",

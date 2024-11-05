@@ -1,5 +1,5 @@
 import jet from "@randajan/jet-core";
-import { nref, summary } from "../../../dist";
+import { nref, summary } from "../../../../dist";
 
 
 
