@@ -7483,13 +7483,25 @@
     return res;
   };
   var removeRec = (record, ctx, force) => getRecPriv(void 0, record).remove(ctx, force);
+  var Record = class {
+    constructor(values) {
+      if (values) {
+        Object.assign(this, values);
+      }
+    }
+    toString() {
+      return this.id;
+    }
+    toJSON() {
+      return this.id;
+    }
+  };
   var RecordPrivate = class {
     constructor(db, values) {
       const _ent = values._ent = toRefId(values._ent);
       const isMeta = values.isMeta && meta.hasOwnProperty(_ent);
-      const magic = { toString: (_2) => values.id, toJSON: (_2) => values.id };
-      const current = solids({ ...values }, magic, false);
-      const before = solids({}, magic, false);
+      const current = new Record(values);
+      const before = new Record();
       solids(this, {
         db,
         current,
@@ -7499,10 +7511,10 @@
       });
       this.values = values;
       this.state = "pending";
-      const cols = getRecs(db._cols, _ent);
+      const cols = getColsPriv(_ent);
       if (cols) {
-        for (const [_2, col] of cols) {
-          this.addColumn(_records.get(col));
+        for (const _col of cols) {
+          this.addColumn(_col);
         }
       }
       _records.set(current, this);
@@ -7599,16 +7611,9 @@
             ;
           }
           init(this);
-        }
-      });
-      const _cols = this.chop("_cols", {
-        group: (rec) => toRefId(rec.ent)
-      });
-      this.on((event, rec) => {
-        if (event === "reset") {
           const _recs = [];
-          for (const [rec2] of getAllRecs(this)) {
-            const _rec = getRecPriv(this, rec2);
+          for (const [rec] of getAllRecs(this)) {
+            const _rec = getRecPriv(this, rec);
             if (_rec.state === "ready") {
               console.log(_rec.values);
             }
@@ -7626,30 +7631,28 @@
         }
       });
       this.on((event, rec, ctx) => {
-        const _ent = toRefId(rec?._ent);
-        if (_ent != "_ents") {
+        if (!rec) {
           return;
         }
-        const { id: id2 } = rec;
-        if (event === "remove") {
-          for (const col of _cols.getList(id2)) {
-            removeRec(col, ctx, true);
+        const _ent = toRefId(rec._ent);
+        if (_ent == "_ents") {
+          const { id: id2 } = rec;
+          if (event === "remove") {
+            for (const _col of getColsPriv(id2)) {
+              _col.remove(ctx, true);
+            }
+            ;
+          } else if (event === "add") {
+            this.add(metaId(id2, id2 === "_cols" ? (r) => toRefId(r.ent) + "-" + r.name : void 0), ctx);
+            this.add(metaEnt(id2), ctx);
           }
-          ;
-        } else if (event === "add") {
-          this.add(metaId(id2, id2 === "_cols" ? (r) => toRefId(r.ent) + "-" + r.name : void 0), ctx);
-          this.add(metaEnt(id2), ctx);
+        } else if (_ent === "_cols") {
+          if (event === "add" || event === "update") {
+            setColumn(this, rec);
+          } else if (event === "remove") {
+            removeColumn(this, rec);
+          }
         }
-      });
-      _cols.on((event, rec) => {
-        if (event === "add" || event === "update") {
-          setColumn(this, rec);
-        } else if (event === "remove") {
-          removeColumn(this, rec);
-        }
-      });
-      solids(this, {
-        _cols
       });
       this.reset();
     }

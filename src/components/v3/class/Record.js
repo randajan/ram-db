@@ -6,6 +6,7 @@ import { afterRemove } from "../effects/afterRemove";
 import { afterUpdate } from "../effects/afterUpdate";
 import { meta } from "../meta";
 import { Push } from "./Push";
+import { getColsPriv } from "./Columns";
 
 const _records = new WeakMap();
 
@@ -38,16 +39,20 @@ export const addOrSetRec = (db, values, ctx, isUpdate)=>{
 
 export const removeRec = (record, ctx, force)=>getRecPriv(this, record).remove(ctx, force);
 
+class Record {
+    constructor(values) { if (values) { Object.assign(this, values); } }
+    toString() { return this.id; }
+    toJSON() { return this.id; }
+}
+
 class RecordPrivate {
 
     constructor(db, values) {
         const _ent = values._ent = toRefId(values._ent);
         const isMeta = values.isMeta && meta.hasOwnProperty(_ent);
 
-        const magic = { toString:_=>values.id, toJSON:_=>values.id }
-
-        const current = solids({...values}, magic, false); //interface
-        const before = solids({}, magic, false); //interface
+        const current = new Record(values); //interface
+        const before = new Record();
 
         solids(this, {
             db, current, before,
@@ -58,8 +63,8 @@ class RecordPrivate {
         this.values = values;
         this.state = "pending"; //ready, removed;
 
-        const cols = getRecs(db._cols, _ent);
-        if (cols) { for (const [_, col] of cols) { this.addColumn(_records.get(col)); } }
+        const cols = getColsPriv(_ent);
+        if (cols) { for (const _col of cols) { this.addColumn(_col); } }
 
         _records.set(current, this);
     }

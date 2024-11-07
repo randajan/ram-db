@@ -6,7 +6,7 @@ import { afterRemove } from "../effects/afterRemove";
 import { toRefId } from "../../uni/formats";
 import { meta, metaEnt, metaId } from "../meta";
 import { addOrSetRec, addRec, getRecPriv, removeRec } from "./Record";
-import { setColumn, removeColumn } from "./Columns";
+import { setColumn, removeColumn, getColsPriv } from "./Columns";
 import { getAllRecs, getRec, getRecs } from "../effects/_bits";
 import { solid, solids } from "@randajan/props";
 
@@ -20,21 +20,15 @@ export class DB extends Chop {
             autoReset:false,
             group:rec=>toRefId(rec._ent),
             init:_=>{
+
                 for (const _ent in meta) {
                     for (const id in meta[_ent]) {
                         addRec(this, {_ent, id, isMeta:true, ...meta[_ent][id]});
                     };
                 }
-                init(this); //this was done before meta columns was properly initialized
-            }
-        });
 
-        const _cols = this.chop("_cols", {
-            group:rec=>toRefId(rec.ent),
-        });
+                init(this);
 
-        this.on((event, rec)=>{
-            if (event === "reset") {
                 const _recs = [];
                 for (const [rec] of getAllRecs(this)) {
                     const _rec = getRecPriv(this, rec);
@@ -46,33 +40,32 @@ export class DB extends Chop {
                     const resp = _rec.init(); //init responses
                     if (!resp.isDone) { console.log(resp); }
                 }
+
             }
         });
 
         this.on((event, rec, ctx)=>{
-            const _ent = toRefId(rec?._ent);
-            if (_ent != "_ents") { return; }
+            if (!rec) { return; }
 
-            const { id } = rec;
+            const _ent = toRefId(rec._ent);
+
+            if (_ent == "_ents") {
+                const { id } = rec;
     
-            if (event === "remove") {
-                for (const col of _cols.getList(id)) { removeRec(col, ctx, true); };
+                if (event === "remove") {
+                    for (const _col of getColsPriv(id)) { _col.remove(ctx, true); };
+                }
+                else if (event === "add") {
+                    this.add(metaId(id, id === "_cols" ? r=>toRefId(r.ent) + "-" + r.name : undefined), ctx);
+                    this.add(metaEnt(id), ctx);
+                }
+            } else if (_ent === "_cols") {
+                if (event === "add" || event === "update") { setColumn(this, rec); }
+                else if (event === "remove") { removeColumn(this, rec); }
             }
-            else if (event === "add") {
-                this.add(metaId(id, id === "_cols" ? r=>toRefId(r.ent) + "-" + r.name : undefined), ctx);
-                this.add(metaEnt(id), ctx);
-            }
-        });
-    
-        _cols.on((event, rec)=>{
-            if (event === "add" || event === "update") { setColumn(this, rec); }
-            else if (event === "remove") { removeColumn(this, rec); }
-        });
 
-        solids(this, {
-            _cols
-        });
 
+        });
 
         this.reset();
 
