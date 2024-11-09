@@ -1,6 +1,7 @@
 import { toRefId, toStr } from "../../../uni/formats";
 import { getRec } from "../../effects/_bits";
-import { afterAdd, afterLoad } from "../../effects/afterAdd";
+import { afterAdd } from "../../effects/afterAdd";
+import { afterUpdate } from "../../effects/afterUpdate";
 import { setCol } from "./_columns";
 import { addEnt, loadEnt } from "./_ents";
 import { RecordPrivate } from "./RecordPrivate";
@@ -32,17 +33,20 @@ export const loadRec = (db, values, ctx)=>{
     const brother = getRec(db, _ent, id);
     const _rec = brother ? getRecPriv(db, brother) : createRec(db, values);
 
-    if (brother) { _rec.valsLoad(values);}
-    else { loadEnt(_rec, ctx); }
-
-    afterLoad(db, _rec.current, ctx);
+    if (brother) {
+        _rec.valsLoad(values);
+        afterUpdate(db, _rec.current, ctx);
+    }
+    else {
+        afterAdd(db, _rec.current, ctx);
+        loadEnt(_rec, ctx);
+    }
+    
     return _rec;
 }
 
 export const addRec = (db, values, ctx)=>{
     const _rec = createRec(db, values);
-    addEnt(_rec, ctx);
-    setCol(_rec, ctx);
     const res = _rec.colsInit().colsPrepare().colsFinish();
     afterAdd(db, _rec.current, ctx);
     return res;
@@ -56,9 +60,8 @@ export const addOrSetRec = (db, values, ctx, isUpdate)=>{
     if (brother) { return getRecPriv(db, brother).valsPush(values, ctx, isUpdate); }
 
     const res = _rec.colsFinish();
-    setCol(_rec, ctx);
     afterAdd(db, res.current, ctx);
     return res;
 }
 
-export const removeRec = (record, ctx, force)=>getRecPriv(this, record).remove(ctx, force);
+export const removeRec = (db, record, ctx, force)=>getRecPriv(db, record).remove(ctx, force);

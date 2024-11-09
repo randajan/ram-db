@@ -6,6 +6,7 @@ import { onEvent } from "../../effects/eventHandlers";
 import { getAllRecs, getRec, getRecs } from "../../effects/_bits";
 import { afterReset } from "../../effects/afterReset";
 import { solids, virtuals } from "@randajan/props";
+import { fceToStr } from "../../../uni/fnParser";
 
 
 export class Chop {
@@ -50,7 +51,7 @@ export class Chop {
         if (parent) {
             const _pp = vault.get(parent);
             _p.init = (_, ctx)=>{
-                for (const [rec] of _pp.groupIdsByRec) { afterAdd(this, rec, false, ctx); }
+                for (const [rec] of _pp.groupIdsByRec) { afterAdd(this, rec, ctx); }
             }
             _pp.childs.add(this);
         }
@@ -99,7 +100,14 @@ export class Chop {
     }
 
     export() {
-        return this.map(rec=>({...rec}));
+        return this.map(rec=>{
+            const res = {};
+            for (const i in rec) {
+                const v = rec[i];
+                res[i] = fceToStr(v);
+            }
+            return res;
+        });
     }
 
     chop(id, opt={}) {

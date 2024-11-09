@@ -49,8 +49,8 @@ export class Push {
             }
 
             if (formula && noCache) { continue; }
-            if (formula) { pendings.add(_col); continue; }
             if (isMeta && state === "pending") { continue; } //meta records should never pending
+            if (formula) { pendings.add(_col); continue; }
             
 
             if (!isUpdate || isReal) { pendings.add(_col); this.isPending = true; continue; }
@@ -66,7 +66,7 @@ export class Push {
         }
 
         if (!this.isChanged || !this.isDone) {
-            this.isChanged = false;
+            this.isChanged = this._rec.state === "pending";
             this.output = this._rec.values;
             this.changed.clear();
         }
@@ -76,15 +76,16 @@ export class Push {
 
     pull(_col) {
         const { _rec, pendings, output, input, changed } = this;
-        const { values:{ name, omitChange }, traits:{ setter } } = _col;
+        const { name, omitChange } = _col.values;
         
         if (pendings.has(_col)) {
+            const { setter } = _col.traits;
 
             //because computed value of column can reference itself
             if (this.pending === _col) { return output[name]; }
             this.pending = _col;
 
-            try { setter(_rec, output, input[name], _rec.state === "pending");}
+            try { setter(_rec.current, output, input[name], _rec.state === "ready" ? _rec.before : undefined);}
             catch(err) { this.throw(err); }
 
             //cleanup
@@ -94,7 +95,7 @@ export class Push {
             //detect changes
             if (output[name] !== _rec.values[name]) {
                 changed.add(name);
-                if (!this.isChanged && !omitChange) { this.isChanged = true; }
+                this.isChanged = this.isChanged || !omitChange;
             }
             
         }

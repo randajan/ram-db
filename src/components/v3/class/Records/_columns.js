@@ -31,8 +31,7 @@ const createGetter = _col=>{
 }
 
 const createSetter = _col=>{
-    const col = _col.current;
-    const v = _col.values;
+    const {db, current:col, values:v} = _col;
 
     const { name, ref, parent, formula, validator, isReadonly, resetIf, init, fallback, isRequired } = col;
     const { setter } = (metaData._types[v.type] || col.type);
@@ -40,18 +39,20 @@ const createSetter = _col=>{
     const typize = v=>v == null ? undefined : setter(v, col);
     const n = v.type != "ref" ? typize : v=>typize(toRefId(v));
 
-    return ({current, before}, output, to, isInit)=>{
+    return (current, output, to, before)=>{
         if (formula) { to = output[name] = n(formula(current, col, before)); }
         else {
-            if (!isInit && isReadonly && isReadonly(current, col, before)) { throw new ColMinor(name, `is readonly`); }
-            to = output[name] = n(to);
-            if (validator && !validator(current[name], before[name], current, col, before)) { throw new ColMajor(name, "is invalid"); }
+            if (isReadonly && isReadonly(current, col, before)) {
+                if (before) { throw new ColMinor(name, `is readonly`); }
+            } else {
+                to = output[name] = n(to);
+                if (validator && !validator(current[name], before[name], current, col, before)) { throw new ColMajor(name, "is invalid"); }
+            }
 
-            if ((isInit && to == null) || (resetIf && resetIf(current, col, before))) { 
+            if ((!before && to == null) || (resetIf && resetIf(current, col, before))) { 
                 to = output[name] = !init ? undefined : n(init(current, col, before));
             }
         }
-
         if (to == null && fallback) { to = output[name] = n(fallback(current, col, before)); }
         if (to == null && isRequired && isRequired(current, col, before)) { throw new ColMajor(name, "is required"); }
         return output[name];
@@ -86,7 +87,7 @@ export const remCol = (_rec, ctx)=>{
     const { db, values } = _rec;
     if (values._ent !== "_cols") { return; }
 
-    nregCol(db, ent, _rec, false);
+    nregCol(db, values.ent, _rec, false);
 
     const rows = getRecs(db, values.ent);
     if (rows) {

@@ -6,7 +6,7 @@ export const addEnt = (_rec, ctx)=>{
     const { db, values } = _rec;
     if (values._ent !== "_ents") { return; }
 
-    for (const mdd of metaDataDynamic(values.id)) { addRec(db, mdd, ctx); console.log(mdd); }
+    for (const mdd of metaDataDynamic(values.id)) { addRec(db, mdd, ctx); }
 }
 
 export const loadEnt = (_rec, ctx)=>{

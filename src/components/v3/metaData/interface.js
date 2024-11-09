@@ -1,5 +1,7 @@
 import { fceNone, fcePass, fceTrue } from "../../uni/consts";
-import { parseFce, toBol, toDate, toNum, toRefId, toStr } from "../../uni/formats"
+import { strToFce } from "../../uni/fnParser";
+import { toBol, toDate, toNum, toRefId, toStr } from "../../uni/formats";
+
 
 const getter = fcePass;
 const setter = fcePass;
@@ -26,7 +28,7 @@ export const metaData = {
         "number": { setter:(v, c)=>toNum(v, c.min, c.max, c.dec), getter },
         "datetime": { setter:(v, c)=>toDate(v, c.min, c.max), getter },
         "duration": { setter:(v, c)=>toNum(v, c.min > 0 ? c.min : 0, c.max, 0), getter },
-        "function": { setter:(v, c)=>parseFce(v), getter },
+        "function": { setter:(v, c)=>strToFce(v), getter },
         "object": { setter:(v, c)=>typeof v == "string" ? JSON.parse(v) : {}, getter },
         "ref": { setter, getter },
         "nref": { setter, getter },

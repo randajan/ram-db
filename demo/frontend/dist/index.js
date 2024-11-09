@@ -6692,66 +6692,12 @@
   var toBol = (val) => typeof val !== "string" ? !!val : !_bols.test(val);
   var toDate = (val, min, max) => {
     if (!(val instanceof Date)) {
-      return new Date(toNum(val, min, max));
+      val = Date.parse(val);
     }
     if (min == null && max == null) {
       return val;
     }
     return new Date(toNum(x.getTime(), min, max));
-  };
-  var _arg = /^[a-zA-Z_$][a-zA-Z_$0-9]*$/;
-  var parseFceArgs = (args) => {
-    if (args) {
-      args = args.trim();
-    }
-    if (!args) {
-      return [];
-    }
-    if (!args.startsWith("(")) {
-      return _arg.test(args) ? [args] : void 0;
-    }
-    if (!args.endsWith(")")) {
-      return;
-    }
-    args = args.slice(1, -1).trim();
-    if (!args) {
-      return [];
-    }
-    let result = [];
-    for (let a of args.split(",")) {
-      a = a.trim();
-      if (!_arg.test(a)) {
-        return;
-      }
-      result.push(a);
-    }
-    return result;
-  };
-  var parseFce = (val) => {
-    const t = typeof val;
-    if (t === "function") {
-      return val;
-    }
-    if (t !== "string") {
-      return (_2) => val;
-    }
-    const frags = val.trim().split("=>");
-    if (frags.length <= 1) {
-      return (_2) => val;
-    }
-    const args = parseFceArgs(frags.shift());
-    if (!args) {
-      return (_2) => val;
-    }
-    let body = frags.join("=>").trim();
-    if (!body.startsWith("{")) {
-      body = "return " + body;
-    } else if (!body.endsWith("}")) {
-      return (_2) => val;
-    } else {
-      body = body.slice(1, -1).trim();
-    }
-    return new Function(args, body);
   };
   var prepareRecs = (chop, recsByGroupId, groupId, throwError2 = true, autoCreate = false) => {
     let recs = recsByGroupId.get(groupId);
@@ -6870,7 +6816,10 @@
     return runEvent(handlers, childs, state, "update", rec, ctx);
   };
   var runEvent = (handlers, childs, state, event, rec, ctx) => {
-    if (childs.size && state !== "init") {
+    if (state === "init") {
+      return;
+    }
+    if (childs.size) {
       if (event === "reset") {
         for (const child of childs) {
           afterReset(child, ctx);
@@ -6921,8 +6870,8 @@
       return callback;
     };
   };
-  var afterSet = (chop, event, rec, ctx) => {
-    const { isMultiGroup, recsByGroupId, groupIdsByRec, filter: filter2, group, handlers, childs, state } = vault.get(chop);
+  var afterAdd = (chop, rec, ctx) => {
+    const { isMultiGroup, recsByGroupId, groupIdsByRec, filter: filter2, handlers, childs, state } = vault.get(chop);
     if (!filter2(rec)) {
       return false;
     }
@@ -6941,10 +6890,131 @@
       setRec(chop, recsByGroupId, valid, rec);
       groupIdsByRec.set(rec, valid);
     }
-    return runEvent(handlers, childs, state, event, rec, ctx);
+    return runEvent(handlers, childs, state, "add", rec, ctx);
   };
-  var afterAdd = (chop, rec, ctx) => afterSet(chop, "add", rec, ctx);
-  var afterLoad = (chop, rec, ctx) => afterSet(chop, "load", rec, ctx);
+  var unbracket = (str, br = "()") => {
+    if (!str.startsWith(br[0])) {
+      return str;
+    }
+    if (!str.endsWith(br[1])) {
+      return;
+    }
+    return str.slice(1, -1).trim();
+  };
+  var _arg = /^[a-zA-Z_$][a-zA-Z_$0-9]*$/;
+  var parseFceArgs = (args) => {
+    if (args) {
+      args = unbracket(args.trim());
+    }
+    if (args == null) {
+      return;
+    }
+    let result = [];
+    if (args) {
+      for (let a of args.split(",")) {
+        a = a.trim();
+        if (!_arg.test(a)) {
+          return;
+        }
+        result.push(a);
+      }
+    }
+    return result;
+  };
+  var _splitCommon = (fstr) => {
+    const lba = fstr.indexOf("(");
+    if (lba < 0) {
+      return;
+    }
+    fstr = fstr.slice(lba);
+    const rba = fstr.indexOf(")") + 1;
+    if (rba <= 0) {
+      return;
+    }
+    return [fstr.slice(0, rba).trim(), fstr.slice(rba).trim()];
+  };
+  var _splitArrow = (fstr) => {
+    const frags = fstr.split("=>");
+    if (frags.length <= 1) {
+      return;
+    }
+    return [frags.shift(), frags.join("=>").trim()];
+  };
+  var _split = (fstr) => {
+    fstr = fstr.trim().replace(/\s+/g, " ");
+    return fstr.startsWith("function") ? _splitCommon(fstr) : _splitArrow(fstr);
+  };
+  var fceFrom = (any, type = "string") => {
+    let body;
+    if (type === "string") {
+      body = `'${any}'`;
+    } else if (type === "number" || type === "boolean") {
+      body = `${any}`;
+    } else if (any instanceof Date) {
+      body = `new Date('${any}')`;
+    } else if (type === "object") {
+      body = `(${JSON.stringify(any)})`;
+    }
+    if (any != null && !body) {
+      return;
+    }
+    return new Function(`return ${body}`);
+  };
+  var strToFce = (fstr) => {
+    const t = typeof fstr;
+    if (t !== "string") {
+      return fceFrom(fstr, t);
+    }
+    const f = _split(fstr);
+    if (!f) {
+      return fceFrom(fstr);
+    }
+    const args = parseFceArgs(f[0]);
+    if (!args) {
+      return fceFrom(fstr);
+    }
+    let body = f[1];
+    if (!body.startsWith("{")) {
+      body = "return " + body;
+    } else if (!body.endsWith("}")) {
+      return fceFrom(fstr);
+    } else {
+      body.slice(1, -1);
+    }
+    return new Function(args, body);
+  };
+  var fceToStr = (fn) => {
+    const t = typeof fn;
+    if (t !== "function") {
+      return fn;
+    }
+    const f = _split(fn.toString());
+    if (!f) {
+      return;
+    }
+    let args = unbracket(f[0]);
+    if (args == null) {
+      return;
+    }
+    if (!args || !_arg.test(args)) {
+      args = `(${args})`;
+    }
+    let body = unbracket(f[1], "{}");
+    if (!body.startsWith("return")) {
+      body = `{${body}}`;
+    } else {
+      body = body.slice(6).trim();
+      if (body.endsWith(";")) {
+        body = body.slice(0, -1);
+      }
+      if (body.startsWith("{")) {
+        body = "(" + body + ")";
+      } else if (body.endsWith("}")) {
+        return;
+      }
+    }
+    return `${args}=>${body}`;
+  };
   var Chop2 = class {
     constructor(id, opt = {}, parent) {
       id = toStr(id);
@@ -6984,7 +7054,7 @@
         const _pp = vault.get(parent);
         _p.init = (_2, ctx) => {
           for (const [rec] of _pp.groupIdsByRec) {
-            afterAdd(this, rec, false, ctx);
+            afterAdd(this, rec, ctx);
           }
         };
         _pp.childs.add(this);
@@ -7032,7 +7102,14 @@
       return result;
     }
     export() {
-      return this.map((rec) => ({ ...rec }));
+      return this.map((rec) => {
+        const res = {};
+        for (const i in rec) {
+          const v = rec[i];
+          res[i] = fceToStr(v);
+        }
+        return res;
+      });
     }
     chop(id, opt = {}) {
       return new Chop2(id, opt, this);
@@ -7059,7 +7136,7 @@
       "number": { setter: (v, c) => toNum(v, c.min, c.max, c.dec), getter },
       "datetime": { setter: (v, c) => toDate(v, c.min, c.max), getter },
       "duration": { setter: (v, c) => toNum(v, c.min > 0 ? c.min : 0, c.max, 0), getter },
-      "function": { setter: (v, c) => parseFce(v), getter },
+      "function": { setter: (v, c) => strToFce(v), getter },
       "object": { setter: (v, c) => typeof v == "string" ? JSON.parse(v) : {}, getter },
       "ref": { setter, getter },
       "nref": { setter, getter },
@@ -7289,24 +7366,26 @@
     return v.type == "ref" ? (from) => _col.db.get(v.ref, from, false) : getter2;
   };
   var createSetter = (_col) => {
-    const col = _col.current;
-    const v = _col.values;
+    const { db, current: col, values: v } = _col;
     const { name, ref, parent, formula, validator, isReadonly: isReadonly2, resetIf, init, fallback, isRequired: isRequired2 } = col;
     const { setter: setter2 } = metaData._types[v.type] || col.type;
     const typize = (v2) => v2 == null ? void 0 : setter2(v2, col);
     const n = v.type != "ref" ? typize : (v2) => typize(toRefId(v2));
-    return ({ current, before }, output, to3, isInit) => {
+    return (current, output, to3, before) => {
       if (formula) {
         to3 = output[name] = n(formula(current, col, before));
       } else {
-        if (!isInit && isReadonly2 && isReadonly2(current, col, before)) {
-          throw new ColMinor(name, `is readonly`);
+        if (isReadonly2 && isReadonly2(current, col, before)) {
+          if (before) {
+            throw new ColMinor(name, `is readonly`);
+          }
+        } else {
+          to3 = output[name] = n(to3);
+          if (validator && !validator(current[name], before[name], current, col, before)) {
+            throw new ColMajor(name, "is invalid");
+          }
         }
-        to3 = output[name] = n(to3);
-        if (validator && !validator(current[name], before[name], current, col, before)) {
-          throw new ColMajor(name, "is invalid");
-        }
-        if (isInit && to3 == null || resetIf && resetIf(current, col, before)) {
+        if (!before && to3 == null || resetIf && resetIf(current, col, before)) {
           to3 = output[name] = !init ? void 0 : n(init(current, col, before));
         }
       }
@@ -7330,10 +7409,10 @@
     if (values._ent !== "_cols") {
       return;
     }
-    const ent2 = values.ent;
-    nregCol(db, ent2, _rec, true);
+    const ent = values.ent;
+    nregCol(db, ent, _rec, true);
     solid3(_rec, "traits", createTraits(_rec), true, true);
-    const rows = getRecs(db, ent2);
+    const rows = getRecs(db, ent);
     if (rows) {
       for (const [_2, row] of rows) {
         getRecPriv(db, row).colAdd(_rec);
@@ -7345,7 +7424,7 @@
     if (values._ent !== "_cols") {
       return;
     }
-    nregCol(db, ent, _rec, false);
+    nregCol(db, values.ent, _rec, false);
     const rows = getRecs(db, values.ent);
     if (rows) {
       for (const [_2, row] of rows) {
@@ -7360,7 +7439,6 @@
     }
     for (const mdd of metaDataDynamic(values.id)) {
       addRec(db, mdd, ctx);
-      console.log(mdd);
     }
   };
   var loadEnt = (_rec, ctx) => {
@@ -7431,11 +7509,11 @@
         if (formula && noCache) {
           continue;
         }
-        if (formula) {
-          pendings.add(_col);
+        if (isMeta && state === "pending") {
           continue;
         }
-        if (isMeta && state === "pending") {
+        if (formula) {
+          pendings.add(_col);
           continue;
         }
         if (!isUpdate || isReal) {
@@ -7460,7 +7538,7 @@
         }
       }
       if (!this.isChanged || !this.isDone) {
-        this.isChanged = false;
+        this.isChanged = this._rec.state === "pending";
         this.output = this._rec.values;
         this.changed.clear();
       }
@@ -7468,14 +7546,15 @@
     }
     pull(_col) {
       const { _rec, pendings, output, input, changed } = this;
-      const { values: { name, omitChange }, traits: { setter: setter2 } } = _col;
+      const { name, omitChange } = _col.values;
       if (pendings.has(_col)) {
+        const { setter: setter2 } = _col.traits;
         if (this.pending === _col) {
           return output[name];
         }
         this.pending = _col;
         try {
-          setter2(_rec, output, input[name], _rec.state === "pending");
+          setter2(_rec.current, output, input[name], _rec.state === "ready" ? _rec.before : void 0);
         } catch (err) {
           this.throw(err);
         }
@@ -7483,9 +7562,7 @@
         pendings.delete(_col);
         if (output[name] !== _rec.values[name]) {
           changed.add(name);
-          if (!this.isChanged && !omitChange) {
-            this.isChanged = true;
-          }
+          this.isChanged = this.isChanged || !omitChange;
         }
       }
       return output[name];
@@ -7549,7 +7626,7 @@
         }
       };
       if (isVirtual) {
-        prop.get = (_2) => t.getter(t.setter(this, this.values, this.values[name]));
+        prop.get = (_2) => t.getter(t.setter(current, this.values, this.values[name], this.state === "ready" ? before : void 0));
       } else {
         prop.get = (_2) => t.getter(this.push.isPending ? this.push.pull(_col) : this.values[name]);
       }
@@ -7559,7 +7636,7 @@
       }
       Object.defineProperty(before, name, prop);
       if (state === "ready") {
-        t.setter(this, this.values, this.values[name], true);
+        t.setter(current, this.values, this.values[name]);
       }
     }
     colRem(name) {
@@ -7622,14 +7699,12 @@
       if (!force && meta) {
         exceptions.push(new PushMajor("is meta"));
       } else {
-        remEnt(this, ctx);
-        remCol(this, ctx);
         this.state = "removed";
-        unregRec(this);
         afterRemove(db, current, ctx);
+        unregRec(this);
       }
       return solids({}, {
-        isDone: !errors.size,
+        isDone: !exceptions.size,
         exceptions
       });
     }
@@ -7661,16 +7736,15 @@
     const _rec = brother ? getRecPriv(db, brother) : createRec(db, values);
     if (brother) {
       _rec.valsLoad(values);
+      afterUpdate(db, _rec.current, ctx);
     } else {
+      afterAdd(db, _rec.current, ctx);
       loadEnt(_rec, ctx);
     }
-    afterLoad(db, _rec.current, ctx);
     return _rec;
   };
   var addRec = (db, values, ctx) => {
     const _rec = createRec(db, values);
-    addEnt(_rec, ctx);
-    setCol(_rec, ctx);
     const res = _rec.colsInit().colsPrepare().colsFinish();
     afterAdd(db, _rec.current, ctx);
     return res;
@@ -7683,11 +7757,10 @@
       return getRecPriv(db, brother).valsPush(values, ctx, isUpdate);
     }
     const res = _rec.colsFinish();
-    setCol(_rec, ctx);
     afterAdd(db, res.current, ctx);
     return res;
   };
-  var removeRec = (record, ctx, force) => getRecPriv(void 0, record).remove(ctx, force);
+  var removeRec = (db, record, ctx, force) => getRecPriv(db, record).remove(ctx, force);
   var DB2 = class extends Chop2 {
     constructor(id, opt = {}) {
       const { init } = opt;
@@ -7720,6 +7793,26 @@
           return _recs;
         }
       });
+      this.on((event, rec, ctx) => {
+        if (!rec) {
+          return;
+        }
+        const _rec = getRecPriv(this, rec);
+        const { _ent } = _rec.values;
+        if (_ent == "_ents") {
+          if (event === "remove") {
+            remEnt(_rec, ctx);
+          } else if (event === "add") {
+            addEnt(_rec, ctx);
+          }
+        } else if (_ent === "_cols") {
+          if (event === "add" || event === "update") {
+            setCol(_rec, ctx);
+          } else if (event === "remove") {
+            remCol(_rec, ctx);
+          }
+        }
+      });
       vault.get(this).colsByEnt = /* @__PURE__ */ new Map();
       this.reset();
     }
@@ -7727,7 +7820,7 @@
       return !!getRecPriv(this, any, throwError2);
     }
     remove(record, ctx) {
-      return removeRec(record, ctx);
+      return removeRec(this, record, ctx);
     }
     add(values, ctx) {
       return addRec(this, values, ctx);

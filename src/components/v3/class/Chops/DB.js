@@ -2,11 +2,12 @@
 import { Chop } from "./Chop";
 
 import { toRefId, toStr } from "../../../uni/formats";
-import { metaData, metaStrong } from "../../metaData/interface";
+import { metaData, metaDataDynamic, metaStrong } from "../../metaData/interface";
 import { addOrSetRec, addRec, getRecPriv, loadRec, removeRec } from "../Records/_records";
 import { getAllRecs, getRecs } from "../../effects/_bits";
 import { vault } from "../../../uni/consts";
-import { setCol } from "../Records/_columns";
+import { getColsPriv, remCol, setCol } from "../Records/_columns";
+import { addEnt, remEnt } from "../Records/_ents";
 
 export class DB extends Chop {
 
@@ -32,7 +33,7 @@ export class DB extends Chop {
                 
                 for (const [_, rec] of getRecs(this, "_cols")) {
                     const _rec = getRecPriv(this, rec);
-                    setCol(_rec, ctx); 
+                    setCol(_rec, ctx);
                 }
 
                 const _recs = [];
@@ -48,6 +49,22 @@ export class DB extends Chop {
             }
         });
 
+        this.on((event, rec, ctx)=>{
+            if (!rec) { return; }
+            const _rec = getRecPriv(this, rec);
+            const { _ent } = _rec.values;
+
+            if (_ent == "_ents") {
+                if (event === "remove") { remEnt(_rec, ctx); }
+                else if (event === "add") { addEnt(_rec, ctx); }
+            }
+            else if (_ent === "_cols") {
+                if (event === "add" || event === "update") { setCol(_rec, ctx); }
+                else if (event === "remove") { remCol(_rec, ctx); }
+            }
+
+        });
+
         vault.get(this).colsByEnt = new Map();     
 
         this.reset();
@@ -56,7 +73,7 @@ export class DB extends Chop {
     isRecord(any, throwError=false) { return !!getRecPriv(this, any, throwError); }
 
     remove(record, ctx) {
-        return removeRec(record, ctx);
+        return removeRec(this, record, ctx);
     }
 
     add(values, ctx) {

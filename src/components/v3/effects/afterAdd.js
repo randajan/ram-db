@@ -3,8 +3,8 @@ import { setRec } from "./_bits";
 import { runEvent } from "./eventHandlers";
 
 
-const afterSet = (chop, event, rec, ctx)=>{
-    const { isMultiGroup, recsByGroupId, groupIdsByRec, filter, group, handlers, childs, state } = vault.get(chop);
+export const afterAdd = (chop, rec, ctx)=>{
+    const { isMultiGroup, recsByGroupId, groupIdsByRec, filter, handlers, childs, state } = vault.get(chop);
     if (!filter(rec)) { return false; }
 
     const valid = chop.getGroup(rec);
@@ -24,8 +24,5 @@ const afterSet = (chop, event, rec, ctx)=>{
         groupIdsByRec.set(rec, valid);
     }
 
-    return runEvent(handlers, childs, state, event, rec, ctx);
+    return runEvent(handlers, childs, state, "add", rec, ctx);
 }
-
-export const afterAdd = (chop, rec, ctx)=>afterSet(chop, "add", rec, ctx);
-export const afterLoad = (chop, rec, ctx)=>afterSet(chop, "load", rec, ctx);

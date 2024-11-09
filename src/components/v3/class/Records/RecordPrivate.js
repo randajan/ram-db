@@ -18,7 +18,7 @@ export class RecordPrivate {
             db,
             push:new Push(this),
             current:new Record(),
-            before:new Record(),
+            before: new Record()
         });
 
         this.state = "pending"; //ready, removed;
@@ -47,14 +47,14 @@ export class RecordPrivate {
             set:_=>{ throw new Error(this.msg("for update use db.update(...) interface", {column:name})) }
         };
 
-        if (isVirtual) { prop.get = _=>t.getter(t.setter(this, this.values, this.values[name])); }
+        if (isVirtual) { prop.get = _=>t.getter(t.setter(current, this.values, this.values[name], this.state === "ready" ? before : undefined)); }
         else { prop.get = _=>t.getter(this.push.isPending ? this.push.pull(_col) : this.values[name]); }
         Object.defineProperty(current, name, prop);
 
         if (!isVirtual) { prop.get = _=>t.getter(this.values[name]); }
         Object.defineProperty(before, name, prop);
 
-        if (state === "ready") { t.setter(this, this.values, this.values[name], true); }
+        if (state === "ready") { t.setter(current, this.values, this.values[name]); }
     }
 
     colRem(name) {
@@ -89,7 +89,7 @@ export class RecordPrivate {
     valsLoad(values) {
         const { state, current, values:v } = this;
         if (state !== "pending") {  } //TODO
-        
+
         Object.assign(v, values);
 
         v._ent = toRefId(v._ent);
@@ -121,15 +121,13 @@ export class RecordPrivate {
 
         if (!force && meta) { exceptions.push(new PushMajor("is meta")); }
         else {
-            remEnt(this, ctx);
-            remCol(this, ctx);
             this.state = "removed";
-            unregRec(this);
             afterRemove(db, current, ctx);
+            unregRec(this);
         }
         
         return solids({}, {
-            isDone:!errors.size,
+            isDone:!exceptions.size,
             exceptions
         });
     }
