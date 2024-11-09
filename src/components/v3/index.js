@@ -1,6 +1,6 @@
 
 
-import { DB } from "./class/DB";
+import { DB } from "./class/Chops/DB";
 
 export {
     DB

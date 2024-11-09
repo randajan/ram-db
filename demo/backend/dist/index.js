@@ -74,12 +74,12 @@ var io = new IO(http, {
 
 // demo/backend/src/index.js
 import fs from "fs-extra";
-var records = fs.readJsonSync("demo/_data/db.json");
+var records = fs.readJsonSync("demo/backend/src/data/db.json");
 var bifrost = new BifrostRouter(io);
 bifrost.createBeam("data", {
   get: (_) => records,
   set: (data) => {
-    fs.writeJsonSync("demo/_data/db.json", data);
+    fs.writeJsonSync("demo/backend/src/data/db.json", data);
     return records = data;
   }
 });

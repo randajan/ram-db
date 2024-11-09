@@ -1,20 +1,32 @@
-import { toRefId } from "../../uni/formats";
-import { getRecPriv } from "./Record";
-import { meta } from "../meta";
-import { getRecs } from "../effects/_bits";
-import { fceNone, fcePass } from "../../uni/consts";
+import { toRefId } from "../../../uni/formats";
+import { getRecPriv } from "./_records";
+import { metaData } from "../../metaData/interface";
+import { getRecs } from "../../effects/_bits";
 import { cacheds, solid } from "@randajan/props";
-import { ColMajor, ColMinor } from "./Exceptions";
+import { ColMajor, ColMinor } from "../Exceptions";
+import { vault } from "../../../uni/consts";
 
-const _columnsByEnt = new Map();
+const nregCol = (db, entId, _col, action)=>{
+    const colsByEnt = vault.get(db)?.colsByEnt;
+    if (!colsByEnt) { throw Error(db.msg(`columns not found`)); }
+    let cols = colsByEnt.get(entId);
 
-export const getColsPriv = entId=>_columnsByEnt.get(entId);
+    if (action) {
+        if (cols) { cols.add(_col); }
+        else { colsByEnt.set(entId, new Set([_col]));  }
+    } else if (cols) {
+        if (cols.size > 1) {cols.delete(_col);  }
+        else { colsByEnt.delete(entId); }
+    }
+};
+
+export const getColsPriv = (db, entId)=>vault.get(db)?.colsByEnt?.get(entId);
 
 const createGetter = _col=>{
     const col = _col.current;
     const v = _col.values;
     
-    const { getter } = (meta._types[v.type] || col.type);
+    const { getter } = (metaData._types[v.type] || col.type);
     return v.type == "ref" ? from=>_col.db.get(v.ref, from, false) : getter;
 }
 
@@ -23,7 +35,7 @@ const createSetter = _col=>{
     const v = _col.values;
 
     const { name, ref, parent, formula, validator, isReadonly, resetIf, init, fallback, isRequired } = col;
-    const { setter } = (meta._types[v.type] || col.type);
+    const { setter } = (metaData._types[v.type] || col.type);
 
     const typize = v=>v == null ? undefined : setter(v, col);
     const n = v.type != "ref" ? typize : v=>typize(toRefId(v));
@@ -53,32 +65,32 @@ const createTraits = _col=>{
     });
 }
 
-export const setColumn = (db, col)=>{
+export const setCol = (_rec, ctx)=>{
+    const { db, values } = _rec;
+    if (values._ent !== "_cols") { return; }
 
-    const _col = getRecPriv(db, col);
-    const ent = _col.values.ent = toRefId(_col.values.ent);
+    const ent = values.ent;
 
-    if (_columnsByEnt.has(ent)) { _columnsByEnt.get(ent).add(_col); }
-    else { _columnsByEnt.set(ent, new Set([_col])); }
+    nregCol(db, ent, _rec, true);
 
-    solid(_col, "traits", createTraits(_col), true, true);
-
-    //this is because columns of columns that are not meta can be updated
-    solid(_col, "isMetaColumn", !meta.hasOwnProperty(ent)); 
+    solid(_rec, "traits", createTraits(_rec), true, true);
 
     const rows = getRecs(db, ent);
     if (rows) {
-        for (const [_, row] of rows) { getRecPriv(db, row).addColumn(_col); }
+        for (const [_, row] of rows) { getRecPriv(db, row).colAdd(_rec); }
     }
 
 }
 
-export const removeColumn = (db, col)=>{
-    const { name, ent } = col;
+export const remCol = (_rec, ctx)=>{
+    const { db, values } = _rec;
+    if (values._ent !== "_cols") { return; }
 
-    const rows = getRecs(db, toRefId(ent));
+    nregCol(db, ent, _rec, false);
+
+    const rows = getRecs(db, values.ent);
     if (rows) {
-        for (const [_, row] of rows) { getRecPriv(db, row).removeColumn(name); }
+        for (const [_, row] of rows) { getRecPriv(db, row).colRem(values.name); }
     }
 
 }

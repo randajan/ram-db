@@ -1,18 +1,26 @@
-import { fceNone, fcePass, fceTrue } from "../uni/consts";
-import { parseFce, toBol, toDate, toNum, toStr } from "../uni/formats"
+import { fceNone, fcePass, fceTrue } from "../../uni/consts";
+import { parseFce, toBol, toDate, toNum, toRefId, toStr } from "../../uni/formats"
 
 const getter = fcePass;
 const setter = fcePass;
 const isRequired = fceTrue;
 const isReadonly = fceTrue;
 
-export const meta = {
+export const metaStrong = Symbol("metaStrong");
+export const metaWeak = Symbol("metaWeak");
+
+export const metaToStr = v=>v === metaStrong ? "strong" : v === metaWeak ? "weak" : undefined;
+export const isMetaEnt = v=>v === "_ents" || v === "_types" || v === "_cols";
+
+
+export const metaData = {
     "_ents": {
         "_ents": { },
         "_cols": { },
         "_types": { }
     },
     "_types": {
+        "meta":{ setter:metaToStr, getter },
         "string": { setter:(v, c)=>toStr(v, "").substr(0, c.max), getter },
         "boolean": { setter:(v, c)=>toBol(v), getter },
         "number": { setter:(v, c)=>toNum(v, c.min, c.max, c.dec), getter },
@@ -25,16 +33,16 @@ export const meta = {
         "any": { setter, getter }
     },
     "_cols": {
-        "_ents-isMeta":{
-            ent: "_ents", name: "isMeta", type: "boolean", isReadonly,
+        "_ents-meta":{
+            ent: "_ents", name: "meta", type: "meta", isReadonly,
         },
         "_ents-cols":{
             ent: "_ents", name: "cols", type: "nref", ref:"_cols", parent:"_cols-ent", noCache:true,
         },
 
         //_types
-        "_types-isMeta":{
-            ent: "_types", name: "isMeta", type: "boolean", isReadonly
+        "_types-meta":{
+            ent: "_types", name: "meta", type: "meta", isReadonly
         },
         "_types-setter":{
             ent: "_types", name: "setter", type: "function", isReadonly, fallback:_=>setter
@@ -44,8 +52,8 @@ export const meta = {
         },
 
         //_cols
-        "_cols-isMeta":{
-            ent: "_cols", name: "isMeta", type: "boolean", isReadonly
+        "_cols-meta":{
+            ent: "_cols", name: "meta", type: "meta", isReadonly
         },
         "_cols-ent":{
             ent: "_cols", name: "ent", type: "ref", ref: "_ents", isReadonly, isRequired
@@ -106,16 +114,17 @@ export const meta = {
     }
 }
 
-export const metaEnt = ent=>{
-    return {
-        _ent:`_cols`, id:`${ent}-_ent`, ent, name: "_ent", type: "ref", ref:"_ents",
-        isReadonly, isRequired, isMeta:true
-    }
-}
-
-export const metaId = (ent, formula)=>{
-    return {
-        _ent:`_cols`, id:`${ent}-id`, ent, name: "id", type: "string",
-        isReadonly, isRequired, isMeta:true, formula
-    }   
+export const metaDataDynamic = entId=>{
+    return [
+        {
+            _ent:`_cols`, id:`${entId}-_ent`, ent:entId, name: "_ent", type: "ref", ref:"_ents",
+            isReadonly, isRequired, meta:metaStrong
+        },
+        {
+            _ent:`_cols`, id:`${entId}-id`, ent:entId, name: "id", type: "string",
+            isReadonly, isRequired,
+            meta:isMetaEnt(entId) ? metaStrong : metaWeak,
+            formula:entId === "_cols" ? r=>r.ent.id + "-" + r.name : undefined
+        }   
+    ];
 }

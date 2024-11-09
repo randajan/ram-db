@@ -1,9 +1,7 @@
 import { solids } from "@randajan/props";
-import { toRefId } from "../../uni/formats";
-import { getColsPriv } from "./Columns";
-import { ColMajor, ColMinor, PushMajor } from "./Exceptions";
-
-
+import { toRefId } from "../../../uni/formats";
+import { getColsPriv } from "./_columns";
+import { ColMajor, ColMinor, PushMajor } from "../Exceptions";
 
 
 export class Push {
@@ -20,7 +18,7 @@ export class Push {
     }
 
     prepare(input, isUpdate=false) {
-        const { values, state, isMeta, isMetaColumn } = this._rec;
+        const { db, meta:metaRec, values, state } = this._rec;
 
         this.input = input;
         const output = this.output = {}
@@ -34,26 +32,28 @@ export class Push {
 
         if (!values._ent) { this.throw(new ColMajor("_ent", "is required")); return; }
 
-        const _cols = getColsPriv(values._ent);
+        const _cols = getColsPriv(db, values._ent);
         if (!_cols) { this.throw(new ColMajor("_ent", "invalid")); return; }
 
         for (const _col of _cols) {
-            const { name, formula, resetIf, noCache } = _col.values;
-            const real = input.hasOwnProperty(name);
+            const { meta:metaCol, values:{ name, formula, resetIf, noCache } } = _col;
+            const isReal = input.hasOwnProperty(name);
+            const isMeta = (metaCol && metaRec === "strong")
 
             output[name] = values[name]; //default output is value without change
 
             //fail quick
-            if (real && state === "ready") {
-                if (_col.isMeta && isMeta && !isMetaColumn) { this.throw(new ColMinor(name, "is meta")); continue; }
+            if (isReal && state === "ready") {
+                if (isMeta) { this.throw(new ColMinor(name, "is meta")); continue; }
                 if (formula) { this.throw(new ColMinor(name, `has formula`)); continue; }
             }
 
             if (formula && noCache) { continue; }
-            if (isMeta && state === "pending") { continue; } //meta column should never pending
             if (formula) { pendings.add(_col); continue; }
+            if (isMeta && state === "pending") { continue; } //meta records should never pending
+            
 
-            if (!isUpdate || real) { pendings.add(_col); this.isPending = true; continue; }
+            if (!isUpdate || isReal) { pendings.add(_col); this.isPending = true; continue; }
             if (resetIf) { input[name] = values[name]; pendings.add(_col); continue; } //default input 
         }
 

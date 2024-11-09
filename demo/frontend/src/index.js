@@ -12,13 +12,8 @@ const beam = window.beam = bifrost.createBeam("data");
 
 beam.get().then(records=>{
     const db =  window.db = new DBv3("db", {
-        init:(self, ctx)=>{
-            console.log(records);
-            for (const rec of records) {
-                const result = self.addOrUpdate(rec, ctx);
-                if (!result.isDone) { console.log(result); }
-            }
-            console.log(records);
+        init:(load, ctx)=>{
+            for (const rec of records) { load(rec, ctx); }
         }
     });
     

@@ -6921,7 +6921,7 @@
       return callback;
     };
   };
-  var afterAdd = (chop, rec, ctx) => {
+  var afterSet = (chop, event, rec, ctx) => {
     const { isMultiGroup, recsByGroupId, groupIdsByRec, filter: filter2, group, handlers, childs, state } = vault.get(chop);
     if (!filter2(rec)) {
       return false;
@@ -6941,8 +6941,10 @@
       setRec(chop, recsByGroupId, valid, rec);
       groupIdsByRec.set(rec, valid);
     }
-    return runEvent(handlers, childs, state, "add", rec, ctx);
+    return runEvent(handlers, childs, state, event, rec, ctx);
   };
+  var afterAdd = (chop, rec, ctx) => afterSet(chop, "add", rec, ctx);
+  var afterLoad = (chop, rec, ctx) => afterSet(chop, "load", rec, ctx);
   var Chop2 = class {
     constructor(id, opt = {}, parent) {
       id = toStr(id);
@@ -7040,13 +7042,18 @@
   var setter = fcePass;
   var isRequired = fceTrue;
   var isReadonly = fceTrue;
-  var meta = {
+  var metaStrong = Symbol("metaStrong");
+  var metaWeak = Symbol("metaWeak");
+  var metaToStr = (v) => v === metaStrong ? "strong" : v === metaWeak ? "weak" : void 0;
+  var isMetaEnt = (v) => v === "_ents" || v === "_types" || v === "_cols";
+  var metaData = {
     "_ents": {
       "_ents": {},
       "_cols": {},
       "_types": {}
     },
     "_types": {
+      "meta": { setter: metaToStr, getter },
       "string": { setter: (v, c) => toStr(v, "").substr(0, c.max), getter },
       "boolean": { setter: (v, c) => toBol(v), getter },
       "number": { setter: (v, c) => toNum(v, c.min, c.max, c.dec), getter },
@@ -7059,10 +7066,10 @@
       "any": { setter, getter }
     },
     "_cols": {
-      "_ents-isMeta": {
+      "_ents-meta": {
         ent: "_ents",
-        name: "isMeta",
-        type: "boolean",
+        name: "meta",
+        type: "meta",
         isReadonly
       },
       "_ents-cols": {
@@ -7074,10 +7081,10 @@
         noCache: true
       },
       //_types
-      "_types-isMeta": {
+      "_types-meta": {
         ent: "_types",
-        name: "isMeta",
-        type: "boolean",
+        name: "meta",
+        type: "meta",
         isReadonly
       },
       "_types-setter": {
@@ -7095,10 +7102,10 @@
         fallback: (_2) => getter
       },
       //_cols
-      "_cols-isMeta": {
+      "_cols-meta": {
         ent: "_cols",
-        name: "isMeta",
-        type: "boolean",
+        name: "meta",
+        type: "meta",
         isReadonly
       },
       "_cols-ent": {
@@ -7208,31 +7215,31 @@
       }
     }
   };
-  var metaEnt = (ent) => {
-    return {
-      _ent: `_cols`,
-      id: `${ent}-_ent`,
-      ent,
-      name: "_ent",
-      type: "ref",
-      ref: "_ents",
-      isReadonly,
-      isRequired,
-      isMeta: true
-    };
-  };
-  var metaId = (ent, formula) => {
-    return {
-      _ent: `_cols`,
-      id: `${ent}-id`,
-      ent,
-      name: "id",
-      type: "string",
-      isReadonly,
-      isRequired,
-      isMeta: true,
-      formula
-    };
+  var metaDataDynamic = (entId) => {
+    return [
+      {
+        _ent: `_cols`,
+        id: `${entId}-_ent`,
+        ent: entId,
+        name: "_ent",
+        type: "ref",
+        ref: "_ents",
+        isReadonly,
+        isRequired,
+        meta: metaStrong
+      },
+      {
+        _ent: `_cols`,
+        id: `${entId}-id`,
+        ent: entId,
+        name: "id",
+        type: "string",
+        isReadonly,
+        isRequired,
+        meta: isMetaEnt(entId) ? metaStrong : metaWeak,
+        formula: entId === "_cols" ? (r) => r.ent.id + "-" + r.name : void 0
+      }
+    ];
   };
   var Exception = class {
     constructor(severity, reason, details, column) {
@@ -7254,19 +7261,38 @@
       super("major", reason, details);
     }
   };
-  var _columnsByEnt = /* @__PURE__ */ new Map();
-  var getColsPriv = (entId) => _columnsByEnt.get(entId);
+  var nregCol = (db, entId, _col, action) => {
+    const colsByEnt = vault.get(db)?.colsByEnt;
+    if (!colsByEnt) {
+      throw Error(db.msg(`columns not found`));
+    }
+    let cols = colsByEnt.get(entId);
+    if (action) {
+      if (cols) {
+        cols.add(_col);
+      } else {
+        colsByEnt.set(entId, /* @__PURE__ */ new Set([_col]));
+      }
+    } else if (cols) {
+      if (cols.size > 1) {
+        cols.delete(_col);
+      } else {
+        colsByEnt.delete(entId);
+      }
+    }
+  };
+  var getColsPriv = (db, entId) => vault.get(db)?.colsByEnt?.get(entId);
   var createGetter = (_col) => {
     const col = _col.current;
     const v = _col.values;
-    const { getter: getter2 } = meta._types[v.type] || col.type;
+    const { getter: getter2 } = metaData._types[v.type] || col.type;
     return v.type == "ref" ? (from) => _col.db.get(v.ref, from, false) : getter2;
   };
   var createSetter = (_col) => {
     const col = _col.current;
     const v = _col.values;
     const { name, ref, parent, formula, validator, isReadonly: isReadonly2, resetIf, init, fallback, isRequired: isRequired2 } = col;
-    const { setter: setter2 } = meta._types[v.type] || col.type;
+    const { setter: setter2 } = metaData._types[v.type] || col.type;
     const typize = (v2) => v2 == null ? void 0 : setter2(v2, col);
     const n = v.type != "ref" ? typize : (v2) => typize(toRefId(v2));
     return ({ current, before }, output, to3, isInit) => {
@@ -7299,31 +7325,62 @@
       setter: (_2) => createSetter(_col)
     });
   };
-  var setColumn = (db, col) => {
-    const _col = getRecPriv(db, col);
-    const ent = _col.values.ent = toRefId(_col.values.ent);
-    if (_columnsByEnt.has(ent)) {
-      _columnsByEnt.get(ent).add(_col);
-    } else {
-      _columnsByEnt.set(ent, /* @__PURE__ */ new Set([_col]));
+  var setCol = (_rec, ctx) => {
+    const { db, values } = _rec;
+    if (values._ent !== "_cols") {
+      return;
     }
-    solid3(_col, "traits", createTraits(_col), true, true);
-    solid3(_col, "isMetaColumn", !meta.hasOwnProperty(ent));
-    const rows = getRecs(db, ent);
+    const ent2 = values.ent;
+    nregCol(db, ent2, _rec, true);
+    solid3(_rec, "traits", createTraits(_rec), true, true);
+    const rows = getRecs(db, ent2);
     if (rows) {
       for (const [_2, row] of rows) {
-        getRecPriv(db, row).addColumn(_col);
+        getRecPriv(db, row).colAdd(_rec);
       }
     }
   };
-  var removeColumn = (db, col) => {
-    const { name, ent } = col;
-    const rows = getRecs(db, toRefId(ent));
+  var remCol = (_rec, ctx) => {
+    const { db, values } = _rec;
+    if (values._ent !== "_cols") {
+      return;
+    }
+    nregCol(db, ent, _rec, false);
+    const rows = getRecs(db, values.ent);
     if (rows) {
       for (const [_2, row] of rows) {
-        getRecPriv(db, row).removeColumn(name);
+        getRecPriv(db, row).colRem(values.name);
       }
     }
+  };
+  var addEnt = (_rec, ctx) => {
+    const { db, values } = _rec;
+    if (values._ent !== "_ents") {
+      return;
+    }
+    for (const mdd of metaDataDynamic(values.id)) {
+      addRec(db, mdd, ctx);
+      console.log(mdd);
+    }
+  };
+  var loadEnt = (_rec, ctx) => {
+    const { db, values } = _rec;
+    if (values._ent !== "_ents") {
+      return;
+    }
+    for (const mdd of metaDataDynamic(values.id)) {
+      loadRec(db, mdd, ctx);
+    }
+  };
+  var remEnt = (_rec, ctx) => {
+    const { db, values } = _rec;
+    if (values._ent !== "_ents") {
+      return;
+    }
+    for (const _col of getColsPriv(db, values.id)) {
+      _col.remove(ctx, true);
+    }
+    ;
   };
   var Push = class {
     constructor(_rec) {
@@ -7338,7 +7395,7 @@
       this.exceptions.push(error);
     }
     prepare(input, isUpdate = false) {
-      const { values, state, isMeta, isMetaColumn } = this._rec;
+      const { db, meta: metaRec, values, state } = this._rec;
       this.input = input;
       const output = this.output = {};
       const pendings = this.pendings = /* @__PURE__ */ new Set();
@@ -7351,17 +7408,18 @@
         this.throw(new ColMajor("_ent", "is required"));
         return;
       }
-      const _cols = getColsPriv(values._ent);
+      const _cols = getColsPriv(db, values._ent);
       if (!_cols) {
         this.throw(new ColMajor("_ent", "invalid"));
         return;
       }
       for (const _col of _cols) {
-        const { name, formula, resetIf, noCache } = _col.values;
-        const real = input.hasOwnProperty(name);
+        const { meta: metaCol, values: { name, formula, resetIf, noCache } } = _col;
+        const isReal = input.hasOwnProperty(name);
+        const isMeta = metaCol && metaRec === "strong";
         output[name] = values[name];
-        if (real && state === "ready") {
-          if (_col.isMeta && isMeta && !isMetaColumn) {
+        if (isReal && state === "ready") {
+          if (isMeta) {
             this.throw(new ColMinor(name, "is meta"));
             continue;
           }
@@ -7373,14 +7431,14 @@
         if (formula && noCache) {
           continue;
         }
-        if (isMeta && state === "pending") {
-          continue;
-        }
         if (formula) {
           pendings.add(_col);
           continue;
         }
-        if (!isUpdate || real) {
+        if (isMeta && state === "pending") {
+          continue;
+        }
+        if (!isUpdate || isReal) {
           pendings.add(_col);
           this.isPending = true;
           continue;
@@ -7451,44 +7509,7 @@
       });
     }
   };
-  var _records = /* @__PURE__ */ new WeakMap();
-  var getRecPriv = (db, any, throwError2 = true) => {
-    const _p = _records.get(any);
-    if (_p && (!db || db === _p.db)) {
-      return _p;
-    }
-    if (throwError2) {
-      throw Error(db.msg("is not record", { row: toRefId(any) }));
-    }
-    ;
-  };
-  var createRec = (db, values) => new RecordPrivate(db, values);
-  var addRec = (db, values, ctx) => {
-    let res = createRec(db, values);
-    if (db.state === "ready") {
-      res = res.prepareInit().init();
-    }
-    afterAdd(db, res.current, ctx);
-    return res;
-  };
-  var addOrSetRec = (db, values, ctx, isUpdate) => {
-    const _rec = createRec(db, values).prepareInit();
-    const { _ent, id } = _rec.current;
-    const brother = getRec(db, toRefId(_ent), id);
-    if (brother) {
-      return getRecPriv(db, brother).set(values, ctx, isUpdate);
-    }
-    const res = _rec.init();
-    afterAdd(db, res.current, ctx);
-    return res;
-  };
-  var removeRec = (record, ctx, force) => getRecPriv(void 0, record).remove(ctx, force);
   var Record = class {
-    constructor(values) {
-      if (values) {
-        Object.assign(this, values);
-      }
-    }
     toString() {
       return this.id;
     }
@@ -7497,36 +7518,25 @@
     }
   };
   var RecordPrivate = class {
-    constructor(db, values) {
-      const _ent = values._ent = toRefId(values._ent);
-      const isMeta = values.isMeta && meta.hasOwnProperty(_ent);
-      const current = new Record(values);
-      const before = new Record();
+    constructor(db) {
       solids(this, {
         db,
-        current,
-        before,
         push: new Push(this),
-        isMeta
+        current: new Record(),
+        before: new Record()
       });
-      this.values = values;
       this.state = "pending";
-      const cols = getColsPriv(_ent);
-      if (cols) {
-        for (const _col of cols) {
-          this.addColumn(_col);
-        }
-      }
-      _records.set(current, this);
+      this.values = {};
+      regRec(this);
     }
     msg(text, details = {}) {
       return this.db.msg(text, {
-        ent: toRefId(this.values._ent),
+        ent: this.values._ent,
         row: this.values.id,
         ...details
       });
     }
-    addColumn(_col) {
+    colAdd(_col) {
       const { current, before, state } = this;
       const { name, formula, noCache } = _col.current;
       const t = _col.traits;
@@ -7552,108 +7562,165 @@
         t.setter(this, this.values, this.values[name], true);
       }
     }
-    removeColumn(name) {
+    colRem(name) {
       const { current, before } = this;
       delete this.values[name];
       delete current[name];
       delete before[name];
     }
-    prepareInit() {
-      const { state, push, values } = this;
-      if (state !== "pending") {
-        return;
+    colsInit() {
+      const { db, values } = this;
+      const cols = getColsPriv(db, values._ent);
+      if (cols) {
+        for (const _col of cols) {
+          this.colAdd(_col);
+        }
       }
-      push.prepare(values);
       return this;
     }
-    init() {
-      const { push } = this;
-      this.values = push.execute();
-      this.state = "ready";
+    colsPrepare() {
+      const { state, push, values } = this;
+      if (state === "pending") {
+        push.prepare(values);
+      }
+      return this;
+    }
+    colsFinish() {
+      const { state, push } = this;
+      if (state === "pending") {
+        this.values = push.execute();
+        this.state = "ready";
+      }
       return push.close();
     }
-    set(input, ctx, isUpdate = false) {
+    valsLoad(values) {
+      const { state, current, values: v } = this;
+      if (state !== "pending") {
+      }
+      Object.assign(v, values);
+      v._ent = toRefId(v._ent);
+      if (v._ent === "_cols") {
+        v.ent = toRefId(v.ent);
+      }
+      this.meta = isMetaEnt(v._ent) ? v.meta = metaToStr(v.meta) : void 0;
+      Object.assign(this.current, v);
+      return this;
+    }
+    valsPush(values, ctx, isUpdate = false) {
       const { db, current, push } = this;
-      push.prepare(input, isUpdate);
+      push.prepare(values, isUpdate);
       this.values = push.execute();
       if (push.isChanged) {
+        setCol(this, ctx);
         afterUpdate(db, current, ctx);
       }
       return push.close();
     }
     remove(ctx, force = false) {
-      const { db, current, isMeta } = this;
-      const errors = /* @__PURE__ */ new Map();
-      if (!force && isMeta) {
-        errors.set(void 0, "is meta");
+      const { db, current, meta } = this;
+      const exceptions = [];
+      if (!force && meta) {
+        exceptions.push(new PushMajor("is meta"));
       } else {
+        remEnt(this, ctx);
+        remCol(this, ctx);
         this.state = "removed";
-        _records.delete(this);
+        unregRec(this);
         afterRemove(db, current, ctx);
       }
       return solids({}, {
         isDone: !errors.size,
-        errors
+        exceptions
       });
     }
   };
+  var _records = /* @__PURE__ */ new WeakMap();
+  var regRec = (_rec) => {
+    _records.set(_rec.current, _rec);
+    return _rec;
+  };
+  var unregRec = (_rec) => {
+    _records.delete(_rec.current);
+    return _rec;
+  };
+  var createRec = (db, values) => new RecordPrivate(db).valsLoad(values);
+  var getRecPriv = (db, any, throwError2 = true) => {
+    const _p = _records.get(any);
+    if (_p && (!db || db === _p.db)) {
+      return _p;
+    }
+    if (throwError2) {
+      throw Error(db.msg("is not record", { row: toRefId(any) }));
+    }
+    ;
+  };
+  var loadRec = (db, values, ctx) => {
+    const _ent = toRefId(values._ent);
+    const id = toStr(values.id);
+    const brother = getRec(db, _ent, id);
+    const _rec = brother ? getRecPriv(db, brother) : createRec(db, values);
+    if (brother) {
+      _rec.valsLoad(values);
+    } else {
+      loadEnt(_rec, ctx);
+    }
+    afterLoad(db, _rec.current, ctx);
+    return _rec;
+  };
+  var addRec = (db, values, ctx) => {
+    const _rec = createRec(db, values);
+    addEnt(_rec, ctx);
+    setCol(_rec, ctx);
+    const res = _rec.colsInit().colsPrepare().colsFinish();
+    afterAdd(db, _rec.current, ctx);
+    return res;
+  };
+  var addOrSetRec = (db, values, ctx, isUpdate) => {
+    const _rec = createRec(db, values).valsLoad(values).colsInit().colsPrepare();
+    const { _ent, id } = _rec.current;
+    const brother = getRec(db, toRefId(_ent), id);
+    if (brother) {
+      return getRecPriv(db, brother).valsPush(values, ctx, isUpdate);
+    }
+    const res = _rec.colsFinish();
+    setCol(_rec, ctx);
+    afterAdd(db, res.current, ctx);
+    return res;
+  };
+  var removeRec = (record, ctx, force) => getRecPriv(void 0, record).remove(ctx, force);
   var DB2 = class extends Chop2 {
     constructor(id, opt = {}) {
       const { init } = opt;
       super(id, {
         autoReset: false,
         group: (rec) => toRefId(rec._ent),
-        init: (_2) => {
-          for (const _ent in meta) {
-            for (const id2 in meta[_ent]) {
-              addRec(this, { _ent, id: id2, isMeta: true, ...meta[_ent][id2] });
+        init: (self2, ctx) => {
+          const load = (values) => loadRec(this, values, ctx);
+          init(load, ctx);
+          for (const _ent in metaData) {
+            for (const id2 in metaData[_ent]) {
+              load({ _ent, id: id2, meta: metaStrong, ...metaData[_ent][id2] });
             }
             ;
           }
-          init(this);
+          for (const [_2, rec] of getRecs(this, "_cols")) {
+            const _rec = getRecPriv(this, rec);
+            setCol(_rec, ctx);
+          }
           const _recs = [];
           for (const [rec] of getAllRecs(this)) {
             const _rec = getRecPriv(this, rec);
-            if (_rec.state === "ready") {
-              console.log(_rec.values);
+            if (_rec.state === "pending") {
+              _recs.push(_rec.colsPrepare());
             }
-            _recs.push(_rec.prepareInit());
           }
           for (const _rec of _recs) {
-            if (!_rec) {
-              continue;
-            }
-            const resp = _rec.init();
-            if (!resp.isDone) {
-              console.log(resp);
-            }
+            console.log(_rec.colsFinish());
           }
+          return _recs;
         }
       });
-      this.on((event, rec, ctx) => {
-        if (!rec) {
-          return;
-        }
-        const _ent = toRefId(rec._ent);
-        if (_ent == "_ents") {
-          const { id: id2 } = rec;
-          if (event === "remove") {
-            for (const _col of getColsPriv(id2)) {
-              _col.remove(ctx, true);
-            }
-            ;
-          } else if (event === "add") {
-            this.add(metaId(id2, id2 === "_cols" ? (r) => toRefId(r.ent) + "-" + r.name : void 0), ctx);
-            this.add(metaEnt(id2), ctx);
-          }
-        } else if (_ent === "_cols") {
-          if (event === "add" || event === "update") {
-            setColumn(this, rec);
-          } else if (event === "remove") {
-            removeColumn(this, rec);
-          }
-        }
-      });
+      vault.get(this).colsByEnt = /* @__PURE__ */ new Map();
       this.reset();
     }
     isRecord(any, throwError2 = false) {
@@ -7672,10 +7739,10 @@
       return addOrSetRec(this, values, ctx, true);
     }
     set(record, values, ctx) {
-      return getRecPriv(this, record).set(values, ctx);
+      return getRecPriv(this, record).valsPush(values, ctx);
     }
     update(record, values, ctx) {
-      return getRecPriv(this, record).set(values, ctx, true);
+      return getRecPriv(this, record).valsPush(values, ctx, true);
     }
     removeBy(groupId, recId, ctx) {
       const rec = this.get(groupId, recId);
@@ -7703,15 +7770,10 @@
   var beam = window.beam = bifrost.createBeam("data");
   beam.get().then((records) => {
     const db = window.db = new DB2("db", {
-      init: (self2, ctx) => {
-        console.log(records);
+      init: (load, ctx) => {
         for (const rec of records) {
-          const result = self2.addOrUpdate(rec, ctx);
-          if (!result.isDone) {
-            console.log(result);
-          }
+          load(rec, ctx);
         }
-        console.log(records);
       }
     });
     db.on((event, rec, ctx) => {

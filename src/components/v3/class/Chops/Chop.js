@@ -1,10 +1,10 @@
-import { vault } from "../../uni/consts";
+import { vault } from "../../../uni/consts";
 
-import { toArr, toFce, toStr, wrapFce } from "../../uni/formats";
-import { afterAdd } from "../effects/afterAdd";
-import { onEvent } from "../effects/eventHandlers";
-import { getAllRecs, getRec, getRecs } from "../effects/_bits";
-import { afterReset } from "../effects/afterReset";
+import { toArr, toFce, toStr, wrapFce } from "../../../uni/formats";
+import { afterAdd } from "../../effects/afterAdd";
+import { onEvent } from "../../effects/eventHandlers";
+import { getAllRecs, getRec, getRecs } from "../../effects/_bits";
+import { afterReset } from "../../effects/afterReset";
 import { solids, virtuals } from "@randajan/props";
 
 
