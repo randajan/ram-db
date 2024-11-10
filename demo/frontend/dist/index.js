@@ -6664,20 +6664,21 @@
   var { solid: solid8, virtual: virtual7 } = src_default.prop;
   var { solid: solid9, virtual: virtual8 } = src_default.prop;
   var toRefId = (ref) => typeof ref !== "string" ? ref?.id : ref;
+  var isNull = (v) => v == null || typeof v === "number" && isNaN(v);
   var isFce = (fce) => typeof fce === "function";
   var toFce = (fce, defReturn) => isFce(fce) ? fce : () => defReturn;
   var wrapFce = (wrap, what) => (...args) => wrap(what(...args));
-  var toStr = (any, def) => any != null ? String(any) : def;
+  var toStr = (any, def) => isNull(any) ? def : String(any);
   var toArr = (any) => any instanceof Array ? any : [any];
   var toNum = (val, min, max, dec) => {
     val = Number(val);
     if (isNaN(val)) {
       return val;
     }
-    if (max != null) {
+    if (!isNull(max)) {
       val = Math.min(val, max);
     }
-    if (min != null) {
+    if (!isNull(min)) {
       val = Math.max(val, min);
     }
     if (dec == 0) {
@@ -6694,10 +6695,27 @@
     if (!(val instanceof Date)) {
       val = Date.parse(val);
     }
-    if (min == null && max == null) {
+    if (isNull(min) && isNull(max)) {
       return val;
     }
     return new Date(toNum(x.getTime(), min, max));
+  };
+  var reArray = (val, trait) => {
+    const res = [];
+    if (isNull(val)) {
+      return res;
+    }
+    if (!Array.isArray(val)) {
+      res.push(trait(val));
+      return res;
+    }
+    for (const v of val) {
+      const r = trait(v);
+      if (!isNull(r)) {
+        res.push(r);
+      }
+    }
+    return res;
   };
   var prepareRecs = (chop, recsByGroupId, groupId, throwError2 = true, autoCreate = false) => {
     let recs = recsByGroupId.get(groupId);
@@ -7138,7 +7156,7 @@
       "duration": { setter: (v, c) => toNum(v, c.min > 0 ? c.min : 0, c.max, 0), getter },
       "function": { setter: (v, c) => strToFce(v), getter },
       "object": { setter: (v, c) => typeof v == "string" ? JSON.parse(v) : {}, getter },
-      "ref": { setter, getter },
+      "ref": { setter: toRefId, getter },
       "nref": { setter, getter },
       "any": { setter, getter }
     },
@@ -7360,17 +7378,18 @@
   };
   var getColsPriv = (db, entId) => vault.get(db)?.colsByEnt?.get(entId);
   var createGetter = (_col) => {
-    const col = _col.current;
-    const v = _col.values;
+    const { db, current: col, values: v } = _col;
     const { getter: getter2 } = metaData._types[v.type] || col.type;
-    return v.type == "ref" ? (from) => _col.db.get(v.ref, from, false) : getter2;
+    const typize = v.type == "ref" ? (from) => _col.db.get(v.ref, from, false) : (v2) => getter2(v2, col);
+    const n = !v.isList ? typize : (f) => reArray(f, typize);
+    return n;
   };
   var createSetter = (_col) => {
     const { db, current: col, values: v } = _col;
-    const { name, ref, parent, formula, validator, isReadonly: isReadonly2, resetIf, init, fallback, isRequired: isRequired2 } = col;
+    const { name, ref, parent, formula, validator, isReadonly: isReadonly2, resetIf, init, fallback, isRequired: isRequired2, isList } = col;
     const { setter: setter2 } = metaData._types[v.type] || col.type;
-    const typize = (v2) => v2 == null ? void 0 : setter2(v2, col);
-    const n = v.type != "ref" ? typize : (v2) => typize(toRefId(v2));
+    const typize = (t) => isNull(t) ? void 0 : setter2(t, col);
+    const n = !isList ? typize : (t) => isNull(t) ? void 0 : reArray(t, typize);
     return (current, output, to3, before) => {
       if (formula) {
         to3 = output[name] = n(formula(current, col, before));
@@ -7385,14 +7404,14 @@
             throw new ColMajor(name, "is invalid");
           }
         }
-        if (!before && to3 == null || resetIf && resetIf(current, col, before)) {
+        if (!before && isNull(to3) || resetIf && resetIf(current, col, before)) {
           to3 = output[name] = !init ? void 0 : n(init(current, col, before));
         }
       }
-      if (to3 == null && fallback) {
+      if (isNull(to3) && fallback) {
         to3 = output[name] = n(fallback(current, col, before));
       }
-      if (to3 == null && isRequired2 && isRequired2(current, col, before)) {
+      if (isNull(to3) && isRequired2 && isRequired2(current, col, before)) {
         throw new ColMajor(name, "is required");
       }
       return output[name];
@@ -7617,7 +7636,7 @@
       const { current, before, state } = this;
       const { name, formula, noCache } = _col.current;
       const t = _col.traits;
-      const isVirtual = formula != null && noCache != null;
+      const isVirtual = formula && noCache;
       const prop = {
         enumerable: true,
         configurable: true,

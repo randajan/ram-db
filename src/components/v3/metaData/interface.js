@@ -30,7 +30,7 @@ export const metaData = {
         "duration": { setter:(v, c)=>toNum(v, c.min > 0 ? c.min : 0, c.max, 0), getter },
         "function": { setter:(v, c)=>strToFce(v), getter },
         "object": { setter:(v, c)=>typeof v == "string" ? JSON.parse(v) : {}, getter },
-        "ref": { setter, getter },
+        "ref": { setter:toRefId, getter },
         "nref": { setter, getter },
         "any": { setter, getter }
     },

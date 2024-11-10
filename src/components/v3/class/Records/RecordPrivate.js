@@ -40,7 +40,7 @@ export class RecordPrivate {
 
         const { name, formula, noCache } = _col.current;
         const t = _col.traits;
-        const isVirtual = (formula != null && noCache != null);
+        const isVirtual = (formula && noCache);
     
         const prop = {
             enumerable:true, configurable:true,
