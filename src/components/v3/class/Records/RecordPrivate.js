@@ -3,12 +3,11 @@ import { toRefId } from "../../../uni/formats";
 import { afterRemove } from "../../effects/afterRemove";
 import { afterUpdate } from "../../effects/afterUpdate";
 import { metaToStr, isMetaEnt } from "../../metaData/interface";
-import { Push } from "./Push";
+import { Turn } from "./Turn";
 import { getColsPriv, remCol, setCol } from "./_columns";
-import { PushMajor } from "../Exceptions";
+import { Major } from "../Exceptions";
 import { regRec, unregRec } from "./_records";
 import { Record } from "./Record";
-import { remEnt } from "./_ents";
 
 export class RecordPrivate {
 
@@ -16,8 +15,7 @@ export class RecordPrivate {
         
         solids(this, {
             db,
-            push:new Push(this),
-            current:new Record(),
+            current: new Record(),
             before: new Record()
         });
 
@@ -47,11 +45,11 @@ export class RecordPrivate {
             set:_=>{ throw new Error(this.msg("for update use db.update(...) interface", {column:name})) }
         };
 
-        if (isVirtual) { prop.get = _=>t.getter(t.setter(current, this.values, this.values[name], this.state === "ready" ? before : undefined)); }
-        else { prop.get = _=>t.getter(this.push.isPending ? this.push.pull(_col) : this.values[name]); }
+        if (isVirtual) { prop.get = _=>t.getter(t.setter(current, this.values, this.values[name], this.state === "ready" ? before : undefined), this.state === "ready"); }
+        else { prop.get = _=>t.getter(this.turn ? this.turn.pull(_col) : this.values[name], this); }
         Object.defineProperty(current, name, prop);
 
-        if (!isVirtual) { prop.get = _=>t.getter(this.values[name]); }
+        if (!isVirtual) { prop.get = _=>t.getter(this.values[name], this); }
         Object.defineProperty(before, name, prop);
 
         if (state === "ready") { t.setter(current, this.values, this.values[name]); }
@@ -72,18 +70,19 @@ export class RecordPrivate {
     }
 
     colsPrepare() {
-        const { state, push, values } = this;
-        if (state === "pending") { push.prepare(values); }
+        const { state, values } = this;
+        if (state === "pending") { Turn.attach(this, values); }
         return this;
     }
 
     colsFinish() {
-        const { state, push } = this;
+        const { state, turn } = this;
         if (state === "pending") {
-            this.values = push.execute();
+            this.values = turn.execute();
             this.state = "ready";
         }
-        return push.close();
+
+        return this.turn.detach();
     }
 
     valsLoad(values) {
@@ -102,24 +101,23 @@ export class RecordPrivate {
     }
 
     valsPush(values, ctx, isUpdate=false) {
-        const { db, current, push } = this;
+        const { db, current } = this;
 
-        push.prepare(values, isUpdate);
-        this.values = push.execute();
+        this.values = Turn.attach(this, values, isUpdate).execute();
 
-        if (push.isChanged) {
+        if (this.turn.isChanged) {
             setCol(this, ctx);
             afterUpdate(db, current, ctx);
         }
 
-        return push.close();
+        return this.turn.detach();
     }
 
     remove(ctx, force=false) {
-        const { db, current, meta } = this;
-        const exceptions = [];
+        const { db, current, values, meta } = this;
+        const fails = [];
 
-        if (!force && meta) { exceptions.push(new PushMajor("is meta")); }
+        if (!force && meta) { fails.push(Major.fail("is meta").setRow(values.id)); }
         else {
             this.state = "removed";
             afterRemove(db, current, ctx);
@@ -127,8 +125,8 @@ export class RecordPrivate {
         }
         
         return solids({}, {
-            isDone:!exceptions.size,
-            exceptions
+            isDone:!fails.size,
+            fails
         });
     }
 

@@ -48,5 +48,8 @@
     "email": "jnranda@gmail.com",
     "url": "https://www.linkedin.com/in/randajan/"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@randajan/function-parser": "^0.0.4",
+    "regex-parser": "^2.3.0"
+  }
 }

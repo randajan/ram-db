@@ -4,7 +4,7 @@ import { runEvent } from "./eventHandlers";
 
 
 export const afterUpdate = (chop, rec, ctx)=>{
-    const { isMultiGroup, recsByGroupId, groupIdsByRec, group, filter, handlers, childs, state } = vault.get(chop);
+    const { isMultiGroup, recsByGroupId, groupIdsByRec, filter, handlers, childs, state } = vault.get(chop);
 
     const current = groupIdsByRec.get(rec);
     if (!current) {

@@ -1,34 +1,57 @@
 import { solid, solids } from "@randajan/props";
 
+class Fail {
 
+    constructor(severity, reason, details) {
+        solids(this, { severity, reason, details });
+    }
 
+    setEnt(entId) {
+        solid(this, "ent", entId);
+        return this;
+    }
 
-class Exception {
-    constructor(severity, reason, details, column) {
-        solids(this, { severity, column, reason, details });
+    setCol(colId) {
+        solid(this, "col", colId);
+        return this;
+    }
+
+    setRow(rowId) {
+        solid(this, "row", rowId);
+        return this;
     }
 }
 
-export class ColMinor extends Exception {
-    constructor(column, reason, details) {
-        super("minor", reason, details, column);
-    }
-}
 
-export class ColMajor extends Exception {
-    constructor(column, reason, details) {
-        super("major", reason, details, column);
-    }
-}
+export class Minor extends Fail {
 
-export class PushMinor extends Exception {
+    static fail(reason, details) { return new Minor(reason, details); }
+
     constructor(reason, details) {
         super("minor", reason, details);
     }
 }
 
-export class PushMajor extends Exception {
+export class Major extends Fail {
+
+    static fail(reason, details) { return new Major(reason, details); }
+
     constructor(reason, details) {
         super("major", reason, details);
     }
+}
+
+export class Critical extends Fail {
+
+    static fail(reason, details) { return new Critical(reason, details); }
+
+    constructor(reason, details) {
+        super("critical", reason, details);
+    }
+}
+
+export const toFail = err=>{
+    if (err instanceof Fail) { return err; }
+    if (err instanceof Error) { return Critical.fail(err.message, err.stack); }
+    return Critical.fail("Unknown error", err);
 }

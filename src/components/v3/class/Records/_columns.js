@@ -3,12 +3,12 @@ import { getRecPriv } from "./_records";
 import { metaData } from "../../metaData/interface";
 import { getRecs } from "../../effects/_bits";
 import { cacheds, solid } from "@randajan/props";
-import { ColMajor, ColMinor } from "../Exceptions";
+import { Critical, Major, Minor } from "../Exceptions";
 import { vault } from "../../../uni/consts";
 
 const nregCol = (db, entId, _col, action)=>{
     const colsByEnt = vault.get(db)?.colsByEnt;
-    if (!colsByEnt) { throw Error(db.msg(`columns not found`)); }
+    if (!colsByEnt) { throw Critical.fail("columns not found"); }
     let cols = colsByEnt.get(entId);
 
     if (action) {
@@ -27,7 +27,7 @@ const createGetter = _col=>{
     
     const { getter } = (metaData._types[v.type] || col.type);
 
-    const typize = v.type == "ref" ? from=>_col.db.get(v.ref, from, false) : v=>getter(v, col);
+    const typize = v.type == "ref" ? from=>db.get(v.ref, from, false) : v=>getter(v, col);
     const n = !v.isList ? typize : f=>reArray(f, typize);
 
     return n;
@@ -36,28 +36,35 @@ const createGetter = _col=>{
 const createSetter = _col=>{
     const { db, current:col, values:v } = _col;
 
-    const { name, ref, parent, formula, validator, isReadonly, resetIf, init, fallback, isRequired, isList } = col;
+    const { name, ref, parent, formula, store, noCache, validator, isReadonly, resetIf, init, fallback, isRequired, isList } = col;
     const { setter } = (metaData._types[v.type] || col.type);
 
     const typize = t=>isNull(t) ? undefined : setter(t, col);
     const n = !isList ? typize : t=>isNull(t) ? undefined : reArray(t, typize);
 
+    const stored = !store ? undefined : store(col, db);
+
     return (current, output, to, before)=>{
-        if (formula) { to = output[name] = n(formula(current, col, before)); }
+
+        if (formula) { to = output[name] = n(formula(current, before, stored)); }
         else {
-            if (isReadonly && isReadonly(current, col, before)) {
-                if (before) { throw new ColMinor(name, `is readonly`); }
+            if (isReadonly && isReadonly(current, before, stored)) {
+                if (before) { throw Minor.fail(`is readonly`); }
             } else {
                 to = output[name] = n(to);
-                if (validator && !validator(current[name], before[name], current, col, before)) { throw new ColMajor(name, "is invalid"); }
+                if (validator && !validator(current, before, stored)) {
+                    throw Major.fail("is invalid");
+                }
             }
 
-            if ((!before && isNull(to)) || (resetIf && resetIf(current, col, before))) { 
-                to = output[name] = !init ? undefined : n(init(current, col, before));
+            if ((!before && isNull(to)) || (resetIf && resetIf(current, before, stored))) { 
+                to = output[name] = !init ? undefined : n(init(current, before, stored));
             }
         }
-        if (isNull(to) && fallback) { to = output[name] = n(fallback(current, col, before)); }
-        if (isNull(to) && isRequired && isRequired(current, col, before)) { throw new ColMajor(name, "is required"); }
+
+        if (fallback && isNull(to)) { to = output[name] = n(fallback(current, before, stored)); }
+        if (isRequired && isNull(to) && isRequired(current, before, stored)) { throw Major.fail("is required"); }
+        
         return output[name];
     }
 }

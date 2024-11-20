@@ -6,14 +6,14 @@ import { onEvent } from "../../effects/eventHandlers";
 import { getAllRecs, getRec, getRecs } from "../../effects/_bits";
 import { afterReset } from "../../effects/afterReset";
 import { solids, virtuals } from "@randajan/props";
-import { fceToStr } from "../../../uni/fnParser";
-
+import { exportFn } from "../../traits/functions";
+import { Major } from "../Exceptions";
 
 export class Chop {
 
     constructor(id, opt={}, parent) {
         id = toStr(id);
-        if (!id) { throw Error(this.msg("critical error - missing id")); }
+        if (!id) { throw Major.fail("missing id"); }
 
         const { init, group, autoReset=true, isMultiGroup=false } = opt;
         const filter = toFce(opt.filter, true);
@@ -30,15 +30,12 @@ export class Chop {
         }
 
         solids(this, {
+            id,
             db:parent?.db || this,
             parent,
-            getGroup:!isMultiGroup ? toFce(group) : wrapFce(toArr, toFce(group, [undefined]))
-        }, false);
-
-        solids(this, {
-            id:parent ? (parent.id + "." + id) : id,
+            getGroup:!isMultiGroup ? toFce(group) : wrapFce(toArr, toFce(group, [undefined])),
             isMultiGroup
-        });
+        }, false);
 
         virtuals(this, {
             state:_=>_p.state,
@@ -50,10 +47,10 @@ export class Chop {
 
         if (parent) {
             const _pp = vault.get(parent);
+            _pp.childs.add(this);
             _p.init = (_, ctx)=>{
                 for (const [rec] of _pp.groupIdsByRec) { afterAdd(this, rec, ctx); }
             }
-            _pp.childs.add(this);
         }
 
         if (autoReset) { this.reset(); }
@@ -86,7 +83,11 @@ export class Chop {
 
     getList(groupId, throwError = false) {
         const recs = getRecs(this, groupId, throwError);
-        return recs ? recs.values() : []; 
+        return recs ? Array.from(recs.values()) : []; 
+    }
+
+    getSize(groupId, throwError=false) {
+        return getRecs(this, groupId, throwError)?.size || 0;
     }
 
     map(callback) {
@@ -99,15 +100,18 @@ export class Chop {
         return result;
     }
 
-    export() {
-        return this.map(rec=>{
-            const res = {};
-            for (const i in rec) {
-                const v = rec[i];
-                res[i] = fceToStr(v);
-            }
-            return res;
-        });
+    export(rec) {
+        const res = {};
+        for (const i in rec) {
+            const v = rec[i];
+            
+            res[i] = Array.isArray(v) ? v.map(exportFn) : exportFn(v);
+        }
+        return res;
+    }
+
+    exportAll() {
+        return this.map(this.export);
     }
 
     chop(id, opt={}) {

@@ -1,14 +1,80 @@
 (() => {
+  var __create = Object.create;
   var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __getProtoOf = Object.getPrototypeOf;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __esm = (fn, res) => function __init() {
+    return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+  };
+  var __commonJS = (cb, mod) => function __require() {
+    return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+  };
   var __export = (target, all) => {
     for (var name in all)
       __defProp(target, name, { get: all[name], enumerable: true });
   };
+  var __copyProps = (to3, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to3, key) && key !== except)
+          __defProp(to3, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to3;
+  };
+  var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+    // If the importer is in node compatibility mode or this is not an ESM
+    // file that has been converted to a CommonJS file using a Babel-
+    // compatible transform (i.e. "__esModule" has not been set), then set
+    // "default" to the CommonJS "module.exports" for node compatibility.
+    isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+    mod
+  ));
 
   // <define:__slib_info>
-  var define_slib_info_default = { isBuild: true, name: "@randajan/ram-db", description: "Realtime database", version: "2.8.4", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "web", port: 3005, dir: { root: "C:\\dev\\lib\\ram-db", dist: "demo/frontend/dist" } };
+  var define_slib_info_default;
+  var init_define_slib_info = __esm({
+    "<define:__slib_info>"() {
+      define_slib_info_default = { isBuild: true, name: "@randajan/ram-db", description: "Realtime database", version: "2.8.4", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "web", port: 3005, dir: { root: "C:\\dev\\lib\\ram-db", dist: "demo/frontend/dist" } };
+    }
+  });
+
+  // node_modules/regex-parser/lib/index.js
+  var require_lib = __commonJS({
+    "node_modules/regex-parser/lib/index.js"(exports, module) {
+      "use strict";
+      init_define_slib_info();
+      var RegexParser = module.exports = function(input) {
+        if (typeof input !== "string") {
+          throw new Error("Invalid input. Input must be a string");
+        }
+        var m = input.match(/(\/?)(.+)\1([a-z]*)/i);
+        if (!m) {
+          throw new Error("Invalid regular expression format.");
+        }
+        var validFlags = Array.from(new Set(m[3])).filter(function(flag) {
+          return "gimsuy".includes(flag);
+        }).join("");
+        return new RegExp(m[2], validFlags);
+      };
+    }
+  });
+
+  // demo/frontend/src/index.js
+  init_define_slib_info();
+
+  // node_modules/@randajan/simple-lib/dist/web/index.js
+  init_define_slib_info();
+
+  // node_modules/@randajan/simple-lib/dist/chunk-JLCKRPTS.js
+  init_define_slib_info();
+
+  // node_modules/chalk/source/index.js
+  init_define_slib_info();
 
   // node_modules/chalk/source/vendor/ansi-styles/index.js
+  init_define_slib_info();
   var ANSI_BACKGROUND_OFFSET = 10;
   var wrapAnsi16 = (offset = 0) => (code) => `\x1B[${code + offset}m`;
   var wrapAnsi256 = (offset = 0) => (code) => `\x1B[${38 + offset};5;${code}m`;
@@ -195,6 +261,7 @@
   var ansi_styles_default = ansiStyles;
 
   // node_modules/chalk/source/vendor/supports-color/browser.js
+  init_define_slib_info();
   var level = (() => {
     if (navigator.userAgentData) {
       const brand = navigator.userAgentData.brands.find(({ brand: brand2 }) => brand2 === "Chromium");
@@ -220,6 +287,7 @@
   var browser_default = supportsColor;
 
   // node_modules/chalk/source/utilities.js
+  init_define_slib_info();
   function stringReplaceAll(string, substring, replacer) {
     let index = string.indexOf(substring);
     if (index === -1) {
@@ -419,6 +487,7 @@
   };
 
   // node_modules/@randajan/simple-lib/dist/chunk-XM4YD4K6.js
+  init_define_slib_info();
   var enumerable = true;
   var lockObject = (o) => {
     if (typeof o !== "object") {
@@ -442,7 +511,38 @@
   // node_modules/@randajan/simple-lib/dist/web/index.js
   var log = logger(info.name, info.version, info.env);
 
+  // node_modules/socket.io-client/build/esm/index.js
+  init_define_slib_info();
+
+  // node_modules/socket.io-client/build/esm/url.js
+  init_define_slib_info();
+
+  // node_modules/engine.io-client/build/esm/index.js
+  init_define_slib_info();
+
+  // node_modules/engine.io-client/build/esm/socket.js
+  init_define_slib_info();
+
+  // node_modules/engine.io-client/build/esm/transports/index.js
+  init_define_slib_info();
+
+  // node_modules/engine.io-client/build/esm/transports/polling-xhr.js
+  init_define_slib_info();
+
+  // node_modules/engine.io-client/build/esm/transports/polling.js
+  init_define_slib_info();
+
+  // node_modules/engine.io-client/build/esm/transport.js
+  init_define_slib_info();
+
+  // node_modules/engine.io-parser/build/esm/index.js
+  init_define_slib_info();
+
+  // node_modules/engine.io-parser/build/esm/encodePacket.browser.js
+  init_define_slib_info();
+
   // node_modules/engine.io-parser/build/esm/commons.js
+  init_define_slib_info();
   var PACKET_TYPES = /* @__PURE__ */ Object.create(null);
   PACKET_TYPES["open"] = "0";
   PACKET_TYPES["close"] = "1";
@@ -511,7 +611,11 @@
     });
   }
 
+  // node_modules/engine.io-parser/build/esm/decodePacket.browser.js
+  init_define_slib_info();
+
   // node_modules/engine.io-parser/build/esm/contrib/base64-arraybuffer.js
+  init_define_slib_info();
   var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
   var lookup = typeof Uint8Array === "undefined" ? [] : new Uint8Array(256);
   for (let i = 0; i < chars.length; i++) {
@@ -734,6 +838,7 @@
   var protocol = 4;
 
   // node_modules/@socket.io/component-emitter/lib/esm/index.js
+  init_define_slib_info();
   function Emitter(obj) {
     if (obj)
       return mixin(obj);
@@ -807,7 +912,11 @@
     return !!this.listeners(event).length;
   };
 
+  // node_modules/engine.io-client/build/esm/util.js
+  init_define_slib_info();
+
   // node_modules/engine.io-client/build/esm/globals.js
+  init_define_slib_info();
   var nextTick = (() => {
     const isPromiseAvailable = typeof Promise === "function" && typeof Promise.resolve === "function";
     if (isPromiseAvailable) {
@@ -878,6 +987,7 @@
   }
 
   // node_modules/engine.io-client/build/esm/contrib/parseqs.js
+  init_define_slib_info();
   function encode(obj) {
     let str = "";
     for (let i in obj) {
@@ -1163,6 +1273,7 @@
   };
 
   // node_modules/engine.io-client/build/esm/contrib/has-cors.js
+  init_define_slib_info();
   var value = false;
   try {
     value = typeof XMLHttpRequest !== "undefined" && "withCredentials" in new XMLHttpRequest();
@@ -1412,6 +1523,7 @@
   }
 
   // node_modules/engine.io-client/build/esm/transports/websocket.js
+  init_define_slib_info();
   var isReactNative = typeof navigator !== "undefined" && typeof navigator.product === "string" && navigator.product.toLowerCase() === "reactnative";
   var BaseWS = class extends Transport {
     get name() {
@@ -1506,6 +1618,7 @@
   };
 
   // node_modules/engine.io-client/build/esm/transports/webtransport.js
+  init_define_slib_info();
   var WT = class extends Transport {
     get name() {
       return "webtransport";
@@ -1576,6 +1689,7 @@
   };
 
   // node_modules/engine.io-client/build/esm/contrib/parseuri.js
+  init_define_slib_info();
   var re = /^(?:(?![^:@\/?#]+:[^:@\/]*@)(http|https|ws|wss):\/\/)?((?:(([^:@\/?#]*)(?::([^:@\/?#]*))?)?@)?((?:[a-f0-9]{0,4}:){2,7}[a-f0-9]{0,4}|[^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/;
   var parts = [
     "source",
@@ -2202,6 +2316,9 @@
     }
   };
 
+  // node_modules/engine.io-client/build/esm/transports/polling-fetch.js
+  init_define_slib_info();
+
   // node_modules/engine.io-client/build/esm/index.js
   var protocol2 = Socket.protocol;
 
@@ -2243,6 +2360,12 @@
     return obj;
   }
 
+  // node_modules/socket.io-client/build/esm/manager.js
+  init_define_slib_info();
+
+  // node_modules/socket.io-client/build/esm/socket.js
+  init_define_slib_info();
+
   // node_modules/socket.io-parser/build/esm/index.js
   var esm_exports = {};
   __export(esm_exports, {
@@ -2251,8 +2374,13 @@
     PacketType: () => PacketType,
     protocol: () => protocol3
   });
+  init_define_slib_info();
+
+  // node_modules/socket.io-parser/build/esm/binary.js
+  init_define_slib_info();
 
   // node_modules/socket.io-parser/build/esm/is-binary.js
+  init_define_slib_info();
   var withNativeArrayBuffer3 = typeof ArrayBuffer === "function";
   var isView2 = (obj) => {
     return typeof ArrayBuffer.isView === "function" ? ArrayBuffer.isView(obj) : obj.buffer instanceof ArrayBuffer;
@@ -2608,6 +2736,7 @@
   };
 
   // node_modules/socket.io-client/build/esm/on.js
+  init_define_slib_info();
   function on(obj, ev, fn) {
     obj.on(ev, fn);
     return function subDestroy() {
@@ -3390,6 +3519,7 @@
   };
 
   // node_modules/socket.io-client/build/esm/contrib/backo2.js
+  init_define_slib_info();
   function Backoff(opts) {
     opts = opts || {};
     this.ms = opts.min || 100;
@@ -3805,7 +3935,14 @@
     connect: lookup2
   });
 
+  // node_modules/@randajan/bifrost/dist/client/index.js
+  init_define_slib_info();
+
+  // node_modules/@randajan/bifrost/dist/chunk-SYVCEPMC.js
+  init_define_slib_info();
+
   // node_modules/@randajan/queue/dist/index.js
+  init_define_slib_info();
   var numOrZero = (num) => {
     const n = Number(num);
     return isNaN(n) ? 0 : Math.max(0, n);
@@ -3969,11 +4106,11 @@
     return (_) => socket2.off(_bifrostEvent, listener);
   };
   var unregisterExe = (list2, exe) => {
-    const x2 = list2.indexOf(exe);
-    if (x2 < 0) {
+    const x = list2.indexOf(exe);
+    if (x < 0) {
       return false;
     }
-    list2.splice(x2, 1);
+    list2.splice(x, 1);
     return true;
   };
   var registerExe = (list2, exe) => {
@@ -4278,7 +4415,23 @@
     }
   };
 
+  // dist/index.js
+  init_define_slib_info();
+
+  // dist/chunk-ANX6F3ON.js
+  init_define_slib_info();
+
+  // node_modules/@randajan/jet-core/dist/index.js
+  init_define_slib_info();
+
+  // node_modules/@randajan/jet-core/dist/chunk-UOVKGED6.js
+  init_define_slib_info();
+
+  // node_modules/@randajan/jet-core/dist/chunk-MQZZBFQG.js
+  init_define_slib_info();
+
   // node_modules/@randajan/jet-core/dist/chunk-C7UZX2AX.js
+  init_define_slib_info();
   var __defProp2 = Object.defineProperty;
   var __export2 = (target, all) => {
     for (var name in all)
@@ -4549,9 +4702,9 @@
     rnd = rnd || create;
     isFull2 = isFull2 || ((any) => isFull(any, vals));
     if (entries) {
-      get = get || ((x2, k) => x2[k]);
-      set = set || ((x2, k, v) => x2[k] = v);
-      rem = rem || ((x2, k) => delete x2[k]);
+      get = get || ((x, k) => x[k]);
+      set = set || ((x, k, v) => x[k] = v);
+      rem = rem || ((x, k) => delete x[k]);
     }
     const def = { name, constructor, prototype, is: is2, create, isFull: isFull2, copy: copy2, rnd, keys, vals, entries, get, set, rem, to: {} };
     register(def);
@@ -4685,14 +4838,14 @@
   var split = (str) => (str.match(/(?:\\.|[^.])+/g) || []).map(unescape);
   var bite = (str, direction, position) => {
     const dir = direction !== false;
-    const x2 = dir ? str.indexOf(".", position) : str.lastIndexOf(".", position);
-    if (x2 <= 0) {
+    const x = dir ? str.indexOf(".", position) : str.lastIndexOf(".", position);
+    if (x <= 0) {
       return [str, ""];
     }
-    if (x2 > 1 && str.charAt(x2 - 1) === "\\") {
-      return bite(str, dir, x2 + (dir * 2 - 1));
+    if (x > 1 && str.charAt(x - 1) === "\\") {
+      return bite(str, dir, x + (dir * 2 - 1));
     }
-    return direction ? [str.slice(0, x2), str.slice(x2 + 1)] : [str.slice(x2 + 1), str.slice(0, x2)];
+    return direction ? [str.slice(0, x), str.slice(x + 1)] : [str.slice(x + 1), str.slice(0, x)];
   };
   var biteLeft = (str, position) => bite(str, true, position);
   var biteRight = (str, position) => bite(str, false, position);
@@ -4977,10 +5130,10 @@
     define: new Plex_default(define_default, { to: defineTo, extend: defineExtend })
   });
   define_default("Plex", Plex_default, {
-    copy: (x2) => Object.defineProperties({}, Object.getOwnPropertyDescriptors(x2)),
-    keys: (x2) => Object.keys(x2),
-    vals: (x2) => Object.values(x2),
-    entries: (x2) => Object.entries(x2)
+    copy: (x) => Object.defineProperties({}, Object.getOwnPropertyDescriptors(x)),
+    keys: (x) => Object.keys(x),
+    vals: (x) => Object.values(x),
+    entries: (x) => Object.entries(x)
   });
 
   // node_modules/@randajan/jet-core/dist/chunk-UOVKGED6.js
@@ -5070,10 +5223,10 @@
   });
   defs_default.define("Array", Array, {
     create: Array,
-    copy: (x2) => Array.from(x2),
-    keys: (x2) => [...x2.keys()],
-    vals: (x2) => [...x2.values()],
-    entries: (x2) => [...x2.entries()],
+    copy: (x) => Array.from(x),
+    keys: (x) => [...x.keys()],
+    vals: (x) => [...x.values()],
+    entries: (x) => [...x.entries()],
     to: {
       Function: (arr) => (_) => arr,
       Boolean: (arr) => Array.jet.isFull(arr),
@@ -5148,7 +5301,7 @@
     }
   });
   defs_default.define("Date", Date, {
-    create: (x2) => !x2 ? new Date() : new Date(x2),
+    create: (x) => !x ? new Date() : new Date(x),
     rnd: (from, to22) => new Date(Number.jet.rnd(new Date(from).getTime(), to22 ? new Date(to22).getTime() : Date.now() * 2)),
     to: {
       Function: (date) => (_) => date
@@ -5163,7 +5316,7 @@
   });
   defs_default.define("Function", Function, {
     create: Function,
-    copy: (x2) => Object.defineProperties({ [x2.name]: (...a) => x2(...a) }[x2.name], Object.getOwnPropertyDescriptors(x2)),
+    copy: (x) => Object.defineProperties({ [x.name]: (...a) => x(...a) }[x.name], Object.getOwnPropertyDescriptors(x)),
     extend: {
       benchmark: (fces, inputs, iterations = 100) => {
         const results = [];
@@ -5194,13 +5347,13 @@
     }
   });
   defs_default.define("Map", Map, {
-    copy: (x2) => new Map(x2),
-    keys: (x2) => [...x2.keys()],
-    vals: (x2) => [...x2.values()],
-    entries: (x2) => [...x2.entries()],
-    get: (x2, k) => x2.get(k),
-    set: (x2, k, v) => x2.set(k, v),
-    rem: (x2, k) => x2.delete(k),
+    copy: (x) => new Map(x),
+    keys: (x) => [...x.keys()],
+    vals: (x) => [...x.values()],
+    entries: (x) => [...x.entries()],
+    get: (x, k) => x.get(k),
+    set: (x, k, v) => x.set(k, v),
+    rem: (x, k) => x.delete(k),
     to: {
       Function: (map2) => (_) => map2
     }
@@ -5222,10 +5375,10 @@
   };
   defs_default.define("Object", Object, {
     create: Object,
-    copy: (x2) => Object.defineProperties({}, Object.getOwnPropertyDescriptors(x2)),
-    keys: (x2) => Object.keys(x2),
-    vals: (x2) => Object.values(x2),
-    entries: (x2) => Object.entries(x2),
+    copy: (x) => Object.defineProperties({}, Object.getOwnPropertyDescriptors(x)),
+    keys: (x) => Object.keys(x),
+    vals: (x) => Object.values(x),
+    entries: (x) => Object.entries(x),
     extend: {
       filter,
       exclude: (obj, mask = []) => filter(obj, (v, k) => !mask.includes(k)),
@@ -5244,11 +5397,11 @@
     }
   });
   defs_default.define("Promise", Promise, {
-    create: (x2) => new Promise(defs_default.only.Function(x2, (e) => e()))
+    create: (x) => new Promise(defs_default.only.Function(x, (e) => e()))
   });
   defs_default.define("RegExp", RegExp, {
     create: RegExp,
-    copy: (x2) => RegExp(x2.source),
+    copy: (x) => RegExp(x.source),
     extend: {
       lib: {
         line: /[^\n\r]+/g,
@@ -5267,13 +5420,13 @@
     }
   });
   defs_default.define("Set", Set, {
-    copy: (x2) => new Set(x2),
-    keys: (x2) => [...x2.keys()],
-    vals: (x2) => [...x2.values()],
-    entries: (x2) => [...x2.entries()],
-    get: (x2, k) => x2.has(k) ? k : void 0,
-    set: (x2, k, v) => x2.add(v) ? v : void 0,
-    rem: (x2, k) => x2.delete(k),
+    copy: (x) => new Set(x),
+    keys: (x) => [...x.keys()],
+    vals: (x) => [...x.values()],
+    entries: (x) => [...x.entries()],
+    get: (x, k) => x.has(k) ? k : void 0,
+    set: (x, k, v) => x.add(v) ? v : void 0,
+    rem: (x, k) => x.delete(k),
     to: {
       "*": (set) => Array.from(set),
       Function: (set) => (_) => set,
@@ -5366,8 +5519,8 @@
       delone: (str) => {
         let r = "";
         for (let v of str) {
-          let x2 = deloneMap.from.indexOf(v);
-          r += x2 >= 0 ? deloneMap.to[x2] : v;
+          let x = deloneMap.from.indexOf(v);
+          r += x >= 0 ? deloneMap.to[x] : v;
         }
         return r;
       },
@@ -5391,8 +5544,8 @@
         return r;
       },
       bite: (str, separator) => {
-        const x2 = str.indexOf(separator);
-        return x2 <= 0 ? ["", str] : [str.slice(0, x2), str.slice(x2 + separator.length)];
+        const x = str.indexOf(separator);
+        return x <= 0 ? ["", str] : [str.slice(0, x), str.slice(x + separator.length)];
       },
       levenshtein: (s0, s1, blend) => {
         var s = blend === false ? [s0, s1] : [String.jet.simplify(s0, blend), String.jet.simplify(s1, blend)];
@@ -5439,17 +5592,17 @@
   var to2 = (sym) => String(sym).slice(7, -1);
   defs_default.define("Symbol", Symbol, {
     create: Symbol,
-    copy: (x2) => Symbol(to2(x2)),
+    copy: (x) => Symbol(to2(x)),
     rnd: (...a) => Symbol(defs_default.rnd.String(...a)),
     to: {
       Function: (sym) => (_) => sym
     }
   });
   defs_default.define("WeakMap", WeakMap, {
-    copy: (x2) => /* @__PURE__ */ new WeakMap(),
-    get: (x2, k) => x2.get(k),
-    set: (x2, k, v) => x2.set(k, v),
-    rem: (x2, k) => x2.delete(k),
+    copy: (x) => /* @__PURE__ */ new WeakMap(),
+    get: (x, k) => x.get(k),
+    set: (x, k, v) => x.set(k, v),
+    rem: (x, k) => x.delete(k),
     to: {
       Function: (map2) => (_) => map2
     }
@@ -5490,7 +5643,11 @@
   var fceTrue = (_) => true;
   var { solid: solid22, cached: cached22, virtual: virtual2 } = src_default.prop;
 
+  // node_modules/@randajan/jet-core/dist/each/eachSync.js
+  init_define_slib_info();
+
   // node_modules/@randajan/jet-core/dist/chunk-VW6NT76J.js
+  init_define_slib_info();
   var enumerable4 = true;
   var initContext = (value2, { root, stopable, init }) => {
     let path, def, brk, onStop;
@@ -5712,6 +5869,7 @@
   };
 
   // node_modules/@randajan/props/dist/index.js
+  init_define_slib_info();
   var solid3 = (obj, name, value2, enumerable5 = true, configurable = false) => {
     return Object.defineProperty(obj, name, { enumerable: enumerable5, value: value2, configurable });
   };
@@ -5764,7 +5922,132 @@
     return obj;
   };
 
+  // node_modules/@randajan/function-parser/dist/index.js
+  init_define_slib_info();
+  var unbracket = (str, br = "()") => {
+    if (!str) {
+      return str;
+    }
+    if (!str.startsWith(br[0])) {
+      return str;
+    }
+    if (!str.endsWith(br[1])) {
+      return;
+    }
+    return str.slice(1, -1).trim();
+  };
+  var splitCommon = (fstr) => {
+    const lba = fstr.indexOf("(");
+    if (lba < 0) {
+      throw Error("Parsing common function - arguments are missing left bracket '('");
+    }
+    fstr = fstr.slice(lba);
+    const rba = fstr.indexOf(")") + 1;
+    if (rba <= 0) {
+      throw Error("Parsing common function - arguments are missing right bracket ')'");
+    }
+    const args = fstr.slice(0, rba).trim();
+    const body = fstr.slice(rba).trim();
+    if (!body.startsWith("{") || !body.endsWith("}")) {
+      throw Error("Parsing common function - body missing brackets '{...}'");
+    }
+    return [args, body.slice(1, -1).trim()];
+  };
+  var splitArrow = (fstr) => {
+    const frags = fstr.split("=>");
+    if (frags.length <= 1) {
+      throw Error("Parsing arrow function - missing the arrow '=>'");
+    }
+    const args = frags.shift().trim();
+    let body = frags.join("=>").trim();
+    if (!body.startsWith("{")) {
+      body = `return ${body}`;
+    } else if (!body.endsWith("}")) {
+      throw Error("Parsing arrow function - body missing right bracket '}'");
+    } else {
+      body = body.slice(1, -1).trim();
+    }
+    return [args, body];
+  };
+  var split2 = (fstr) => {
+    fstr = fstr.trim().replace(/\s+/g, " ");
+    return fstr.startsWith("function") ? splitCommon(fstr) : splitArrow(fstr);
+  };
+  var argRegExp = /^[a-zA-Z_$][a-zA-Z_$0-9]*$/;
+  var parseArgs = (args) => {
+    if (args == null) {
+      throw Error("Parsing arguments - missing");
+    }
+    args = unbracket(args.trim());
+    let result = [];
+    if (args) {
+      for (let a of args.split(",")) {
+        a = a.trim();
+        if (!argRegExp.test(a)) {
+          throw Error("Parsing arguments - malformatted");
+        }
+        result.push(a);
+      }
+    }
+    return result;
+  };
+  var fnToStr = (fn) => {
+    const t = typeof fn;
+    if (t !== "function") {
+      throw Error("Stringify function - not a function");
+    }
+    const f = split2(fn.toString());
+    let args = unbracket(f[0]);
+    if (!args || !argRegExp.test(args)) {
+      args = `(${args})`;
+    }
+    let body = f[1];
+    if (!body.startsWith("return")) {
+      body = `{${body}}`;
+    } else {
+      body = body.slice(6).trim().replace(/;[\s\S]*$/, "");
+      if (!body) {
+        body = "{}";
+      } else if (body.startsWith("{")) {
+        body = "(" + body + ")";
+      }
+    }
+    return `${args}=>${body}`;
+  };
+  var fromStr = (str) => {
+    const f = split2(str);
+    return new Function(parseArgs(f[0]), f[1]);
+  };
+  var fromAny = (any, type = "string") => {
+    let body;
+    if (any === void 0) {
+      return new Function();
+    }
+    if (type === "string" || type === "number" || type === "boolean" || type === "bigint") {
+      body = `${any}`;
+    } else if (type === "symbol") {
+      throw Error("Creating function - symbol is not supported");
+    } else if (any instanceof Date) {
+      body = `new Date('${any}')`;
+    } else if (type === "object") {
+      try {
+        body = `(${JSON.stringify(any)})`;
+      } catch (e) {
+        throw Error("Creating function - object replication failed");
+      }
+    }
+    if (!body) {
+      throw Error("Creating function - unknown input");
+    }
+    return new Function(`return ${body}`);
+  };
+  var anyToFn = (any) => {
+    const type = typeof any;
+    return type !== "string" || any.startsWith("'") ? fromAny(any, type) : fromStr(any);
+  };
+
   // dist/index.js
+  var import_regex_parser = __toESM(require_lib(), 1);
   var remap = (arr, onItem, byKey = false) => {
     const rk = byKey ? {} : null;
     const rl = arr.map((item) => onItem(item, rk));
@@ -6670,36 +6953,6 @@
   var wrapFce = (wrap, what) => (...args) => wrap(what(...args));
   var toStr = (any, def) => isNull(any) ? def : String(any);
   var toArr = (any) => any instanceof Array ? any : [any];
-  var toNum = (val, min, max, dec) => {
-    val = Number(val);
-    if (isNaN(val)) {
-      return val;
-    }
-    if (!isNull(max)) {
-      val = Math.min(val, max);
-    }
-    if (!isNull(min)) {
-      val = Math.max(val, min);
-    }
-    if (dec == 0) {
-      val = Math.round(val);
-    } else if (dec > 0) {
-      const pow = Math.pow(10, dec);
-      val = Math.round(val * pow) / pow;
-    }
-    return val;
-  };
-  var _bols = /^(0|n|no|not|off|false)$/i;
-  var toBol = (val) => typeof val !== "string" ? !!val : !_bols.test(val);
-  var toDate = (val, min, max) => {
-    if (!(val instanceof Date)) {
-      val = Date.parse(val);
-    }
-    if (isNull(min) && isNull(max)) {
-      return val;
-    }
-    return new Date(toNum(x.getTime(), min, max));
-  };
   var reArray = (val, trait) => {
     const res = [];
     if (isNull(val)) {
@@ -6716,6 +6969,17 @@
       }
     }
     return res;
+  };
+  var join = (separator, ...vals) => {
+    let s = "";
+    for (let v of vals) {
+      v = toStr(v);
+      if (!v) {
+        return;
+      }
+      s += (!s ? "" : separator) + v;
+    }
+    return s;
   };
   var prepareRecs = (chop, recsByGroupId, groupId, throwError2 = true, autoCreate = false) => {
     let recs = recsByGroupId.get(groupId);
@@ -6800,7 +7064,7 @@
     return true;
   };
   var afterUpdate = (chop, rec, ctx) => {
-    const { isMultiGroup, recsByGroupId, groupIdsByRec, group, filter: filter2, handlers, childs, state } = vault.get(chop);
+    const { isMultiGroup, recsByGroupId, groupIdsByRec, filter: filter2, handlers, childs, state } = vault.get(chop);
     const current = groupIdsByRec.get(rec);
     if (!current) {
       if (filter2(rec)) {
@@ -6910,134 +7174,65 @@
     }
     return runEvent(handlers, childs, state, "add", rec, ctx);
   };
-  var unbracket = (str, br = "()") => {
-    if (!str.startsWith(br[0])) {
-      return str;
-    }
-    if (!str.endsWith(br[1])) {
-      return;
-    }
-    return str.slice(1, -1).trim();
+  var saveFn = (any, col) => anyToFn(any);
+  var exportFn = (any) => {
+    return typeof any !== "function" ? any : fnToStr(any);
   };
-  var _arg = /^[a-zA-Z_$][a-zA-Z_$0-9]*$/;
-  var parseFceArgs = (args) => {
-    if (args) {
-      args = unbracket(args.trim());
+  var Fail = class {
+    constructor(severity, reason, details) {
+      solids(this, { severity, reason, details });
     }
-    if (args == null) {
-      return;
+    setEnt(entId) {
+      solid3(this, "ent", entId);
+      return this;
     }
-    let result = [];
-    if (args) {
-      for (let a of args.split(",")) {
-        a = a.trim();
-        if (!_arg.test(a)) {
-          return;
-        }
-        result.push(a);
-      }
+    setCol(colId) {
+      solid3(this, "col", colId);
+      return this;
     }
-    return result;
+    setRow(rowId) {
+      solid3(this, "row", rowId);
+      return this;
+    }
   };
-  var _splitCommon = (fstr) => {
-    const lba = fstr.indexOf("(");
-    if (lba < 0) {
-      return;
+  var Minor = class extends Fail {
+    static fail(reason, details) {
+      return new Minor(reason, details);
     }
-    fstr = fstr.slice(lba);
-    const rba = fstr.indexOf(")") + 1;
-    if (rba <= 0) {
-      return;
+    constructor(reason, details) {
+      super("minor", reason, details);
     }
-    return [fstr.slice(0, rba).trim(), fstr.slice(rba).trim()];
   };
-  var _splitArrow = (fstr) => {
-    const frags = fstr.split("=>");
-    if (frags.length <= 1) {
-      return;
+  var Major = class extends Fail {
+    static fail(reason, details) {
+      return new Major(reason, details);
     }
-    return [frags.shift(), frags.join("=>").trim()];
+    constructor(reason, details) {
+      super("major", reason, details);
+    }
   };
-  var _split = (fstr) => {
-    fstr = fstr.trim().replace(/\s+/g, " ");
-    return fstr.startsWith("function") ? _splitCommon(fstr) : _splitArrow(fstr);
+  var Critical = class extends Fail {
+    static fail(reason, details) {
+      return new Critical(reason, details);
+    }
+    constructor(reason, details) {
+      super("critical", reason, details);
+    }
   };
-  var fceFrom = (any, type = "string") => {
-    let body;
-    if (type === "string") {
-      body = `'${any}'`;
-    } else if (type === "number" || type === "boolean") {
-      body = `${any}`;
-    } else if (any instanceof Date) {
-      body = `new Date('${any}')`;
-    } else if (type === "object") {
-      body = `(${JSON.stringify(any)})`;
+  var toFail = (err) => {
+    if (err instanceof Fail) {
+      return err;
     }
-    if (any != null && !body) {
-      return;
+    if (err instanceof Error) {
+      return Critical.fail(err.message, err.stack);
     }
-    return new Function(`return ${body}`);
-  };
-  var strToFce = (fstr) => {
-    const t = typeof fstr;
-    if (t !== "string") {
-      return fceFrom(fstr, t);
-    }
-    const f = _split(fstr);
-    if (!f) {
-      return fceFrom(fstr);
-    }
-    const args = parseFceArgs(f[0]);
-    if (!args) {
-      return fceFrom(fstr);
-    }
-    let body = f[1];
-    if (!body.startsWith("{")) {
-      body = "return " + body;
-    } else if (!body.endsWith("}")) {
-      return fceFrom(fstr);
-    } else {
-      body.slice(1, -1);
-    }
-    return new Function(args, body);
-  };
-  var fceToStr = (fn) => {
-    const t = typeof fn;
-    if (t !== "function") {
-      return fn;
-    }
-    const f = _split(fn.toString());
-    if (!f) {
-      return;
-    }
-    let args = unbracket(f[0]);
-    if (args == null) {
-      return;
-    }
-    if (!args || !_arg.test(args)) {
-      args = `(${args})`;
-    }
-    let body = unbracket(f[1], "{}");
-    if (!body.startsWith("return")) {
-      body = `{${body}}`;
-    } else {
-      body = body.slice(6).trim();
-      if (body.endsWith(";")) {
-        body = body.slice(0, -1);
-      }
-      if (body.startsWith("{")) {
-        body = "(" + body + ")";
-      } else if (body.endsWith("}")) {
-        return;
-      }
-    }
-    return `${args}=>${body}`;
+    return Critical.fail("Unknown error", err);
   };
   var Chop2 = class {
     constructor(id, opt = {}, parent) {
       id = toStr(id);
       if (!id) {
-        throw Error(this.msg("critical error - missing id"));
+        throw Major.fail("missing id");
       }
       const { init, group, autoReset = true, isMultiGroup = false } = opt;
       const filter2 = toFce(opt.filter, true);
@@ -7054,14 +7249,12 @@
         filter: parent ? (rec) => parent.getGroup(rec) === id && filter2(rec) : filter2
       };
       solids(this, {
+        id,
         db: parent?.db || this,
         parent,
-        getGroup: !isMultiGroup ? toFce(group) : wrapFce(toArr, toFce(group, [void 0]))
-      }, false);
-      solids(this, {
-        id: parent ? parent.id + "." + id : id,
+        getGroup: !isMultiGroup ? toFce(group) : wrapFce(toArr, toFce(group, [void 0])),
         isMultiGroup
-      });
+      }, false);
       virtuals(this, {
         state: (_2) => _p.state,
         size: (_2) => _p.groupIdsByRec.size,
@@ -7070,12 +7263,12 @@
       vault.set(this, _p);
       if (parent) {
         const _pp = vault.get(parent);
+        _pp.childs.add(this);
         _p.init = (_2, ctx) => {
           for (const [rec] of _pp.groupIdsByRec) {
             afterAdd(this, rec, ctx);
           }
         };
-        _pp.childs.add(this);
       }
       if (autoReset) {
         this.reset();
@@ -7106,7 +7299,10 @@
     }
     getList(groupId, throwError2 = false) {
       const recs = getRecs(this, groupId, throwError2);
-      return recs ? recs.values() : [];
+      return recs ? Array.from(recs.values()) : [];
+    }
+    getSize(groupId, throwError2 = false) {
+      return getRecs(this, groupId, throwError2)?.size || 0;
     }
     map(callback) {
       const result = [];
@@ -7119,70 +7315,195 @@
       }
       return result;
     }
-    export() {
-      return this.map((rec) => {
-        const res = {};
-        for (const i in rec) {
-          const v = rec[i];
-          res[i] = fceToStr(v);
-        }
-        return res;
-      });
+    export(rec) {
+      const res = {};
+      for (const i in rec) {
+        const v = rec[i];
+        res[i] = Array.isArray(v) ? v.map(exportFn) : exportFn(v);
+      }
+      return res;
+    }
+    exportAll() {
+      return this.map(this.export);
     }
     chop(id, opt = {}) {
       return new Chop2(id, opt, this);
     }
   };
+  var saveRegExp = (any, col) => {
+    if (any instanceof RegExp) {
+      return any;
+    }
+    if (typeof any != "string") {
+      throw Major.fail("not a regexp");
+    }
+    try {
+      return (0, import_regex_parser.default)(any);
+    } catch (err) {
+      throw Major.fail("unparseable");
+    }
+  };
+  var _bols = /^(0|n|no|not|off|false)$/i;
+  var saveBol = (val, col) => typeof val !== "string" ? !!val : !_bols.test(val);
+  var _nums = /-?(\d+(\s+\d+)*)*[,.]?\d+/;
+  var strToNum = (str) => {
+    const match = String(str).replace(/\u00A0/g, " ").match(_nums);
+    if (!match || !match[0]) {
+      return NaN;
+    }
+    const res = Number(match[0].replaceAll(" ", "").replace(",", "."));
+    return res;
+  };
+  var saveNum = (num, col) => {
+    const t = typeof num;
+    if (t === "string") {
+      num = strToNum(num);
+    } else if (t !== "number") {
+      num = Number(num);
+    }
+    const { name, min, max, dec } = col;
+    if (isNaN(num)) {
+      throw Major.fail("not a number");
+    }
+    if (max != null) {
+      num = Math.min(num, max);
+    }
+    if (min != null) {
+      num = Math.max(num, min);
+    }
+    if (dec == 0) {
+      num = Math.round(num);
+    } else if (dec > 0) {
+      const pow = Math.pow(10, dec);
+      num = Math.round(num * pow) / pow;
+    }
+    return num;
+  };
+  var saveStr = (str, col) => {
+    str = isNull(str) ? "" : String(str);
+    if (str === "[object Object]") {
+      try {
+        str = JSON.stringify(str);
+      } catch (e) {
+        throw Major.fail("unparseable");
+      }
+    }
+    const { name, min, max } = col;
+    if (min != null && str.length < min) {
+      throw Major("too short", min);
+    }
+    if (max != null && str.length > max) {
+      str = str.substr(0, max);
+    }
+    return str;
+  };
+  var saveObj = (obj, col) => {
+    const t = typeof obj;
+    if (t === "object") {
+      return obj;
+    }
+    if (t !== "string") {
+      throw Major.fail("unparseable");
+    }
+    try {
+      return JSON.parse(obj);
+    } catch (e) {
+      throw Major.fail("unparseable");
+    }
+  };
+  var saveDate = (date, col) => {
+    if (!(date instanceof Date)) {
+      date = new Date(date);
+    }
+    const { name, min, max } = col;
+    let num = date.getTime();
+    if (isNaN(num)) {
+      throw Major.fail("not a date");
+    }
+    if (min == null && max == null) {
+      return date;
+    }
+    if (max != null) {
+      num = Math.min(num, max);
+    }
+    if (min != null) {
+      num = Math.max(num, min);
+    }
+    return new Date(num);
+  };
   var getter = fcePass;
   var setter = fcePass;
   var isRequired = fceTrue;
   var isReadonly = fceTrue;
-  var metaStrong = Symbol("metaStrong");
-  var metaWeak = Symbol("metaWeak");
-  var metaToStr = (v) => v === metaStrong ? "strong" : v === metaWeak ? "weak" : void 0;
+  var metaSoft = Symbol("soft");
+  var metaHard = Symbol("hard");
+  var metaNumb = Symbol("numb");
+  var metaToStr = (v) => v === metaNumb ? "numb" : v === metaHard ? "hard" : v === metaSoft ? "soft" : void 0;
   var isMetaEnt = (v) => v === "_ents" || v === "_types" || v === "_cols";
   var metaData = {
     "_ents": {
-      "_ents": {},
-      "_cols": {},
-      "_types": {}
+      "_ents": { meta: metaNumb },
+      "_cols": { meta: metaNumb },
+      "_types": { meta: metaNumb }
     },
     "_types": {
-      "meta": { setter: metaToStr, getter },
-      "string": { setter: (v, c) => toStr(v, "").substr(0, c.max), getter },
-      "boolean": { setter: (v, c) => toBol(v), getter },
-      "number": { setter: (v, c) => toNum(v, c.min, c.max, c.dec), getter },
-      "datetime": { setter: (v, c) => toDate(v, c.min, c.max), getter },
-      "duration": { setter: (v, c) => toNum(v, c.min > 0 ? c.min : 0, c.max, 0), getter },
-      "function": { setter: (v, c) => strToFce(v), getter },
-      "object": { setter: (v, c) => typeof v == "string" ? JSON.parse(v) : {}, getter },
-      "ref": { setter: toRefId, getter },
-      "nref": { setter, getter },
-      "any": { setter, getter }
+      "meta": { meta: metaNumb, setter: metaToStr, getter },
+      "string": { meta: metaNumb, setter: saveStr, getter },
+      "boolean": { meta: metaNumb, setter: saveBol, getter },
+      "number": { meta: metaNumb, setter: saveNum, getter },
+      "datetime": { meta: metaNumb, setter: saveDate, getter },
+      "duration": { meta: metaNumb, setter: saveNum, getter },
+      "function": { meta: metaNumb, setter: saveFn, getter },
+      "regexp": { meta: metaNumb, setter: saveRegExp, getter },
+      "object": { meta: metaNumb, setter: saveObj, getter },
+      "ref": { meta: metaNumb, setter: toRefId, getter },
+      "nref": { meta: metaNumb, setter, getter }
     },
     "_cols": {
       "_ents-meta": {
+        meta: metaNumb,
         ent: "_ents",
         name: "meta",
         type: "meta",
         isReadonly
       },
       "_ents-cols": {
+        meta: metaNumb,
         ent: "_ents",
         name: "cols",
-        type: "nref",
+        type: "ref",
         ref: "_cols",
         parent: "_cols-ent",
-        noCache: true
+        isList: true,
+        noCache: true,
+        store: (c, db) => {
+          const { ref, parent: { name, isList } } = c;
+          return db.chop(ref.id, {
+            group: (r) => r[name],
+            isMultiGroup: isList
+          });
+        },
+        formula: (r, b, s) => s.getList(r, false)
+      },
+      "_ents-size": {
+        meta: metaNumb,
+        ent: "_ents",
+        name: "size",
+        type: "number",
+        noCache: true,
+        store: (c, db) => db,
+        formula: (r, b, s) => s.getSize(r.id, false)
       },
       //_types
       "_types-meta": {
+        meta: metaNumb,
         ent: "_types",
         name: "meta",
         type: "meta",
         isReadonly
       },
       "_types-setter": {
+        meta: metaNumb,
         ent: "_types",
         name: "setter",
         type: "function",
@@ -7190,6 +7511,7 @@
         fallback: (_2) => setter
       },
       "_types-getter": {
+        meta: metaNumb,
         ent: "_types",
         name: "getter",
         type: "function",
@@ -7198,12 +7520,14 @@
       },
       //_cols
       "_cols-meta": {
+        meta: metaNumb,
         ent: "_cols",
         name: "meta",
         type: "meta",
         isReadonly
       },
       "_cols-ent": {
+        meta: metaNumb,
         ent: "_cols",
         name: "ent",
         type: "ref",
@@ -7212,6 +7536,7 @@
         isRequired
       },
       "_cols-name": {
+        meta: metaNumb,
         ent: "_cols",
         name: "name",
         type: "string",
@@ -7219,62 +7544,79 @@
         isRequired
       },
       "_cols-type": {
+        meta: metaNumb,
         ent: "_cols",
         name: "type",
         type: "ref",
         ref: "_types",
-        fallback: (_2) => "any"
+        fallback: (_2) => "string"
       },
       "_cols-ref": {
+        meta: metaNumb,
         ent: "_cols",
         name: "ref",
         type: "ref",
         ref: "_ents"
       },
       "_cols-parent": {
+        meta: metaNumb,
         ent: "_cols",
         name: "parent",
         type: "ref",
         ref: "_cols"
       },
+      "_cols-store": {
+        meta: metaNumb,
+        ent: "_cols",
+        name: "store",
+        type: "function"
+      },
       "_cols-isList": {
+        meta: metaNumb,
         ent: "_cols",
         name: "isList",
         type: "boolean"
       },
       "_cols-isReadonly": {
+        meta: metaNumb,
         ent: "_cols",
         name: "isReadonly",
         type: "function"
       },
       "_cols-isRequired": {
+        meta: metaNumb,
         ent: "_cols",
         name: "isRequired",
         type: "function"
       },
       "_cols-resetIf": {
+        meta: metaNumb,
         ent: "_cols",
         name: "resetIf",
         type: "function"
       },
       "_cols-init": {
+        meta: metaHard,
         ent: "_cols",
         name: "init",
         type: "function"
         //Type should be defined as a function
       },
       "_cols-fallback": {
+        meta: metaHard,
         ent: "_cols",
         name: "fallback",
         type: "function"
         //Type should be defined as a function
       },
       "_cols-validator": {
+        meta: metaHard,
         ent: "_cols",
         name: "validator",
         type: "function"
       },
       "_cols-decimal": {
+        meta: metaHard,
         ent: "_cols",
         name: "decimal",
         type: "number",
@@ -7282,28 +7624,33 @@
         min: 0
       },
       "_cols-min": {
+        meta: metaHard,
         ent: "_cols",
         name: "min",
         type: "number"
         //decimal:_=>r.decimal //decimal should be defined as a function
       },
       "_cols-max": {
+        meta: metaHard,
         ent: "_cols",
         name: "max",
         type: "number"
         //decimal:_=>r.decimal, min:_=>r.min //decimal & min should be defined as a function
       },
       "_cols-formula": {
+        meta: metaHard,
         ent: "_cols",
         name: "formula",
         type: "function"
       },
       "_cols-noCache": {
+        meta: metaNumb,
         ent: "_cols",
         name: "noCache",
         type: "boolean"
       },
       "_cols-omitChange": {
+        meta: metaNumb,
         ent: "_cols",
         name: "omitChange",
         type: "boolean"
@@ -7321,7 +7668,7 @@
         ref: "_ents",
         isReadonly,
         isRequired,
-        meta: metaStrong
+        meta: metaNumb
       },
       {
         _ent: `_cols`,
@@ -7331,35 +7678,15 @@
         type: "string",
         isReadonly,
         isRequired,
-        meta: isMetaEnt(entId) ? metaStrong : metaWeak,
-        formula: entId === "_cols" ? (r) => r.ent.id + "-" + r.name : void 0
+        meta: isMetaEnt(entId) ? metaNumb : metaSoft,
+        formula: entId === "_cols" ? (r) => join("-", r.ent?.id, r.name) : void 0
       }
     ];
-  };
-  var Exception = class {
-    constructor(severity, reason, details, column) {
-      solids(this, { severity, column, reason, details });
-    }
-  };
-  var ColMinor = class extends Exception {
-    constructor(column, reason, details) {
-      super("minor", reason, details, column);
-    }
-  };
-  var ColMajor = class extends Exception {
-    constructor(column, reason, details) {
-      super("major", reason, details, column);
-    }
-  };
-  var PushMajor = class extends Exception {
-    constructor(reason, details) {
-      super("major", reason, details);
-    }
   };
   var nregCol = (db, entId, _col, action) => {
     const colsByEnt = vault.get(db)?.colsByEnt;
     if (!colsByEnt) {
-      throw Error(db.msg(`columns not found`));
+      throw Critical.fail("columns not found");
     }
     let cols = colsByEnt.get(entId);
     if (action) {
@@ -7380,39 +7707,40 @@
   var createGetter = (_col) => {
     const { db, current: col, values: v } = _col;
     const { getter: getter2 } = metaData._types[v.type] || col.type;
-    const typize = v.type == "ref" ? (from) => _col.db.get(v.ref, from, false) : (v2) => getter2(v2, col);
+    const typize = v.type == "ref" ? (from) => db.get(v.ref, from, false) : (v2) => getter2(v2, col);
     const n = !v.isList ? typize : (f) => reArray(f, typize);
     return n;
   };
   var createSetter = (_col) => {
     const { db, current: col, values: v } = _col;
-    const { name, ref, parent, formula, validator, isReadonly: isReadonly2, resetIf, init, fallback, isRequired: isRequired2, isList } = col;
+    const { name, ref, parent, formula, store, noCache, validator, isReadonly: isReadonly2, resetIf, init, fallback, isRequired: isRequired2, isList } = col;
     const { setter: setter2 } = metaData._types[v.type] || col.type;
     const typize = (t) => isNull(t) ? void 0 : setter2(t, col);
     const n = !isList ? typize : (t) => isNull(t) ? void 0 : reArray(t, typize);
+    const stored = !store ? void 0 : store(col, db);
     return (current, output, to3, before) => {
       if (formula) {
-        to3 = output[name] = n(formula(current, col, before));
+        to3 = output[name] = n(formula(current, before, stored));
       } else {
-        if (isReadonly2 && isReadonly2(current, col, before)) {
+        if (isReadonly2 && isReadonly2(current, before, stored)) {
           if (before) {
-            throw new ColMinor(name, `is readonly`);
+            throw Minor.fail(`is readonly`);
           }
         } else {
           to3 = output[name] = n(to3);
-          if (validator && !validator(current[name], before[name], current, col, before)) {
-            throw new ColMajor(name, "is invalid");
+          if (validator && !validator(current, before, stored)) {
+            throw Major.fail("is invalid");
           }
         }
-        if (!before && isNull(to3) || resetIf && resetIf(current, col, before)) {
-          to3 = output[name] = !init ? void 0 : n(init(current, col, before));
+        if (!before && isNull(to3) || resetIf && resetIf(current, before, stored)) {
+          to3 = output[name] = !init ? void 0 : n(init(current, before, stored));
         }
       }
-      if (isNull(to3) && fallback) {
-        to3 = output[name] = n(fallback(current, col, before));
+      if (fallback && isNull(to3)) {
+        to3 = output[name] = n(fallback(current, before, stored));
       }
-      if (isNull(to3) && isRequired2 && isRequired2(current, col, before)) {
-        throw new ColMajor(name, "is required");
+      if (isRequired2 && isNull(to3) && isRequired2(current, before, stored)) {
+        throw Major.fail("is required");
       }
       return output[name];
     };
@@ -7479,106 +7807,124 @@
     }
     ;
   };
-  var Push = class {
-    constructor(_rec) {
+  var Turn = class {
+    static attach(_rec, input, isUpdate = false) {
+      return _rec.turn = new Turn(_rec, input, isUpdate);
+    }
+    constructor(_rec, input, isUpdate = false) {
       solids(this, {
-        _rec
+        _rec,
+        isUpdate,
+        input,
+        output: {},
+        pendings: /* @__PURE__ */ new Set(),
+        fails: [],
+        changed: /* @__PURE__ */ new Set()
       });
-    }
-    throw(error) {
-      if (this.isDone && error.severity !== "minor") {
-        this.isDone = false;
-      }
-      this.exceptions.push(error);
-    }
-    prepare(input, isUpdate = false) {
-      const { db, meta: metaRec, values, state } = this._rec;
-      this.input = input;
-      const output = this.output = {};
-      const pendings = this.pendings = /* @__PURE__ */ new Set();
       this.isDone = true;
-      this.exceptions = [];
-      this.changed = /* @__PURE__ */ new Set();
       this.isPending = false;
       this.isChanged = false;
+      try {
+        this._prepare();
+      } catch (err) {
+        this.addFail(toFail(err));
+      }
+    }
+    addFail(fail, nonMinorThrow) {
+      const { _rec, fails } = this;
+      const { values } = _rec;
+      fail.setRow(values.id).setEnt(values._ent);
+      if (fail.severity !== "minor") {
+        if (nonMinorThrow) {
+          throw fail;
+        } else {
+          this.isDone = false;
+        }
+      }
+      fails.push(fail);
+    }
+    _prepare() {
+      const { _rec } = this;
+      const { db, values, state } = _rec;
       if (!values._ent) {
-        this.throw(new ColMajor("_ent", "is required"));
-        return;
+        throw Major.fail("is required").setCol("_ent");
       }
       const _cols = getColsPriv(db, values._ent);
       if (!_cols) {
-        this.throw(new ColMajor("_ent", "invalid"));
-        return;
+        throw Major.fail("invalid").setCol("_ent");
       }
       for (const _col of _cols) {
-        const { meta: metaCol, values: { name, formula, resetIf, noCache } } = _col;
-        const isReal = input.hasOwnProperty(name);
-        const isMeta = metaCol && metaRec === "strong";
-        output[name] = values[name];
-        if (isReal && state === "ready") {
-          if (isMeta) {
-            this.throw(new ColMinor(name, "is meta"));
-            continue;
-          }
-          if (formula) {
-            this.throw(new ColMinor(name, `has formula`));
-            continue;
-          }
-        }
-        if (formula && noCache) {
-          continue;
-        }
-        if (isMeta && state === "pending") {
-          continue;
-        }
-        if (formula) {
-          pendings.add(_col);
-          continue;
-        }
-        if (!isUpdate || isReal) {
-          pendings.add(_col);
-          this.isPending = true;
-          continue;
-        }
-        if (resetIf) {
-          input[name] = values[name];
-          pendings.add(_col);
-          continue;
+        try {
+          this._prepareCol(_col);
+        } catch (err) {
+          this.addFail(toFail(err).setCol(_col.values.name));
         }
       }
       if (state === "ready" && !this.isPending) {
-        this.throw(new PushMajor("blank"));
+        throw Major.fail("blank");
+      }
+    }
+    _prepareCol(_col) {
+      const { _rec, isUpdate, input, output, pendings } = this;
+      const { meta: metaRec, values, state } = _rec;
+      const { meta: metaCol, values: { name, formula, resetIf, noCache } } = _col;
+      const isReal = input.hasOwnProperty(name);
+      const isMeta = metaRec && metaCol && (metaCol === "numb" || metaRec !== "soft");
+      output[name] = values[name];
+      if (isReal && state === "ready") {
+        if (isMeta) {
+          throw Minor.fail("is meta");
+        }
+        if (formula) {
+          throw Minor.fail(`has formula`);
+        }
+      }
+      if (formula && noCache) {
+        return;
+      }
+      if (isMeta && state === "pending") {
+        return;
+      }
+      if (formula) {
+        pendings.add(_col);
+        return;
+      }
+      if (!isUpdate || isReal) {
+        pendings.add(_col);
+        this.isPending = true;
+        return;
+      }
+      if (resetIf) {
+        input[name] = values[name];
+        pendings.add(_col);
+        return;
       }
     }
     execute() {
+      const { _rec, pendings, changed } = this;
       if (this.isPending) {
-        for (const _col of this.pendings) {
+        for (const _col of pendings) {
           this.pull(_col);
         }
       }
-      if (!this.isChanged || !this.isDone) {
-        this.isChanged = this._rec.state === "pending";
-        this.output = this._rec.values;
-        this.changed.clear();
+      if (this.isChanged && this.isDone) {
+        return this.output;
       }
-      return this.output;
+      this.isChanged = _rec.state === "pending";
+      changed.clear();
+      return _rec.values;
     }
     pull(_col) {
       const { _rec, pendings, output, input, changed } = this;
       const { name, omitChange } = _col.values;
       if (pendings.has(_col)) {
         const { setter: setter2 } = _col.traits;
-        if (this.pending === _col) {
-          return output[name];
-        }
-        this.pending = _col;
+        pendings.delete(_col);
         try {
           setter2(_rec.current, output, input[name], _rec.state === "ready" ? _rec.before : void 0);
         } catch (err) {
-          this.throw(err);
+          this.addFail(toFail(err).setCol(name));
         }
-        delete this.pending;
-        pendings.delete(_col);
         if (output[name] !== _rec.values[name]) {
           changed.add(name);
           this.isChanged = this.isChanged || !omitChange;
@@ -7586,22 +7932,15 @@
       }
       return output[name];
     }
-    close() {
-      const { _rec: { current }, isDone, changed, exceptions } = this;
-      delete this.isDone;
-      delete this.input;
-      delete this.output;
-      delete this.exceptions;
-      delete this.pending;
-      delete this.pendings;
-      delete this.changed;
-      delete this.isChanged;
-      delete this.isPending;
+    detach() {
+      const { _rec, isDone, changed, fails } = this;
+      const { current } = _rec;
+      delete _rec.turn;
       return solids({}, {
         isDone,
         current,
         changed,
-        exceptions
+        fails
       });
     }
   };
@@ -7617,7 +7956,6 @@
     constructor(db) {
       solids(this, {
         db,
-        push: new Push(this),
         current: new Record(),
         before: new Record()
       });
@@ -7645,13 +7983,13 @@
         }
       };
       if (isVirtual) {
-        prop.get = (_2) => t.getter(t.setter(current, this.values, this.values[name], this.state === "ready" ? before : void 0));
+        prop.get = (_2) => t.getter(t.setter(current, this.values, this.values[name], this.state === "ready" ? before : void 0), this.state === "ready");
       } else {
-        prop.get = (_2) => t.getter(this.push.isPending ? this.push.pull(_col) : this.values[name]);
+        prop.get = (_2) => t.getter(this.turn ? this.turn.pull(_col) : this.values[name], this);
       }
       Object.defineProperty(current, name, prop);
       if (!isVirtual) {
-        prop.get = (_2) => t.getter(this.values[name]);
+        prop.get = (_2) => t.getter(this.values[name], this);
       }
       Object.defineProperty(before, name, prop);
       if (state === "ready") {
@@ -7675,19 +8013,19 @@
       return this;
     }
     colsPrepare() {
-      const { state, push, values } = this;
+      const { state, values } = this;
       if (state === "pending") {
-        push.prepare(values);
+        Turn.attach(this, values);
       }
       return this;
     }
     colsFinish() {
-      const { state, push } = this;
+      const { state, turn } = this;
       if (state === "pending") {
-        this.values = push.execute();
+        this.values = turn.execute();
         this.state = "ready";
       }
-      return push.close();
+      return this.turn.detach();
     }
     valsLoad(values) {
       const { state, current, values: v } = this;
@@ -7703,28 +8041,27 @@
       return this;
     }
     valsPush(values, ctx, isUpdate = false) {
-      const { db, current, push } = this;
-      push.prepare(values, isUpdate);
-      this.values = push.execute();
-      if (push.isChanged) {
+      const { db, current } = this;
+      this.values = Turn.attach(this, values, isUpdate).execute();
+      if (this.turn.isChanged) {
         setCol(this, ctx);
         afterUpdate(db, current, ctx);
       }
-      return push.close();
+      return this.turn.detach();
     }
     remove(ctx, force = false) {
-      const { db, current, meta } = this;
-      const exceptions = [];
+      const { db, current, values, meta } = this;
+      const fails = [];
       if (!force && meta) {
-        exceptions.push(new PushMajor("is meta"));
+        fails.push(Major.fail("is meta").setRow(values.id));
       } else {
         this.state = "removed";
         afterRemove(db, current, ctx);
         unregRec(this);
       }
       return solids({}, {
-        isDone: !exceptions.size,
-        exceptions
+        isDone: !fails.size,
+        fails
       });
     }
   };
@@ -7749,8 +8086,8 @@
     ;
   };
   var loadRec = (db, values, ctx) => {
+    const id = toRefId(values);
     const _ent = toRefId(values._ent);
-    const id = toStr(values.id);
     const brother = getRec(db, _ent, id);
     const _rec = brother ? getRecPriv(db, brother) : createRec(db, values);
     if (brother) {
@@ -7765,7 +8102,9 @@
   var addRec = (db, values, ctx) => {
     const _rec = createRec(db, values);
     const res = _rec.colsInit().colsPrepare().colsFinish();
-    afterAdd(db, _rec.current, ctx);
+    if (res.isDone) {
+      afterAdd(db, _rec.current, ctx);
+    }
     return res;
   };
   var addOrSetRec = (db, values, ctx, isUpdate) => {
@@ -7776,7 +8115,9 @@
       return getRecPriv(db, brother).valsPush(values, ctx, isUpdate);
     }
     const res = _rec.colsFinish();
-    afterAdd(db, res.current, ctx);
+    if (res.isDone) {
+      afterAdd(db, res.current, ctx);
+    }
     return res;
   };
   var removeRec = (db, record, ctx, force) => getRecPriv(db, record).remove(ctx, force);
@@ -7791,7 +8132,7 @@
           init(load, ctx);
           for (const _ent in metaData) {
             for (const id2 in metaData[_ent]) {
-              load({ _ent, id: id2, meta: metaStrong, ...metaData[_ent][id2] });
+              load({ _ent, id: id2, ...metaData[_ent][id2] });
             }
             ;
           }
@@ -7807,7 +8148,7 @@
             }
           }
           for (const _rec of _recs) {
-            console.log(_rec.colsFinish());
+            _rec.colsFinish();
           }
           return _recs;
         }
@@ -7890,7 +8231,7 @@
     });
     db.on((event, rec, ctx) => {
       if (rec) {
-        beam.set(db.export());
+        console.log(event);
       }
     });
   });

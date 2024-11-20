@@ -1,9 +1,8 @@
-import { toRefId, toStr } from "../../../uni/formats";
+import { toRefId } from "../../../uni/formats";
 import { getRec } from "../../effects/_bits";
 import { afterAdd } from "../../effects/afterAdd";
 import { afterUpdate } from "../../effects/afterUpdate";
-import { setCol } from "./_columns";
-import { addEnt, loadEnt } from "./_ents";
+import { loadEnt } from "./_ents";
 import { RecordPrivate } from "./RecordPrivate";
 
 const _records = new WeakMap();
@@ -27,8 +26,8 @@ export const getRecPriv = (db, any, throwError=true)=>{
 }
 
 export const loadRec = (db, values, ctx)=>{
+    const id = toRefId(values);
     const _ent = toRefId(values._ent);
-    const id = toStr(values.id);
 
     const brother = getRec(db, _ent, id);
     const _rec = brother ? getRecPriv(db, brother) : createRec(db, values);
@@ -48,7 +47,7 @@ export const loadRec = (db, values, ctx)=>{
 export const addRec = (db, values, ctx)=>{
     const _rec = createRec(db, values);
     const res = _rec.colsInit().colsPrepare().colsFinish();
-    afterAdd(db, _rec.current, ctx);
+    if (res.isDone) { afterAdd(db, _rec.current, ctx); }
     return res;
 }
 
@@ -60,7 +59,7 @@ export const addOrSetRec = (db, values, ctx, isUpdate)=>{
     if (brother) { return getRecPriv(db, brother).valsPush(values, ctx, isUpdate); }
 
     const res = _rec.colsFinish();
-    afterAdd(db, res.current, ctx);
+    if (res.isDone) { afterAdd(db, res.current, ctx); }
     return res;
 }
 

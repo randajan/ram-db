@@ -1,8 +1,8 @@
 
 import { Chop } from "./Chop";
 
-import { toRefId, toStr } from "../../../uni/formats";
-import { metaData, metaDataDynamic, metaStrong } from "../../metaData/interface";
+import { toRefId } from "../../../uni/formats";
+import { metaData } from "../../metaData/interface";
 import { addOrSetRec, addRec, getRecPriv, loadRec, removeRec } from "../Records/_records";
 import { getAllRecs, getRecs } from "../../effects/_bits";
 import { vault } from "../../../uni/consts";
@@ -22,27 +22,33 @@ export class DB extends Chop {
 
                 const load = values=>loadRec(this, values, ctx);
 
+                //load database
                 init(load, ctx);
 
+                //override with metadata
                 for (const _ent in metaData) {
                     for (const id in metaData[_ent]) {
-                        load({_ent, id, meta:metaStrong, ...metaData[_ent][id]});
+                        load({_ent, id, ...metaData[_ent][id]}); //TODO
                     };
                 }
 
-                
+                //set columns definitions
                 for (const [_, rec] of getRecs(this, "_cols")) {
                     const _rec = getRecPriv(this, rec);
                     setCol(_rec, ctx);
                 }
 
+                //prepare columns for rows
                 const _recs = [];
                 for (const [rec] of getAllRecs(this)) {
                     const _rec = getRecPriv(this, rec);
                     if (_rec.state === "pending") { _recs.push(_rec.colsPrepare()); }
                 }
                 
-                for (const _rec of _recs) { console.log(_rec.colsFinish()); }
+                //set columns for rows
+                for (const _rec of _recs) { 
+                    _rec.colsFinish();
+                }
 
                 return _recs;
 

@@ -24,9 +24,6 @@ export const toNum = (val, min, max, dec)=>{
     return val;
 }
 
-const _bols = /^(0|n|no|not|off|false)$/i;
-export const toBol = val=>typeof val !== "string" ? !!val : !_bols.test(val);
-
 export const toDate = (val, min, max)=>{
     if (!(val instanceof Date)) { val = Date.parse(val); }
     if (isNull(min) && isNull(max)) { return val; }
@@ -44,4 +41,14 @@ export const reArray = (val, trait)=>{
     }
 
     return res;
+}
+
+export const join = (separator, ...vals)=>{
+    let s = "";
+    for (let v of vals) {
+        v = toStr(v);
+        if (!v) { return; }
+        s += (!s ? "" : separator) + v;
+    }
+    return s;
 }
