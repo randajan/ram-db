@@ -8,11 +8,12 @@ export {
 
 
 //TODO:
-// - deduplicates records
 
-// - event handlers require whole response object instead of just record
+// - loading is huge mess it requires to improve, how to merge meta with regular rows while loading?
 
-// - self updating formulas - that mean rewrite the push for formulas, with continuous push, how to determine where to send the neccessary update?
+// - deduplicates records, will this solves indexes that we require too?
+
+// - self updating formulas (computed values caching)
 // - better nref (simplier definition)
 
 //if i somehow manage to do above and performance tests doesnt prove me wrong then its ready for betatesting

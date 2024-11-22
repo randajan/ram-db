@@ -4,10 +4,11 @@ import { afterRemove } from "../../effects/afterRemove";
 import { afterUpdate } from "../../effects/afterUpdate";
 import { metaToStr, isMetaEnt } from "../../metaData/interface";
 import { Turn } from "./Turn";
-import { getColsPriv, remCol, setCol } from "./_columns";
+import { getColsPriv, setCol } from "./_columns";
 import { Major } from "../Exceptions";
 import { regRec, unregRec } from "./_records";
 import { Record } from "./Record";
+import { Result } from "./Result";
 
 export class RecordPrivate {
 
@@ -101,33 +102,30 @@ export class RecordPrivate {
     }
 
     valsPush(values, ctx, isUpdate=false) {
-        const { db, current } = this;
 
         this.values = Turn.attach(this, values, isUpdate).execute();
+        const result = this.turn.detach();
 
-        if (this.turn.isChanged) {
+        if (this.turn.isReal) {
             setCol(this, ctx);
-            afterUpdate(db, current, ctx);
+            afterUpdate(this.db, result, ctx);
         }
 
-        return this.turn.detach();
+        return result;
     }
 
     remove(ctx, force=false) {
-        const { db, current, values, meta } = this;
-        const fails = [];
+        const { db, meta } = this;
+        const result = new Result(this);
 
-        if (!force && meta) { fails.push(Major.fail("is meta").setRow(values.id)); }
+        if (!force && meta) { result.addFail(Major.fail("is meta")); }
         else {
             this.state = "removed";
-            afterRemove(db, current, ctx);
+            afterRemove(db, result, ctx);
             unregRec(this);
         }
         
-        return solids({}, {
-            isDone:!fails.size,
-            fails
-        });
+        return result;
     }
 
 }

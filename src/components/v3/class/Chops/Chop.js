@@ -1,7 +1,7 @@
 import { vault } from "../../../uni/consts";
 
 import { toArr, toFce, toStr, wrapFce } from "../../../uni/formats";
-import { afterAdd } from "../../effects/afterAdd";
+import { afterLoad } from "../../effects/afterAdd";
 import { onEvent } from "../../effects/eventHandlers";
 import { getAllRecs, getRec, getRecs } from "../../effects/_bits";
 import { afterReset } from "../../effects/afterReset";
@@ -48,8 +48,8 @@ export class Chop {
         if (parent) {
             const _pp = vault.get(parent);
             _pp.childs.add(this);
-            _p.init = (_, ctx)=>{
-                for (const [rec] of _pp.groupIdsByRec) { afterAdd(this, rec, ctx); }
+            _p.init = _=>{
+                for (const [rec] of _pp.groupIdsByRec) { afterLoad(this, rec); }
             }
         }
 

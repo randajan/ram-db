@@ -238,11 +238,11 @@
           if (value2 === 0) {
             return 30;
           }
-          let result = 30 + (Math.round(blue) << 2 | Math.round(green) << 1 | Math.round(red));
+          let result2 = 30 + (Math.round(blue) << 2 | Math.round(green) << 1 | Math.round(red));
           if (value2 === 2) {
-            result += 60;
+            result2 += 60;
           }
-          return result;
+          return result2;
         },
         enumerable: false
       },
@@ -5979,17 +5979,17 @@
       throw Error("Parsing arguments - missing");
     }
     args = unbracket(args.trim());
-    let result = [];
+    let result2 = [];
     if (args) {
       for (let a of args.split(",")) {
         a = a.trim();
         if (!argRegExp.test(a)) {
           throw Error("Parsing arguments - malformatted");
         }
-        result.push(a);
+        result2.push(a);
       }
     }
-    return result;
+    return result2;
   };
   var fnToStr = (fn) => {
     const t = typeof fn;
@@ -7032,24 +7032,25 @@
     return prepareRecs(chop, recsByGroupId, groupId, throwError2, false);
   };
   var getAllRecs = (chop) => vault.get(chop).groupIdsByRec;
-  var afterRemove = (chop, rec, ctx) => {
+  var afterRemove = (chop, res, ctx) => {
     const { isMultiGroup, recsByGroupId, groupIdsByRec, filter: filter2, handlers, childs, state } = vault.get(chop);
-    const current = groupIdsByRec.get(rec);
-    if (!current) {
+    const rec = res.current;
+    const from = groupIdsByRec.get(rec);
+    if (!from) {
       if (filter2(rec)) {
         throw Error(chop.msg(`remove(...) failed - missing`, { row: rec.id }));
       }
       return false;
     }
     if (isMultiGroup) {
-      for (const groupId of current) {
+      for (const groupId of from) {
         deleteRec(chop, recsByGroupId, groupId, rec);
       }
     } else {
-      deleteRec(chop, recsByGroupId, current, rec);
+      deleteRec(chop, recsByGroupId, from, rec);
     }
     groupIdsByRec.delete(rec);
-    return runEvent(handlers, childs, state, "remove", rec, ctx);
+    return runEvent(handlers, childs, state, "remove", res, ctx);
   };
   var afterReset = (chop, ctx) => {
     const _p = vault.get(chop);
@@ -7063,41 +7064,42 @@
     _p.state = "ready";
     return true;
   };
-  var afterUpdate = (chop, rec, ctx) => {
+  var afterUpdate = (chop, res, ctx) => {
     const { isMultiGroup, recsByGroupId, groupIdsByRec, filter: filter2, handlers, childs, state } = vault.get(chop);
-    const current = groupIdsByRec.get(rec);
-    if (!current) {
+    const rec = res.current;
+    const from = groupIdsByRec.get(rec);
+    if (!from) {
       if (filter2(rec)) {
         throw Error(chop.msg(`update(...) failed - missing`, { row: rec.id }));
       }
       return false;
     }
-    const valid = chop.getGroup(rec);
+    const to3 = chop.getGroup(rec);
     if (isMultiGroup) {
       const results = /* @__PURE__ */ new Set();
-      for (const groupId of valid) {
+      for (const groupId of to3) {
         if (results.has(groupId)) {
           continue;
         }
         results.add(groupId);
-        if (current.has(groupId)) {
-          current.delete(groupId);
+        if (from.has(groupId)) {
+          from.delete(groupId);
           continue;
         }
         setRec(chop, recsByGroupId, groupId, rec);
       }
-      for (const groupId of current) {
+      for (const groupId of from) {
         deleteRec(chop, recsByGroupId, groupId, rec);
       }
       groupIdsByRec.set(rec, results);
-    } else if (valid !== current) {
-      setRec(chop, recsByGroupId, valid, rec);
-      deleteRec(chop, recsByGroupId, current, rec);
-      groupIdsByRec.set(rec, valid);
+    } else if (to3 !== from) {
+      setRec(chop, recsByGroupId, to3, rec);
+      deleteRec(chop, recsByGroupId, from, rec);
+      groupIdsByRec.set(rec, to3);
     }
-    return runEvent(handlers, childs, state, "update", rec, ctx);
+    return runEvent(handlers, childs, state, "update", res, ctx);
   };
-  var runEvent = (handlers, childs, state, event, rec, ctx) => {
+  var runEvent = (handlers, childs, state, event, res, ctx) => {
     if (state === "init") {
       return;
     }
@@ -7108,15 +7110,15 @@
         }
       } else if (event === "add") {
         for (const child of childs) {
-          afterAdd(child, rec, ctx);
+          afterAdd(child, res, ctx);
         }
       } else if (event === "remove") {
         for (const child of childs) {
-          afterRemove(child, rec, ctx);
+          afterRemove(child, res, ctx);
         }
       } else if (event === "update") {
         for (const child of childs) {
-          afterUpdate(child, rec, ctx);
+          afterUpdate(child, res, ctx);
         }
       }
     }
@@ -7124,7 +7126,7 @@
       for (let i = handlers.length - 1; i >= 0; i--) {
         try {
           if (handlers[i]) {
-            handlers[i](event, rec, ctx);
+            handlers[i](event, res, ctx);
           }
         } catch (err) {
           console.error(err);
@@ -7152,7 +7154,7 @@
       return callback;
     };
   };
-  var afterAdd = (chop, rec, ctx) => {
+  var put = (chop, rec, event, res, ctx) => {
     const { isMultiGroup, recsByGroupId, groupIdsByRec, filter: filter2, handlers, childs, state } = vault.get(chop);
     if (!filter2(rec)) {
       return false;
@@ -7172,8 +7174,13 @@
       setRec(chop, recsByGroupId, valid, rec);
       groupIdsByRec.set(rec, valid);
     }
-    return runEvent(handlers, childs, state, "add", rec, ctx);
+    if (!event) {
+      return true;
+    }
+    return runEvent(handlers, childs, state, event, res, ctx);
   };
+  var afterLoad = (chop, rec) => put(chop, rec);
+  var afterAdd = (chop, res, ctx) => put(chop, res.current, "add", res, ctx);
   var saveFn = (any, col) => anyToFn(any);
   var exportFn = (any) => {
     return typeof any !== "function" ? any : fnToStr(any);
@@ -7264,9 +7271,9 @@
       if (parent) {
         const _pp = vault.get(parent);
         _pp.childs.add(this);
-        _p.init = (_2, ctx) => {
+        _p.init = (_2) => {
           for (const [rec] of _pp.groupIdsByRec) {
-            afterAdd(this, rec, ctx);
+            afterLoad(this, rec);
           }
         };
       }
@@ -7305,15 +7312,15 @@
       return getRecs(this, groupId, throwError2)?.size || 0;
     }
     map(callback) {
-      const result = [];
+      const result2 = [];
       const recs = getAllRecs(this);
       for (const [rec] of recs) {
         const r = callback(rec);
         if (r !== void 0) {
-          result.push(r);
+          result2.push(r);
         }
       }
-      return result;
+      return result2;
     }
     export(rec) {
       const res = {};
@@ -7807,44 +7814,78 @@
     }
     ;
   };
-  var Turn = class {
-    static attach(_rec, input, isUpdate = false) {
-      return _rec.turn = new Turn(_rec, input, isUpdate);
-    }
-    constructor(_rec, input, isUpdate = false) {
-      solids(this, {
+  var _results = /* @__PURE__ */ new WeakMap();
+  var Result = class {
+    constructor(_rec) {
+      const _p = {
         _rec,
-        isUpdate,
-        input,
-        output: {},
-        pendings: /* @__PURE__ */ new Set(),
-        fails: [],
-        changed: /* @__PURE__ */ new Set()
+        isOk: true,
+        fails: []
+      };
+      solid3(this, "current", _rec.current);
+      virtuals(this, {
+        isOk: (_2) => _p.isOk,
+        fails: (_2) => [..._p.fails]
       });
-      this.isDone = true;
-      this.isPending = false;
-      this.isChanged = false;
-      try {
-        this._prepare();
-      } catch (err) {
-        this.addFail(toFail(err));
-      }
+      _results.set(this, _p);
     }
-    addFail(fail, nonMinorThrow) {
-      const { _rec, fails } = this;
-      const { values } = _rec;
+    addFail(fail, nonMinorThrow = false) {
+      const _p = _results.get(this);
+      const { values } = _p._rec;
       fail.setRow(values.id).setEnt(values._ent);
       if (fail.severity !== "minor") {
         if (nonMinorThrow) {
           throw fail;
         } else {
-          this.isDone = false;
+          _p.isOk = false;
         }
       }
-      fails.push(fail);
+      _p.fails.push(fail);
+      return true;
+    }
+  };
+  var ResultTurn = class extends Result {
+    constructor(_rec) {
+      super(_rec);
+      const _p = _results.get(this);
+      _p.changed = /* @__PURE__ */ new Set();
+      _p.isReal = _rec.state === "pending";
+      virtuals(this, {
+        isReal: (_2) => _p.isReal,
+        changed: (_2) => new Set(_p.changed)
+      });
+    }
+    addChange(change, isReal = false) {
+      const _p = _results.get(this);
+      _p.changed.add(change);
+      if (isReal) {
+        _p.isReal = true;
+      }
+      return true;
+    }
+  };
+  var Turn = class {
+    static attach(_rec, input, isUpdate = false) {
+      return _rec.turn = new Turn(_rec, input, isUpdate);
+    }
+    constructor(_rec, input, isUpdate = false) {
+      this._rec = _rec;
+      this.result = new ResultTurn(_rec);
+      solids(this, {
+        isUpdate,
+        input,
+        output: {},
+        pendings: /* @__PURE__ */ new Set()
+      });
+      this.isPending = false;
+      try {
+        this._prepare();
+      } catch (err) {
+        result.addFail(toFail(err));
+      }
     }
     _prepare() {
-      const { _rec } = this;
+      const { _rec, result: result2 } = this;
       const { db, values, state } = _rec;
       if (!values._ent) {
         throw Major.fail("is required").setCol("_ent");
@@ -7857,7 +7898,7 @@
         try {
           this._prepareCol(_col);
         } catch (err) {
-          this.addFail(toFail(err).setCol(_col.values.name));
+          result2.addFail(toFail(err).setCol(_col.values.name));
         }
       }
       if (state === "ready" && !this.isPending) {
@@ -7901,47 +7942,38 @@
       }
     }
     execute() {
-      const { _rec, pendings, changed } = this;
+      const { _rec, pendings, result: result2 } = this;
       if (this.isPending) {
         for (const _col of pendings) {
           this.pull(_col);
         }
       }
-      if (this.isChanged && this.isDone) {
-        return this.output;
-      }
-      this.isChanged = _rec.state === "pending";
-      changed.clear();
-      return _rec.values;
+      return result2.isOk && result2.isReal ? this.output : _rec.values;
     }
     pull(_col) {
-      const { _rec, pendings, output, input, changed } = this;
+      const { _rec, pendings, output, input, result: result2 } = this;
+      const { state, current, before } = _rec;
       const { name, omitChange } = _col.values;
       if (pendings.has(_col)) {
         const { setter: setter2 } = _col.traits;
         pendings.delete(_col);
         try {
-          setter2(_rec.current, output, input[name], _rec.state === "ready" ? _rec.before : void 0);
+          setter2(current, output, input[name], state === "ready" ? before : void 0);
         } catch (err) {
-          this.addFail(toFail(err).setCol(name));
+          result2.addFail(toFail(err).setCol(name));
         }
         if (output[name] !== _rec.values[name]) {
-          changed.add(name);
-          this.isChanged = this.isChanged || !omitChange;
+          result2.addChange(name, !omitChange);
         }
       }
       return output[name];
     }
     detach() {
-      const { _rec, isDone, changed, fails } = this;
-      const { current } = _rec;
+      const { _rec, result: result2 } = this;
+      delete this._rec;
+      delete this.result;
       delete _rec.turn;
-      return solids({}, {
-        isDone,
-        current,
-        changed,
-        fails
-      });
+      return result2;
     }
   };
   var Record = class {
@@ -8041,28 +8073,25 @@
       return this;
     }
     valsPush(values, ctx, isUpdate = false) {
-      const { db, current } = this;
       this.values = Turn.attach(this, values, isUpdate).execute();
-      if (this.turn.isChanged) {
+      const result2 = this.turn.detach();
+      if (this.turn.isReal) {
         setCol(this, ctx);
-        afterUpdate(db, current, ctx);
+        afterUpdate(this.db, result2, ctx);
       }
-      return this.turn.detach();
+      return result2;
     }
     remove(ctx, force = false) {
-      const { db, current, values, meta } = this;
-      const fails = [];
+      const { db, meta } = this;
+      const result2 = new Result(this);
       if (!force && meta) {
-        fails.push(Major.fail("is meta").setRow(values.id));
+        result2.addFail(Major.fail("is meta"));
       } else {
         this.state = "removed";
-        afterRemove(db, current, ctx);
+        afterRemove(db, result2, ctx);
         unregRec(this);
       }
-      return solids({}, {
-        isDone: !fails.size,
-        fails
-      });
+      return result2;
     }
   };
   var _records = /* @__PURE__ */ new WeakMap();
@@ -8092,9 +8121,9 @@
     const _rec = brother ? getRecPriv(db, brother) : createRec(db, values);
     if (brother) {
       _rec.valsLoad(values);
-      afterUpdate(db, _rec.current, ctx);
+      afterUpdate(db, { current: _rec.current }, ctx);
     } else {
-      afterAdd(db, _rec.current, ctx);
+      afterLoad(db, _rec.current);
       loadEnt(_rec, ctx);
     }
     return _rec;
@@ -8102,8 +8131,8 @@
   var addRec = (db, values, ctx) => {
     const _rec = createRec(db, values);
     const res = _rec.colsInit().colsPrepare().colsFinish();
-    if (res.isDone) {
-      afterAdd(db, _rec.current, ctx);
+    if (res.isOk) {
+      afterAdd(db, res, ctx);
     }
     return res;
   };
@@ -8115,8 +8144,8 @@
       return getRecPriv(db, brother).valsPush(values, ctx, isUpdate);
     }
     const res = _rec.colsFinish();
-    if (res.isDone) {
-      afterAdd(db, res.current, ctx);
+    if (res.isOk) {
+      afterAdd(db, res, ctx);
     }
     return res;
   };
@@ -8153,11 +8182,11 @@
           return _recs;
         }
       });
-      this.on((event, rec, ctx) => {
-        if (!rec) {
+      this.on((event, res, ctx) => {
+        if (!res) {
           return;
         }
-        const _rec = getRecPriv(this, rec);
+        const _rec = getRecPriv(this, res.current);
         const { _ent } = _rec.values;
         if (_ent == "_ents") {
           if (event === "remove") {
@@ -8229,9 +8258,8 @@
         }
       }
     });
-    db.on((event, rec, ctx) => {
-      if (rec) {
-        console.log(event);
+    db.on((event, res, ctx) => {
+      if (res) {
       }
     });
   });

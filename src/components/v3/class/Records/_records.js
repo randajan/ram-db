@@ -1,6 +1,6 @@
 import { toRefId } from "../../../uni/formats";
 import { getRec } from "../../effects/_bits";
-import { afterAdd } from "../../effects/afterAdd";
+import { afterAdd, afterLoad } from "../../effects/afterAdd";
 import { afterUpdate } from "../../effects/afterUpdate";
 import { loadEnt } from "./_ents";
 import { RecordPrivate } from "./RecordPrivate";
@@ -34,10 +34,10 @@ export const loadRec = (db, values, ctx)=>{
 
     if (brother) {
         _rec.valsLoad(values);
-        afterUpdate(db, _rec.current, ctx);
+        afterUpdate(db, { current:_rec.current }, ctx); //TODO!!!
     }
     else {
-        afterAdd(db, _rec.current, ctx);
+        afterLoad(db, _rec.current);
         loadEnt(_rec, ctx);
     }
     
@@ -47,7 +47,7 @@ export const loadRec = (db, values, ctx)=>{
 export const addRec = (db, values, ctx)=>{
     const _rec = createRec(db, values);
     const res = _rec.colsInit().colsPrepare().colsFinish();
-    if (res.isDone) { afterAdd(db, _rec.current, ctx); }
+    if (res.isOk) { afterAdd(db, res, ctx); }
     return res;
 }
 
@@ -59,7 +59,7 @@ export const addOrSetRec = (db, values, ctx, isUpdate)=>{
     if (brother) { return getRecPriv(db, brother).valsPush(values, ctx, isUpdate); }
 
     const res = _rec.colsFinish();
-    if (res.isDone) { afterAdd(db, res.current, ctx); }
+    if (res.isOk) { afterAdd(db, res, ctx); }
     return res;
 }
 

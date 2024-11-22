@@ -6,7 +6,7 @@ import { afterReset } from "./afterReset";
 import { afterUpdate } from "./afterUpdate";
 
 
-export const runEvent = (handlers, childs, state, event, rec, ctx)=>{
+export const runEvent = (handlers, childs, state, event, res, ctx)=>{
     if (state === "init") { return; }
 
     if (childs.size) {
@@ -14,20 +14,20 @@ export const runEvent = (handlers, childs, state, event, rec, ctx)=>{
             for (const child of childs) { afterReset(child, ctx); }
         }
         else if (event === "add") {
-            for (const child of childs) { afterAdd(child, rec, ctx); }
+            for (const child of childs) { afterAdd(child, res, ctx); }
         }
         else if (event === "remove") {
-            for (const child of childs) { afterRemove(child, rec, ctx); }
+            for (const child of childs) { afterRemove(child, res, ctx); }
         }
         else if (event === "update") {
-            for (const child of childs) { afterUpdate(child, rec, ctx); }
+            for (const child of childs) { afterUpdate(child, res, ctx); }
         }
     }
 
     if (handlers?.length) {
         for (let i = handlers.length - 1; i >= 0; i--) {
-            try { if (handlers[i]) { handlers[i](event, rec, ctx); } }
-            catch(err) { console.error(err); }
+            try { if (handlers[i]) { handlers[i](event, res, ctx); } }
+            catch(err) { console.error(err); } //TODO better fail handler
         }
     }
 

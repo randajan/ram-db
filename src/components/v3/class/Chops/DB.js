@@ -55,9 +55,9 @@ export class DB extends Chop {
             }
         });
 
-        this.on((event, rec, ctx)=>{
-            if (!rec) { return; }
-            const _rec = getRecPriv(this, rec);
+        this.on((event, res, ctx)=>{
+            if (!res) { return; }
+            const _rec = getRecPriv(this, res.current);
             const { _ent } = _rec.values;
 
             if (_ent == "_ents") {

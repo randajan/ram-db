@@ -17,9 +17,9 @@ beam.get().then(records=>{
         }
     });
     
-    db.on((event, rec, ctx)=>{
-        if (rec) {
-            console.log(event);
+    db.on((event, res, ctx)=>{
+        if (res) {
+            //console.log(event);
             //beam.set(db.exportAll());
         }
     });

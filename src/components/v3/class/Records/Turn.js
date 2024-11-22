@@ -1,7 +1,7 @@
 import { solids } from "@randajan/props";
-import { toRefId } from "../../../uni/formats";
 import { getColsPriv } from "./_columns";
 import { Major, Minor, toFail } from "../Exceptions";
+import { ResultTurn } from "./Result";
 
 
 export class Turn {
@@ -12,37 +12,24 @@ export class Turn {
 
     constructor(_rec, input, isUpdate=false) {
 
+        this._rec = _rec;
+        this.result = new ResultTurn(_rec);
+        
         solids(this, {
-            _rec,
             isUpdate,
             input,
             output:{},
             pendings:new Set(),
-            fails:[],
-            changed:new Set()
         });
 
-        this.isDone = true;
         this.isPending = false;
-        this.isChanged = false;
 
-        try { this._prepare(); } catch(err) { this.addFail(toFail(err)); }
+        try { this._prepare(); } catch(err) { result.addFail(toFail(err)); }
 
-    }
-
-    addFail(fail, nonMinorThrow) {
-        const { _rec, fails } = this;
-        const { values } = _rec;
-        fail.setRow(values.id).setEnt(values._ent);
-        if (fail.severity !== "minor") {
-            if (nonMinorThrow) { throw fail; }
-            else { this.isDone = false; }
-        }
-        fails.push(fail);
     }
 
     _prepare() {
-        const { _rec } = this;
+        const { _rec, result } = this;
         const { db, values, state } = _rec;
 
         if (!values._ent) { throw Major.fail("is required").setCol("_ent"); }
@@ -52,7 +39,7 @@ export class Turn {
 
         for (const _col of _cols) {
             try { this._prepareCol(_col); } catch(err) {
-                this.addFail(toFail(err).setCol(_col.values.name));
+                result.addFail(toFail(err).setCol(_col.values.name));
             }
         }
 
@@ -84,21 +71,18 @@ export class Turn {
     }
 
     execute() {
-        const { _rec, pendings, changed } = this;
+        const { _rec, pendings, result } = this;
 
         if (this.isPending) {
             for (const _col of pendings) { this.pull(_col); }
         }
 
-        if (this.isChanged && this.isDone) { return this.output; }
-
-        this.isChanged = _rec.state === "pending";
-        changed.clear();
-        return _rec.values;
+        return (result.isOk && result.isReal) ? this.output : _rec.values;
     }
 
     pull(_col) {
-        const { _rec, pendings, output, input, changed } = this;
+        const { _rec, pendings, output, input, result } = this;
+        const { state, current, before } = _rec;
         const { name, omitChange } = _col.values;
         
         if (pendings.has(_col)) {
@@ -108,34 +92,29 @@ export class Turn {
             pendings.delete(_col);
 
             try {
-                setter(_rec.current, output, input[name], _rec.state === "ready" ? _rec.before : undefined);
+                setter(current, output, input[name], state === "ready" ? before : undefined);
             } catch(err) {
-                this.addFail(toFail(err).setCol(name));
+                result.addFail(toFail(err).setCol(name));
             }
             
             //detect changes
             if (output[name] !== _rec.values[name]) {
-                changed.add(name);
-                this.isChanged = this.isChanged || !omitChange;
+                result.addChange(name, !omitChange);
             }
-            
+
         }
 
         return output[name];
     }
 
     detach() {
-        const { _rec, isDone, changed, fails } = this;
-        const { current } = _rec;
+        const { _rec, result } = this;
         
+        delete this._rec;
+        delete this.result;
         delete _rec.turn;
 
-        return solids({}, {
-            isDone,
-            current,
-            changed,
-            fails
-        })
+        return result;
     }
 
 }
