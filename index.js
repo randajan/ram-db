@@ -12,7 +12,7 @@ slib(
         minify: false,
         lib: {
             external: ["chalk"],
-            entries: ["index.js", "async.js", "api/odata.js"]
+            entries: ["index.js", "async.js", "api/odata.js", "v3/index.js"]
         },
         demo:{
             dir:isServer?"demo/backend":"demo/frontend",

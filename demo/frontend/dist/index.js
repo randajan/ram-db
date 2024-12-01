@@ -4105,24 +4105,24 @@
     socket2.on(_bifrostEvent, listener);
     return (_) => socket2.off(_bifrostEvent, listener);
   };
-  var unregisterExe = (list2, exe) => {
-    const x = list2.indexOf(exe);
+  var unregisterExe = (list, exe) => {
+    const x = list.indexOf(exe);
     if (x < 0) {
       return false;
     }
-    list2.splice(x, 1);
+    list.splice(x, 1);
     return true;
   };
-  var registerExe = (list2, exe) => {
-    list2.unshift(exe);
-    return (_) => unregisterExe(list2, exe);
+  var registerExe = (list, exe) => {
+    list.unshift(exe);
+    return (_) => unregisterExe(list, exe);
   };
-  var mapList = async (map2, list2, ...args) => {
-    for (let i = list2.length - 1; i >= 0; i--) {
+  var mapList = async (map, list, ...args) => {
+    for (let i = list.length - 1; i >= 0; i--) {
       try {
-        const res = await list2[i](...args);
-        if (map2 && typeof res === "function") {
-          map2.push(res);
+        const res = await list[i](...args);
+        if (map && typeof res === "function") {
+          map.push(res);
         }
       } catch (err) {
         console.warn(err);
@@ -4171,14 +4171,14 @@
       return;
     }
     return (state, args) => {
-      const { action, actionArguments } = state || {};
-      if (!action) {
+      const { action: action2, actionArguments } = state || {};
+      if (!action2) {
         throw Error(msg(".Beam", `undefined action`));
       }
-      if (!reactions[action]) {
-        throw Error(msg(".Beam", `unknown action '${action}'`));
+      if (!reactions[action2]) {
+        throw Error(msg(".Beam", `unknown action '${action2}'`));
       }
-      return reactions[action](...actionArguments || [], ...args);
+      return reactions[action2](...actionArguments || [], ...args);
     };
   };
   var formatOpt = (channel, opt, isMultiState) => {
@@ -4243,7 +4243,7 @@
       const propagate = (state, args) => {
         mapList(void 0, _p.watchers, state, ...args);
       };
-      const set = async (state, args) => {
+      const set2 = async (state, args) => {
         let local;
         try {
           if (react) {
@@ -4263,20 +4263,20 @@
         if (ac && ac != "remote") {
           throw Error(msg(".Beam", "doesn't allow remote changes", { channel }));
         }
-        return set(state, args);
+        return set2(state, args);
       };
       const push = async (state, args) => {
         if (ac && ac != "local") {
           throw Error(msg(".Beam", "doesn't allow local changes", { channel }));
         }
         if (!pushRaw) {
-          return set(state, args);
+          return set2(state, args);
         }
         const remote = await pushRaw(state, ...args);
-        const local = await set(stateExtract(remoteStateProp, remote), args);
+        const local = await set2(stateExtract(remoteStateProp, remote), args);
         return stateAttach(remoteStateProp, remote, stateExtract(localStateProp, local));
       };
-      const pull = !pullRaw ? async (args) => propagate(await get(...args), args) : async (args) => set(await pullRaw(...args), args);
+      const pull = !pullRaw ? async (args) => propagate(await get(...args), args) : async (args) => set2(await pullRaw(...args), args);
       const processWithStatus = async (status, pending) => {
         let state;
         _p.status = status;
@@ -4354,9 +4354,9 @@
     }
     applyActions(setMethod, target = {}) {
       const { actions } = _privates.get(this);
-      for (let action of actions) {
-        const act = (...a) => setMethod({ action, actionArguments: a });
-        Object.defineProperty(target, action, { value: act });
+      for (let action2 of actions) {
+        const act = (...a) => setMethod({ action: action2, actionArguments: a });
+        Object.defineProperty(target, action2, { value: act });
       }
       return target;
     }
@@ -4408,17 +4408,17 @@
         push: (state) => {
           return this.tx(channel, { isSet: true, state });
         },
-        register: (beam2, set) => {
-          this.rx(channel, (socket2, state) => set(state));
+        register: (beam2, set2) => {
+          this.rx(channel, (socket2, state) => set2(state));
         }
       }, opt);
     }
   };
 
-  // dist/index.js
+  // dist/v3/index.js
   init_define_slib_info();
 
-  // dist/chunk-ANX6F3ON.js
+  // dist/chunk-SG7V4B56.js
   init_define_slib_info();
 
   // node_modules/@randajan/jet-core/dist/index.js
@@ -4464,8 +4464,8 @@
   };
   var getDefByName = (name) => byName[name];
   var getDefByProto = (prototype) => {
-    const list2 = byPrototype.get(prototype);
-    return list2 ? list2[0] : void 0;
+    const list = byPrototype.get(prototype);
+    return list ? list[0] : void 0;
   };
   var getByInst = (any, def, withDef = true) => {
     if (!def.is || def.is(any)) {
@@ -4473,14 +4473,14 @@
     }
   };
   var findByProto = (any, proto2, withDef = true) => {
-    const list2 = byPrototype.get(proto2);
-    if (!list2) {
+    const list = byPrototype.get(proto2);
+    if (!list) {
       return;
     }
-    if (list2.length === 1) {
-      return getByInst(any, list2[0], withDef);
+    if (list.length === 1) {
+      return getByInst(any, list[0], withDef);
     }
-    for (const def of list2) {
+    for (const def of list) {
       const r = getByInst(any, def, withDef);
       if (r) {
         return r;
@@ -4505,9 +4505,9 @@
   var register = (def) => {
     byName[def.name] = def;
     Object.defineProperty(constructorByName, def.name, { enumerable: true, value: def.constructor });
-    const list2 = byPrototype.get(def.prototype);
-    if (list2) {
-      list2.unshift(def);
+    const list = byPrototype.get(def.prototype);
+    if (list) {
+      list.unshift(def);
     } else {
       byPrototype.set(def.prototype, [def]);
     }
@@ -4687,7 +4687,7 @@
     if (!constructor) {
       throwError("constructor missing", name);
     }
-    let { create, is: is2, isFull: isFull2, copy: copy2, rnd, keys, vals, entries, get, set, rem, to: to22, extend: extend2 } = options;
+    let { create, is: is2, isFull: isFull2, copy: copy2, rnd, keys, vals, entries, get, set: set2, rem, to: to22, extend: extend2 } = options;
     const unknownOptions = Object.keys(options).filter((opt) => !accepts.includes(opt));
     if (unknownOptions.length) {
       throwWarn(`unknown options appeared at definition. '${unknownOptions.join("', '")}'`, name);
@@ -4703,10 +4703,10 @@
     isFull2 = isFull2 || ((any) => isFull(any, vals));
     if (entries) {
       get = get || ((x, k) => x[k]);
-      set = set || ((x, k, v) => x[k] = v);
+      set2 = set2 || ((x, k, v) => x[k] = v);
       rem = rem || ((x, k) => delete x[k]);
     }
-    const def = { name, constructor, prototype, is: is2, create, isFull: isFull2, copy: copy2, rnd, keys, vals, entries, get, set, rem, to: {} };
+    const def = { name, constructor, prototype, is: is2, create, isFull: isFull2, copy: copy2, rnd, keys, vals, entries, get, set: set2, rem, to: {} };
     register(def);
     defineTo(name, to22);
     if (extend2 !== false) {
@@ -4731,7 +4731,7 @@
           vals,
           entries,
           get,
-          set,
+          set: set2,
           rem,
           getRND: (any, min, max, sqr) => getRND(vals(any), min, max, sqr)
         }, true);
@@ -4773,30 +4773,30 @@
     }
   );
   var safe = new Plex_default(
-    (obj, priv, name, set, get, enumerable22 = true) => {
+    (obj, priv, name, set2, get, enumerable22 = true) => {
       return Object.defineProperty(obj, name, {
-        set: set ? (v) => priv[name] = set(v, priv[name], name) : void 0,
+        set: set2 ? (v) => priv[name] = set2(v, priv[name], name) : void 0,
         get: get ? (_) => get(priv[name], name) : (_) => priv[name],
         enumerable: enumerable22
       });
     },
     {
       all: (obj, priv, namedSetsAndGets, enumerable22 = true) => {
-        for (const [name, { set, get }] of Object.entries(namedSetsAndGets)) {
-          safe(obj, priv, name, set, get, enumerable22);
+        for (const [name, { set: set2, get }] of Object.entries(namedSetsAndGets)) {
+          safe(obj, priv, name, set2, get, enumerable22);
         }
         return obj;
       }
     }
   );
   var cached = new Plex_default(
-    (obj, priv, name, set, enumerable22 = true) => {
-      return safe(obj, priv, name, null, (v) => v != null ? v : priv[name] = set(name), enumerable22);
+    (obj, priv, name, set2, enumerable22 = true) => {
+      return safe(obj, priv, name, null, (v) => v != null ? v : priv[name] = set2(name), enumerable22);
     },
     {
       all: (obj, priv, namedSets, enumerable22 = true) => {
-        for (const [name, set] of Object.entries(namedSets)) {
-          cached(obj, priv, name, set, enumerable22);
+        for (const [name, set2] of Object.entries(namedSets)) {
+          cached(obj, priv, name, set2, enumerable22);
         }
         return obj;
       }
@@ -5355,7 +5355,7 @@
     set: (x, k, v) => x.set(k, v),
     rem: (x, k) => x.delete(k),
     to: {
-      Function: (map2) => (_) => map2
+      Function: (map) => (_) => map
     }
   });
   defs_default.define("NaN", Number, {
@@ -5428,11 +5428,11 @@
     set: (x, k, v) => x.add(v) ? v : void 0,
     rem: (x, k) => x.delete(k),
     to: {
-      "*": (set) => Array.from(set),
-      Function: (set) => (_) => set,
-      Boolean: (set) => Set.jet.isFull(set),
-      Object: (set) => defs_default.merge(set),
-      Promise: async (set) => set
+      "*": (set2) => Array.from(set2),
+      Function: (set2) => (_) => set2,
+      Boolean: (set2) => Set.jet.isFull(set2),
+      Object: (set2) => defs_default.merge(set2),
+      Promise: async (set2) => set2
     }
   });
   var hidePats = {
@@ -5604,27 +5604,12 @@
     set: (x, k, v) => x.set(k, v),
     rem: (x, k) => x.delete(k),
     to: {
-      Function: (map2) => (_) => map2
+      Function: (map) => (_) => map
     }
   });
   var src_default = defs_default;
 
-  // dist/chunk-ANX6F3ON.js
-  var breachSelector = (selector, onOne, onMany) => {
-    let alias, path;
-    const isArray = Array.isArray(selector);
-    if (!isArray) {
-      [path, selector] = String.jet.bite(selector, ".");
-    }
-    if (path) {
-      [alias, path] = String.jet.bite(path, ":");
-    } else if (!isArray && !selector.includes(",")) {
-      [alias, selector] = String.jet.bite(selector, ":");
-    } else {
-      return onMany(isArray ? selector : selector.split(","));
-    }
-    return onOne(alias, path, selector);
-  };
+  // dist/chunk-SG7V4B56.js
   var { solid: solid2, cached: cached2 } = src_default.prop;
   var vault = /* @__PURE__ */ new WeakMap();
   var eventsWhen = ["before", "after"];
@@ -5636,278 +5621,58 @@
       ...eventsWhen.map((w) => ["change", "save"].map((c) => [w, c, w + String.jet.capitalize(c)]))
     )
   });
-  var formatKey = (key, def) => key != null ? String(key) : def;
-  var numberPositive = (num, def = 0) => num == null ? def : Math.max(0, Number.jet.to(num));
-  var functionOrNull = (val) => val == null ? void 0 : Function.jet.to(val);
   var fcePass = (v) => v;
   var fceTrue = (_) => true;
-  var { solid: solid22, cached: cached22, virtual: virtual2 } = src_default.prop;
 
-  // node_modules/@randajan/jet-core/dist/each/eachSync.js
+  // dist/chunk-T2T6Q22Z.js
   init_define_slib_info();
-
-  // node_modules/@randajan/jet-core/dist/chunk-VW6NT76J.js
-  init_define_slib_info();
-  var enumerable4 = true;
-  var initContext = (value2, { root, stopable, init }) => {
-    let path, def, brk, onStop;
-    const ctx = Object.defineProperties({}, {
-      isRoot: { enumerable: enumerable4, value: true },
-      root: { get: (_) => ctx },
-      value: { enumerable: enumerable4, value: value2 },
-      depth: { enumerable: enumerable4, value: !root ? 0 : root.length },
-      pending: { enumerable: enumerable4, get: (_) => !brk },
-      path: { enumerable: enumerable4, get: (_) => path != null ? path : path = src_default.dot.toString(root) },
-      fullpath: { enumerable: enumerable4, get: (_) => ctx.path },
-      def: { enumerable: enumerable4, get: (_) => def || (def = getDefByInst(value2)) }
-    });
-    ctx.result = init;
-    return !stopable ? ctx : Object.defineProperties(ctx, {
-      stop: { value: (_) => {
-        if (brk) {
-          return false;
-        }
-        brk = true;
-        if (onStop) {
-          for (const f of onStop) {
-            f(ctx);
-          }
-        }
-        return true;
-      } },
-      onStop: { value: (cb) => {
-        if (!onStop) {
-          onStop = [cb];
-        } else {
-          onStop.push(cb);
-        }
-      } }
-    });
-  };
-  var createContext = (parent, key, value2) => {
-    let def, fullpath;
-    const ctx = Object.defineProperties({}, {
-      isRoot: { enumerable: enumerable4, value: false },
-      root: { value: parent.root },
-      parent: { value: parent },
-      key: { enumerable: enumerable4, get: (_) => key, set: (k) => {
-        key = k;
-        fullpath = void 0;
-      } },
-      value: { enumerable: enumerable4, get: (_) => value2, set: (v) => {
-        value2 = v;
-        def = void 0;
-      } },
-      depth: { enumerable: enumerable4, value: parent.depth + 1 },
-      pending: { enumerable: enumerable4, get: (_) => parent.pending },
-      stop: { enumerable: enumerable4, value: parent.stop },
-      path: { enumerable: enumerable4, get: (_) => parent.fullpath },
-      fullpath: { enumerable: enumerable4, get: (_) => fullpath || (fullpath = src_default.dot.glue(ctx.path, src_default.dot.escape(key))) },
-      def: { enumerable: enumerable4, get: (_) => def || (def = getDefByInst(value2)) },
-      update: { enumerable: enumerable4, value: (...a) => {
-        if (a.length > 0) {
-          ctx.value = a[0];
-        }
-        if (a.length > 1) {
-          ctx.key = a[1];
-        }
-        return ctx;
-      } }
-    });
-    return ctx;
-  };
-  var fight2 = (a, b) => {
-    if (a == b) {
-      return;
-    }
-    if (a == null) {
-      return true;
-    } else if (b == null) {
-      return false;
-    }
-    if (typeof a === "string" || typeof b === "string") {
-      return a === String.jet.fight(a, b);
-    }
-    if (isNaN(a)) {
-      return true;
-    } else if (isNaN(b)) {
-      return false;
-    }
-    return a < b;
-  };
-  var formatOrderBy = (orderBy) => {
-    if (!Array.isArray(orderBy)) {
-      return [[orderBy, true]];
-    }
-    const obs = [];
-    for (let i = 0; i < orderBy.length; i++) {
-      const ob = orderBy[i];
-      if (Array.isArray(ob)) {
-        obs.push(ob);
-        continue;
-      }
-      if (!src_default.isRunnable(ob)) {
-        continue;
-      }
-      const asc = typeof orderBy[i + 1] === "boolean" ? orderBy[i = i + 1] : true;
-      obs.push([ob, asc]);
-    }
-    return obs;
-  };
-
-  // node_modules/@randajan/jet-core/dist/each/eachSync.js
-  var _filter = (entries, fce) => {
-    const res = [];
-    entries.forEach((en) => {
-      if (fce(en[1], en[0])) {
-        res.push(en);
-      }
-    });
-    return;
-  };
-  var _refine = (entries, { filter: filter2, orderBy }) => {
-    if (!filter2 && !orderBy) {
-      return entries;
-    }
-    entries = filter2 ? _filter(entries, filter2) : [...entries];
-    if (!orderBy) {
-      return entries;
-    }
-    const obs = formatOrderBy(orderBy);
-    const expand = entries.map(([key, value2]) => [key, value2, obs.map((ob) => ob[0](value2, key))]);
-    return expand.sort(([aK, aV, aO], [bK, bV, bO]) => {
-      for (const k in obs) {
-        const dir = fight2(aO[k], bO[k]);
-        if (dir == null) {
-          continue;
-        }
-        const asc = obs[k][1];
-        return (asc == null ? !dir : dir != asc) * 2 - 1;
-      }
-      return 0;
-    });
-  };
-  var _eachSerial = (parent, exe, options) => {
-    const entries = parent.def.entries(parent.value);
-    const refined = !parent.isRoot ? entries : _refine(entries, options);
-    for (let [key, val] of refined) {
-      const ctx = createContext(parent, key, val);
-      if (ctx.pending) {
-        exe(ctx);
-      }
-      if (!ctx.pending) {
-        break;
-      }
-    }
-    ;
-  };
-  var each2 = (any, fce, options = {}) => {
-    if (!src_default.isRunnable(fce)) {
-      throw new Error(`fce expect an Function`);
-    }
-    const root = initContext(any, options);
-    const deep = options.deep;
-    const dprun = src_default.isRunnable(deep);
-    const _each = _eachSerial;
-    const exe = (ctx, skipDeep = false) => {
-      const de = ctx.def?.entries;
-      if (!de || !deep && !ctx.isRoot) {
-        fce(ctx.value, ctx);
-      } else if (dprun && !skipDeep) {
-        deep(ctx.value, ctx, (...a) => {
-          exe(ctx.update(...a), true);
-        });
-      } else {
-        _each(ctx, exe, options);
-      }
-      return ctx.result;
-    };
-    return exe(root, true);
-  };
-  var find = (any, fce, options = {}) => {
-    options.stopable = true;
-    return each2(any, (val, ctx) => {
-      val = fce(val, ctx);
-      if (val !== void 0 && ctx.pending) {
-        ctx.root.result = val;
-        ctx.stop();
-      }
-    }, options);
-  };
-  var list = (any, fce, options = {}) => {
-    if (!Array.isArray(options.init)) {
-      options.init = [];
-    }
-    return each2(any, (val, ctx) => {
-      val = fce(val, ctx);
-      if (val !== void 0 && ctx.pending) {
-        ctx.root.result.push(val);
-      }
-    }, options);
-  };
-  var map = (any, fce, options = {}) => {
-    delete options.init;
-    const set = (ctx, key, val) => {
-      if (!ctx) {
-        return;
-      }
-      if (!ctx.result) {
-        set(ctx.parent, ctx.key, ctx.result = ctx.def.create());
-      }
-      if (!options.strictArray && ctx.def.name === "Array") {
-        ctx.result.push(val);
-      } else {
-        ctx.def.set(ctx.result, key, val);
-      }
-    };
-    return each2(any, (val, ctx) => {
-      val = fce(val, ctx);
-      if (val !== void 0 && ctx.pending) {
-        set(ctx.parent, ctx.key, val);
-      }
-    }, options);
+  var __defProp3 = Object.defineProperty;
+  var __defNormalProp = (obj, key, value2) => key in obj ? __defProp3(obj, key, { enumerable: true, configurable: true, writable: true, value: value2 }) : obj[key] = value2;
+  var __publicField = (obj, key, value2) => {
+    __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value2);
+    return value2;
   };
 
   // node_modules/@randajan/props/dist/index.js
   init_define_slib_info();
-  var solid3 = (obj, name, value2, enumerable5 = true, configurable = false) => {
-    return Object.defineProperty(obj, name, { enumerable: enumerable5, value: value2, configurable });
+  var solid3 = (obj, name, value2, enumerable4 = true, configurable = false) => {
+    return Object.defineProperty(obj, name, { enumerable: enumerable4, value: value2, configurable });
   };
-  var solids = (obj, namedValues, enumerable5 = true, configurable = false) => {
+  var solids = (obj, namedValues, enumerable4 = true, configurable = false) => {
     for (const name in namedValues) {
       const value2 = namedValues[name];
-      solid3(obj, name, value2, enumerable5, configurable);
+      solid3(obj, name, value2, enumerable4, configurable);
     }
     return obj;
   };
-  var virtual3 = (obj, name, get, enumerable5 = true, configurable = false) => {
-    return Object.defineProperty(obj, name, { enumerable: enumerable5, get, configurable });
+  var virtual2 = (obj, name, get, enumerable4 = true, configurable = false) => {
+    return Object.defineProperty(obj, name, { enumerable: enumerable4, get, configurable });
   };
-  var virtuals = (obj, namedGets, enumerable5 = true, configurable = false) => {
+  var virtuals = (obj, namedGets, enumerable4 = true, configurable = false) => {
     for (const name in namedGets) {
       const get = namedGets[name];
-      virtual3(obj, name, get, enumerable5, configurable);
+      virtual2(obj, name, get, enumerable4, configurable);
     }
     return obj;
   };
-  var safe2 = (obj, priv, name, set, get, enumerable5 = true, configurable = false) => {
+  var safe2 = (obj, priv, name, set2, get, enumerable4 = true, configurable = false) => {
     return Object.defineProperty(obj, name, {
-      set: set ? (v) => priv[name] = set(v, priv[name], name) : void 0,
+      set: set2 ? (v) => priv[name] = set2(v, priv[name], name) : void 0,
       get: get ? (_) => get(priv[name], name) : (_) => priv[name],
-      enumerable: enumerable5,
+      enumerable: enumerable4,
       configurable
     });
   };
-  var cached3 = (obj, priv, name, reset, get, enumerable5 = true, configurable = false) => {
+  var cached3 = (obj, priv, name, reset, get, enumerable4 = true, configurable = false) => {
     const setAndGet = (v) => {
       if (!priv.hasOwnProperty(name)) {
         v = priv[name] = reset(name);
       }
       return get ? get(v, name) : v;
     };
-    return safe2(obj, priv, name, null, setAndGet, enumerable5, configurable);
+    return safe2(obj, priv, name, null, setAndGet, enumerable4, configurable);
   };
-  var cacheds = (obj, priv, namedResetsAndGets, enumerable5 = true) => {
+  var cacheds = (obj, priv, namedResetsAndGets, enumerable4 = true) => {
     for (const name in namedResetsAndGets) {
       const resetGet = namedResetsAndGets[name];
       let reset, get;
@@ -5917,7 +5682,7 @@
         reset = resetGet.reset || resetGet[0];
         get = resetGet.get || resetGet[1];
       }
-      cached3(obj, priv, name, reset, get, enumerable5);
+      cached3(obj, priv, name, reset, get, enumerable4);
     }
     return obj;
   };
@@ -6046,906 +5811,8 @@
     return type !== "string" || any.startsWith("'") ? fromAny(any, type) : fromStr(any);
   };
 
-  // dist/index.js
+  // dist/v3/index.js
   var import_regex_parser = __toESM(require_lib(), 1);
-  var remap = (arr, onItem, byKey = false) => {
-    const rk = byKey ? {} : null;
-    const rl = arr.map((item) => onItem(item, rk));
-    return rk || rl;
-  };
-  var evaluate = (base, selector, opt, to3, forceAlias) => {
-    if (!base?.get) {
-      return;
-    }
-    const { byKey, throwError: throwError2 } = opt;
-    return breachSelector(
-      selector,
-      (alias, path, selector2) => {
-        let res;
-        if (!path) {
-          res = base.get(selector2, throwError2 !== false);
-        } else if (path !== "*") {
-          const ref = base.get(path, throwError2 !== false);
-          if (!ref?.eval) {
-            return;
-          }
-          res = ref.eval(selector2, opt);
-        } else {
-          if (!base.getList) {
-            return;
-          }
-          const arr = base.getList();
-          return remap(arr, (item, rk) => {
-            const r = item?.eval(selector2, opt);
-            return rk ? rk[item] = r : r;
-          }, byKey);
-        }
-        if (!byKey) {
-          return res;
-        }
-        const key = forceAlias || alias || path || selector2;
-        if (!to3) {
-          return { [key]: res };
-        }
-        if (to3.hasOwnProperty(key)) {
-          throw Error(`selector collision at ${key}, please use alias`);
-        }
-        to3[key] = res;
-        return to3;
-      },
-      (arr) => remap(arr, (item, rk) => evaluate(base, item, opt, to3 || rk), byKey)
-    );
-  };
-  var { solid: solid4, virtual: virtual4 } = src_default.prop;
-  var Bundle = class {
-    constructor(parentName, name, childName, getContext, def) {
-      name = formatKey(name, "Bundle");
-      solid4.all(this, {
-        name,
-        fullName: parentName && name ? parentName + "." + name : parentName ? parentName : name ? name : "",
-        childName: formatKey(childName, "key"),
-        data: {},
-        handlers: {},
-        getContext: src_default.isRunnable(getContext) ? getContext : (_2) => null,
-        def: formatKey(def, "undefined")
-      });
-      if (!this.name) {
-        throw Error(this.msg("critical error - missing name"));
-      }
-    }
-    msg(text, key, context) {
-      const { fullName, childName, def } = this;
-      key = formatKey(key);
-      context = formatKey(context, def);
-      let msg2 = fullName || "";
-      if (context !== def) {
-        msg2 += ` context('${context}')`;
-      }
-      if (key) {
-        msg2 += ` ${childName}('${key}')`;
-      }
-      if (text) {
-        msg2 += " " + text;
-      }
-      return msg2.trim();
-    }
-    getData(context, throwError2 = true, autoCreate = false) {
-      const { data, def } = this;
-      context = formatKey(context, def);
-      if (data[context]) {
-        return data[context];
-      }
-      if (autoCreate || context === def) {
-        return data[context] = { context, index: {}, list: [] };
-      }
-      if (throwError2) {
-        throw Error(this.msg(`not found`, void 0, context));
-      }
-      return { context, index: {}, list: [] };
-    }
-    validateKey(key, action = "validateKey", throwError2 = true) {
-      if (key = key = formatKey(key)) {
-        return key;
-      }
-      if (throwError2) {
-        throw Error(this.msg(`${action}(...) failed - key undefined`));
-      }
-    }
-    on(event, callback, opt = {}) {
-      if (!src_default.isRunnable(callback)) {
-        throw Error(this.msg(`on(...) require callback`));
-      }
-      const { once, bufferMs, maxQueueMs, maxQueueSize } = opt;
-      const { handlers } = this;
-      const list2 = handlers[event] || (handlers[event] = []);
-      let remove;
-      let cb = once ? (...args) => {
-        callback(...args);
-        remove();
-      } : callback;
-      cb = bufferMs ? src_default.buffer(cb, bufferMs, maxQueueMs, maxQueueSize) : cb;
-      if (event.startsWith("before")) {
-        list2.push(cb);
-      } else {
-        list2.unshift(cb);
-      }
-      return remove = (_2) => {
-        const id = list2.indexOf(cb);
-        if (id >= 0) {
-          list2.splice(id, 1);
-        }
-        return callback;
-      };
-    }
-    run(event, args = [], opt = {}) {
-      const throwError2 = opt.throwError !== false;
-      const handlers = this.handlers[event];
-      if (!handlers?.length) {
-        return true;
-      }
-      const isBefore = event.startsWith("before");
-      for (let i = handlers.length - 1; i >= 0; i--) {
-        const cb = handlers[i];
-        if (!cb) {
-          continue;
-        }
-        try {
-          cb(...args, opt);
-        } catch (err) {
-          if (isBefore && throwError2) {
-            throw err;
-          } else if (isBefore) {
-            return false;
-          } else if (throwError2) {
-            console.warn(this.msg(err?.message || "unknown error"), err?.stack);
-          }
-        }
-      }
-      return true;
-    }
-    reset(throwError2 = true) {
-      const opt = { throwError: throwError2 };
-      if (!this.run("beforeReset", [], opt)) {
-        return false;
-      }
-      for (let i in this.data) {
-        delete this.data[i];
-      }
-      return this.run("afterReset", [], opt);
-    }
-    _set(context, key, child, opt = {}, afterEffect) {
-      const { context: ctx, index, list: list2 } = this.getData(context, opt.throwError, true);
-      if (index.hasOwnProperty(key)) {
-        if (opt.throwError !== false) {
-          throw Error(this.msg(`set(...) failed - duplicate`, key, ctx));
-        }
-        return false;
-      }
-      if (!this.run("beforeSet", [child, ctx], opt)) {
-        return false;
-      }
-      list2.push(index[key] = child);
-      if (afterEffect) {
-        afterEffect(child, ctx, opt);
-      }
-      return this.run("afterSet", [child, ctx], opt);
-    }
-    set(child, opt = {}, afterEffect) {
-      const context = this.getContext(child, true);
-      const key = this.validateKey(child.getKey(true), "set", opt.throwError);
-      if (!Array.isArray(context)) {
-        return this._set(context, key, child, opt, afterEffect);
-      }
-      let ok = true;
-      for (const ctx of context) {
-        ok = this._set(ctx, key, child, opt, afterEffect) && ok;
-      }
-      return ok;
-    }
-    _remove(context, key, child, opt = {}, afterEffect) {
-      const { context: ctx, index, list: list2 } = this.getData(context, opt.throwError);
-      const id = list2.indexOf(child);
-      if (id < 0) {
-        if (opt.throwError !== false) {
-          throw Error(this.msg(`remove(...) failed - missing`, key, ctx));
-        }
-        return false;
-      }
-      if (!this.run("beforeRemove", [child, ctx], opt)) {
-        return false;
-      }
-      if (list2.length === 1) {
-        delete this.data[ctx];
-      } else {
-        list2.splice(id, 1);
-        delete index[key];
-      }
-      if (afterEffect) {
-        afterEffect(child, ctx, opt);
-      }
-      return this.run("afterRemove", [child, ctx], opt);
-    }
-    remove(child, opt = {}, afterEffect) {
-      const context = this.getContext(child, false);
-      const key = this.validateKey(child.getKey(false), "remove", opt.throwError);
-      if (!Array.isArray(context)) {
-        return this._remove(context, key, child, opt, afterEffect);
-      }
-      let ok = true;
-      for (const ctx of context) {
-        ok = this._remove(ctx, key, child, opt, afterEffect) && ok;
-      }
-      return ok;
-    }
-    exist(key, context, throwError2 = false) {
-      const { context: ctx, index } = this.getData(context, throwError2);
-      key = this.validateKey(key, "exist", throwError2);
-      if (index.hasOwnProperty(key)) {
-        return true;
-      }
-      if (throwError2) {
-        throw Error(this.msg(`exist failed - not exist`, key, ctx));
-      }
-      return false;
-    }
-    get(key, context, throwError2 = true) {
-      const { context: ctx, index } = this.getData(context, throwError2);
-      key = this.validateKey(key, "get", throwError2);
-      const child = index[key];
-      if (child) {
-        return child;
-      }
-      if (throwError2) {
-        throw Error(this.msg(`get failed - not exist`, key, ctx));
-      }
-    }
-    map(callback, opt = {}) {
-      const { context, throwError: throwError2, filter: filter2, orderBy, stopable, byKey } = opt;
-      const { list: list2, index } = this.getData(context, throwError2);
-      const optPass = { filter: filter2, orderBy, stopable };
-      return byKey ? map(index, callback, optPass) : list(list2, callback, optPass);
-    }
-    find(checker, opt = {}) {
-      const { context, throwError: throwError2, filter: filter2, orderBy, stopable } = opt;
-      const { list: list2 } = this.getData(context, throwError2);
-      return find(list2, checker, { filter: filter2, orderBy, stopable });
-    }
-  };
-  var Transactions = class {
-    constructor(onError) {
-      this.ticks = 0;
-      this.state = "ready";
-      this.queue = [];
-      this.onError = src_default.isRunnable(onError) ? onError : () => {
-      };
-    }
-    execute(name, execution, opt = { stopOnError: false, throwError: true }) {
-      const exe = (last) => {
-        try {
-          last;
-        } catch (e) {
-        }
-        if (this.queue[0] === exe) {
-          return false;
-        } else {
-          this.queue.shift();
-        }
-        let isErr = this.state === "error";
-        let err = this.error;
-        if (!isErr) {
-          this.state = name;
-          try {
-            execution(this.ticks++);
-          } catch (e) {
-            isErr = true;
-            err = e;
-          }
-          this.state = isErr || opt.stopOnError === false ? "ready" : "error";
-          if (this.state === "error") {
-            this.onError(this.error = err);
-          }
-        }
-        if (isErr && opt.throwError !== false) {
-          throw err;
-        }
-        return !isErr;
-      };
-      return this.last = exe(this.last);
-    }
-    reset() {
-      this.state = "ready";
-      this.queue = [];
-    }
-  };
-  var { solid: solid23, virtual: virtual22 } = src_default.prop;
-  var Chop = class extends src_default.types.Plex {
-    constructor(name, config = {}) {
-      const { stream, loader: loader2, parent, childName, getContext, defaultContext, maxAge, maxAgeError, extra } = Object.jet.to(config);
-      super((...args) => this.get(...args));
-      const _p = {
-        isLoaded: false,
-        loader: loader2,
-        stream: src_default.isRunnable(stream) ? stream : (_2) => stream,
-        transactions: new Transactions((_2) => {
-          if (!this.maxAgeError) {
-            return;
-          }
-          clearTimeout(_p.intError);
-          _p.intError = setTimeout((_3) => this.reset(), this.maxAgeError);
-        }),
-        bundle: new Bundle(
-          parent?.name,
-          name,
-          childName,
-          getContext,
-          defaultContext
-        ),
-        subs: {}
-      };
-      vault.set(this, _p);
-      solid23.all(this, {
-        parent,
-        maxAge: Math.max(0, Number.jet.to(maxAge)),
-        maxAgeError: Math.max(0, Number.jet.to(maxAgeError)),
-        extra: solid23.all({}, Object.jet.to(extra))
-      }, false);
-      virtual22.all(this, {
-        state: (_2) => !_p.isLoaded && _p.transactions.state === "ready" ? "concept" : _p.transactions.state,
-        name: (_2) => _p.bundle.name,
-        fullName: (_2) => _p.bundle.fullName,
-        childName: (_2) => _p.bundle.childName,
-        isLoading: (_2) => _p.transactions.state === "loading"
-      });
-      _p.bundle.on("afterReset", (_2) => {
-        clearTimeout(_p.intError);
-        clearTimeout(_p.intAge);
-        _p.isLoaded = false;
-        _p.transactions.reset();
-      });
-      _p.bundle.on("afterLoad", (_2) => {
-        if (this.maxAge) {
-          clearTimeout(_p.intAge);
-          _p.intAge = setTimeout((_3) => this.reset(), this.maxAge);
-        }
-      });
-    }
-    on(event, callback, opt = {}) {
-      return vault.get(this).bundle.on(event, callback, opt);
-    }
-    msg(text, key, context) {
-      return vault.get(this).bundle.msg(text, key, context);
-    }
-    exist(key, context, throwError2 = false) {
-      this.untilLoaded();
-      return vault.get(this).bundle.exist(key, context, throwError2);
-    }
-    get(key, context, throwError2 = true) {
-      this.untilLoaded();
-      return vault.get(this).bundle.get(key, context, throwError2);
-    }
-    eval(selector, opt = {}) {
-      return evaluate(this, selector, opt);
-    }
-    count(context, throwError2 = false) {
-      this.untilLoaded();
-      return vault.get(this).bundle.getData(context, throwError2).list.length;
-    }
-    getList(context, throwError2 = false) {
-      this.untilLoaded();
-      return [...vault.get(this).bundle.getData(context, throwError2).list];
-    }
-    getIndex(context, throwError2 = false) {
-      this.untilLoaded();
-      return { ...vault.get(this).bundle.getData(context, throwError2).index };
-    }
-    getContextList() {
-      this.untilLoaded();
-      return Object.keys(vault.get(this).bundle.data);
-    }
-    map(callback, opt = {}) {
-      this.untilLoaded();
-      return vault.get(this).bundle.map(callback, opt);
-    }
-    find(checker, opt = {}) {
-      this.untilLoaded();
-      return vault.get(this).bundle.find(checker, opt);
-    }
-    reset(throwError2 = true) {
-      return vault.get(this).bundle.reset(throwError2);
-    }
-    untilLoaded(throwError2 = true) {
-      const _p = vault.get(this);
-      if (_p.isLoaded) {
-        return true;
-      }
-      const { state, last } = _p.transactions;
-      if (state === "error") {
-        return throwError2 ? last : false;
-      }
-      if (state === "loading") {
-        return last;
-      }
-      return _p.transactions.execute("loading", (_2) => {
-        if (_p.isLoaded) {
-          return;
-        }
-        _p.bundle.run("beforeLoad", [this]);
-        const data = _p.stream(this);
-        _p.loader(this, _p.bundle, data);
-        _p.isLoaded = true;
-        _p.bundle.run("afterLoad", [this]);
-      }, { stopOnError: false });
-    }
-    withUntilLoaded(execute) {
-      return (...args) => {
-        this.untilLoaded();
-        return execute(...args);
-      };
-    }
-    addChop(name, config = {}) {
-      const subs = vault.get(this).subs;
-      const { useCache, throwError: throwError2, getContext, defaultContext, loader: loader2, extra } = config;
-      name = formatKey(name);
-      if (useCache !== false && subs[name]) {
-        if (throwError2 !== false) {
-          throw Error(this.msg(`chop '${name}' allready exist`));
-        }
-        return subs[name];
-      }
-      const sub = new Chop(name, {
-        parent: this,
-        childName: this.childName,
-        maxAge: 0,
-        maxAgeError: this.maxAgeError,
-        getContext,
-        defaultContext,
-        loader: (chop, bundle) => {
-          this.map((child) => bundle.set(child));
-          chop.on("afterReset", this.on("afterSet", (child) => bundle.set(child)), { once: true });
-          chop.on("afterReset", this.on("afterRemove", (child) => bundle.remove(child)), { once: true });
-          this.on("afterReset", (_2) => chop.reset(), { once: true });
-          if (loader2) {
-            loader2(chop, bundle);
-          }
-        },
-        extra
-      });
-      return useCache !== false ? subs[name] = sub : sub;
-    }
-    getChop(name, throwError2 = true) {
-      const subs = vault.get(this).subs;
-      if (subs[name]) {
-        return subs[name];
-      }
-      if (throwError2) {
-        throw Error(this.msg(`chop '${name}' doesn't exist`));
-      }
-    }
-  };
-  var { solid: solid32, virtual: virtual32 } = src_default.prop;
-  var Wrap = class extends src_default.types.Plex {
-    static is(any) {
-      return any instanceof Wrap;
-    }
-    static create(table, step) {
-      return new Wrap(table, step);
-    }
-    constructor(table, step) {
-      const { db, rows, cols } = table;
-      const get = (col, throwError2 = true) => step.get(col, throwError2);
-      super(get);
-      solid32.all(this, {
-        db,
-        table,
-        rows,
-        get,
-        getRaw: (col, throwError2 = true) => step.getRaw(col, throwError2),
-        eval: (selector, opt = {}) => step.eval(selector, opt),
-        getRaws: (filter2) => step.extract(true, filter2),
-        getVals: (filter2) => step.extract(false, filter2)
-      }, false);
-      virtual32.all(this, {
-        key: (_2) => step.key,
-        label: (_2) => step.label,
-        before: (_2) => step.before?.wrap,
-        isExist: (_2) => step.isExist,
-        isDirty: (_2) => step.isDirty,
-        isRemoved: (_2) => step.isRemoved,
-        raws: (_2) => ({ ...step.raws }),
-        vals: (_2) => cols.map((col) => step.pull(col), { byKey: true }),
-        changeList: (_2) => [...step.changeList],
-        changes: (_2) => ({ ...step.changes })
-      });
-    }
-    chopByRef(tableName, colName, filter2, cacheAs = true, morphSeparator = "$$") {
-      const table = this.db.get(tableName);
-      const chop = table.rows.chopByCol(colName, filter2, cacheAs, morphSeparator);
-      if (chop.extra.isRef) {
-        return chop;
-      }
-      throw Error(this.table.msg(`chopByRef table('${tableName}') column('${colName}') failed because column is not ref`));
-    }
-    refs(tableName, colName, filter2, cache2 = {}) {
-      const chop = cache2.current || (cache2.current = this.chopByRef(tableName, colName, filter2, false));
-      return chop.getList((chop.extra.isMorph ? this.table.name + chop.extra.morphSeparator : "") + this.key, false);
-    }
-    getKey() {
-      return this.key;
-    }
-    toJSON() {
-      return this.key || null;
-    }
-    toString() {
-      return this.key || "";
-    }
-  };
-  var { solid: solid42, virtual: virtual42 } = src_default.prop;
-  var Step = class {
-    static is(any) {
-      return any instanceof Step;
-    }
-    static create(table, before) {
-      return new Step(table, before);
-    }
-    constructor(table, before) {
-      this.key = before?.key;
-      let state = "ready";
-      solid42.all(this, {
-        db: table.db,
-        table,
-        wrap: Wrap.create(table, this),
-        lock: (_2) => state !== "ready" ? false : (state = "locked") && true,
-        unlock: (_2) => state !== "locked" ? false : (state = "ready") && true,
-        retire: (_2) => {
-          before = null;
-          state = "retired";
-        }
-      }, false);
-      virtual42.all(this, {
-        before: (_2) => before,
-        state: (_2) => state,
-        label: (_2) => this.pull(table.cols.label),
-        isExist: (_2) => !this.isRemoved && table.rows.exist(this.key),
-        isDirty: (_2) => !!this.changeList.length || this.key !== before?.key || !this.isRemoved !== !before?.isRemoved
-      });
-      this.reset();
-    }
-    getKey() {
-      return this.key;
-    }
-    pull(col) {
-      if (!col) {
-        return;
-      }
-      const { vals, raws, vStamp, vSolid, before, wrap } = this;
-      const { isVirtual, init, resetIf, formula, isReadonly: isReadonly2, separator } = col;
-      const cacheStamp = col.getCacheStamp();
-      if (vals.hasOwnProperty(col) && (!isVirtual || vStamp[col] === cacheStamp)) {
-        const cval = vals[col];
-        return separator && cval ? [...cval] : cval;
-      }
-      let raw = raws[col];
-      const self2 = (_2) => col.toVal(raw, wrap);
-      if (!vSolid[col]) {
-        vSolid[col] = !isVirtual;
-        if (formula) {
-          raw = formula(wrap);
-        } else {
-          const bew = before ? before.raws[col] : raw;
-          if (raw !== bew && isReadonly2 && isReadonly2(wrap, self2)) {
-            raw = bew;
-          }
-          if (!before ? init && raw == null : resetIf && resetIf(wrap, self2)) {
-            raw = init ? init(wrap) : void 0;
-          }
-        }
-      }
-      const val = self2();
-      if (cacheStamp) {
-        vals[col] = val;
-        vStamp[col] = cacheStamp;
-      }
-      if (!isVirtual || col.isPrimary) {
-        raws[col] = col.toRaw(val);
-      }
-      return val;
-    }
-    push(vals, force = true) {
-      if (this.state !== "ready") {
-        return false;
-      }
-      const { table: { rows: { isLoading }, cols }, raws, before } = this;
-      const reals = cols.virtuals.getList(false);
-      const changeList2 = this.changeList = [];
-      const changes = this.changes = {};
-      this.vals = {};
-      this.vStamp = {};
-      this.vSolid = {};
-      for (const col of reals) {
-        this.vSolid[col] = isLoading;
-        const raw = col.fetch(vals);
-        if (raw !== void 0) {
-          raws[col] = col.toRaw(raw);
-        } else if (force) {
-          delete raws[col];
-        }
-        if (isLoading) {
-          changeList2.push(col);
-          changes[col] = raws[col];
-        }
-      }
-      if (!isLoading) {
-        for (const col of reals) {
-          this.pull(col);
-          if (before && raws[col] !== before.raws[col]) {
-            changeList2.push(col);
-            changes[col] = raws[col];
-          }
-        }
-        ;
-      }
-      this.key = this.pull(cols.primary);
-      return !!changeList2.length;
-    }
-    get(col, throwError2 = true) {
-      const { table: { cols } } = this;
-      if (!Array.isArray(col)) {
-        return this.pull(cols.get(col, throwError2 !== false));
-      }
-      let row;
-      for (const c of col) {
-        if (c === col[0]) {
-          row = this.pull(cols.get(c, throwError2 !== false));
-        } else if (row?.get) {
-          row = row.get(c, throwError2);
-        } else {
-          return;
-        }
-      }
-      return row;
-    }
-    getRaw(col, throwError2 = true) {
-      const { table: { cols } } = this;
-      if (this.raws.hasOwnProperty(col)) {
-        return this.raws[col];
-      }
-      const c = cols(col, throwError2);
-      if (c && c.isVirtual) {
-        return c.toRaw(this.pull(c));
-      }
-    }
-    eval(selector, opt = {}) {
-      return evaluate(this, selector, opt);
-    }
-    extract(noVals, filter2) {
-      const { table: { cols } } = this;
-      return cols.map((c) => {
-        if (filter2 && !filter2(c)) {
-          return;
-        }
-        return !noVals ? this.pull(c) : !c.isVirtual ? this.raws[c] : c.toRaw(this.pull(c));
-      }, { byKey: true });
-    }
-    remove() {
-      if (this.state !== "ready") {
-        return false;
-      }
-      return this.isRemoved = true;
-    }
-    reset() {
-      if (this.state !== "ready") {
-        return false;
-      }
-      const { before } = this;
-      this.isRemoved = before?.isRemoved || false;
-      this.raws = before ? { ...before.raws } : {};
-      this.vals = before ? { ...before.vals } : {};
-      this.vStamp = before ? { ...before.vStamp } : {};
-      this.vSolid = before ? { ...before.vSolid } : {};
-      this.changeList = [];
-      this.changes = {};
-      return true;
-    }
-  };
-  var { solid: solid5, virtual: virtual5 } = src_default.prop;
-  var Row = class extends src_default.types.Plex {
-    static create(rows, onSave, iniStep) {
-      return new Row(rows, onSave, iniStep);
-    }
-    constructor(rows, onSave, iniStep) {
-      const { db, table } = rows;
-      const _p = {};
-      const get = (col, throwError2 = true) => _p.live.get(col, throwError2);
-      const push = (vals, force, opt = { autoSave: true, resetOnError: true, throwError: true, silentSave: false }) => {
-        return _p.live.push(vals, force) && (opt.autoSave === false || this.save(opt));
-      };
-      const markAsSaved = (_2) => {
-        _p.live = Step.create(table, _p.saved = _p.live);
-      };
-      super(get);
-      solid5.all(this, {
-        db,
-        table,
-        rows,
-        get,
-        getRaw: (col, throwError2 = true) => _p.live.getRaw(col, throwError2),
-        eval: (selector, opt = {}) => _p.live.eval(selector, opt),
-        set: (vals, opt = { autoSave: true, resetOnError: true, throwError: true }) => push(vals, true, opt),
-        update: (vals, opt = { autoSave: true, resetOnError: true, throwError: true }) => push(vals, false, opt),
-        reset: (_2) => !this.isDirty || _p.live.reset(),
-        remove: (opt = { autoSave: true, resetOnError: true, throwError: true }) => {
-          return _p.live.remove() && (opt.autoSave === false || this.save(opt));
-        },
-        save: (opt = { resetOnError: true, throwError: true, silentSave: false }) => {
-          if (!this.isDirty) {
-            return true;
-          }
-          const live = _p.live;
-          try {
-            live.lock();
-            onSave(this, { throwError: true, silentSave: opt.silentSave === true }, markAsSaved);
-            live.retire();
-            return true;
-          } catch (err) {
-            live.unlock();
-            if (opt.resetOnError !== false) {
-              this.reset();
-            }
-            if (opt.throwError !== false) {
-              throw err;
-            }
-            console.warn(this.msg(err?.message || "unknown error"), err?.stack);
-            return false;
-          }
-        }
-      }, false);
-      virtual5.all(this, {
-        key: (_2) => _p.saved?.key,
-        label: (_2) => _p.saved?.label,
-        isRemoved: (_2) => !_p.saved || _p.saved.isRemoved,
-        isExist: (_2) => !!_p.saved?.isExist,
-        isDirty: (_2) => _p.live.isDirty,
-        live: (_2) => _p.live.wrap,
-        saved: (_2) => _p.saved?.wrap
-      });
-      _p.live = iniStep || Step.create(table);
-    }
-    msg(text) {
-      return this.rows.msg(text, this.key || JSON.stringify(this.raws));
-    }
-    getKey(isSet) {
-      return isSet ? this.live.key : this.key;
-    }
-    toJSON() {
-      return this.key;
-    }
-    toString() {
-      return this.key || "";
-    }
-  };
-  var { solid: solid6 } = src_default.prop;
-  var _scopes = ["global", "db", "table", "self"];
-  var functionWithCacheOrNull = (trait, col) => {
-    const selector = col.selector;
-    const formula = functionOrNull(trait);
-    if (!formula) {
-      return selector ? (row) => row.eval(selector) : null;
-    }
-    const cache2 = {};
-    if (!selector) {
-      return (row) => formula(row, cache2);
-    }
-    return (row) => formula(row.eval(selector), row, cache2);
-  };
-  var colTo = map({
-    boolean: { val: Boolean.jet.to },
-    string: { val: (v, c) => String.jet.to(v).substr(0, c.max) },
-    ref: { val: String, raw: (v) => v.key || v },
-    number: { val: (v, c) => Number.jet.round(Number.jet.frame(Number.jet.to(v), c.min, c.max), c.dec) },
-    datetime: { val: (v) => v == null ? new Date() : new Date(v) },
-    duration: { val: (v) => Math.max(0, Math.round(Number.jet.to(v))) },
-    object: { val: (v) => src_default.json.from(v) }
-  }, (t) => t.raw ? t : { ...t, raw: t.val });
-  var colTraits = {
-    type: src_default.enumFactory(Object.keys(colTo), {
-      before: (raw) => String.jet.simplify(String.jet.to(raw)),
-      after: (output, col) => col.ref ? "ref" : output != null ? output : "string"
-    }),
-    isReadonly: functionOrNull,
-    resetIf: functionOrNull,
-    init: functionOrNull,
-    selector: (val) => Array.isArray(val) || typeof val === "string" ? val : null,
-    formula: functionWithCacheOrNull,
-    ref: functionOrNull,
-    display: (val, col) => numberPositive(val, col.db.displayDefault),
-    separator: String.jet.to,
-    isVirtual: Boolean.jet.to,
-    isTrusted: Boolean.jet.to,
-    isMorph: (val, col) => typeof col._ref === "function",
-    dec: (val, col) => Math.round(numberPositive(val, col.db.decimalDefault)),
-    min: (val) => val == null ? void 0 : Number.jet.to(val),
-    max: (val) => val == null ? void 0 : Number.jet.to(val),
-    noNull: Boolean.jet.to,
-    extra: Object.jet.to,
-    scope: (raw, col) => {
-      if (!col.isVirtual) {
-        return (_2) => "self";
-      }
-      if (typeof raw === "string") {
-        raw = String.jet.simplify(String.jet.to(raw));
-        return _scopes.includes(raw) ? (_2) => raw : (_2) => raw.split(",");
-      }
-      if (Array.isArray(raw)) {
-        return (_2) => [...raw];
-      }
-      if (!col.selector) {
-        return (_2) => "self";
-      }
-      let ready, pending;
-      const tables = /* @__PURE__ */ new Set(), scopes = /* @__PURE__ */ new Set();
-      return (_2) => {
-        if (pending) {
-          pending;
-        } else if (!ready) {
-          pending = collectDeps(col.cols, col.selector, tables, scopes);
-          ready = true;
-          pending = null;
-        }
-        if (scopes.has("global")) {
-          return "global";
-        }
-        if (scopes.has("db")) {
-          return "db";
-        }
-        if (!tables.size) {
-          return "self";
-        }
-        return [...tables];
-      };
-    }
-  };
-  var collectDeps = (cols, selector, tables, scopes) => {
-    if (!cols) {
-      return;
-    }
-    if (scopes.has("global") || scopes.has("db")) {
-      return;
-    }
-    breachSelector(
-      selector,
-      (alias, path, selector2) => {
-        if (path === "*") {
-          return;
-        }
-        const c = cols(path || selector2);
-        const s = c.scope();
-        if (!Array.isArray(s)) {
-          scopes.add(s);
-        } else {
-          for (const t of s) {
-            tables.add(t);
-          }
-        }
-        if (!c._ref) {
-          return;
-        }
-        if (c.isMorph) {
-          scopes.add("db");
-          return;
-        }
-        if (!path) {
-          return;
-        }
-        tables.add(c._ref);
-        const tbl = cols.db(c._ref);
-        return collectDeps(tbl.cols, selector2, tables, scopes);
-      },
-      (arr) => arr.map((selector2) => collectDeps(cols, selector2, tables, scopes))
-    );
-  };
-  var { solid: solid7, virtual: virtual6, cached: cached4 } = src_default.prop;
-  var { solid: solid8, virtual: virtual7 } = src_default.prop;
-  var { solid: solid9, virtual: virtual8 } = src_default.prop;
   var toRefId = (ref) => typeof ref !== "string" ? ref?.id : ref;
   var isNull = (v) => v == null || typeof v === "number" && isNaN(v);
   var isFce = (fce) => typeof fce === "function";
@@ -6993,7 +5860,7 @@
     }
     return recs;
   };
-  var deleteRec = (chop, recsByGroupId, groupId, rec) => {
+  var _chopDeleteRec = (chop, recsByGroupId, groupId, rec) => {
     const recs = prepareRecs(chop, recsByGroupId, groupId, true, false);
     if (!recs?.has(rec.id)) {
       throw Error(chop.msg(`delete(...) critical error - inconsistency`, { group: groupId, row: rec.id }));
@@ -7004,7 +5871,7 @@
       recs.delete(rec.id);
     }
   };
-  var setRec = (chop, recsByGroupId, groupId, rec) => {
+  var _chopSetRec = (chop, recsByGroupId, groupId, rec) => {
     const recs = prepareRecs(chop, recsByGroupId, groupId, false, true);
     const current = recs.get(rec.id);
     if (!current) {
@@ -7016,7 +5883,7 @@
     }
     throw Error(chop.msg(`add(...) failed - duplicate`, { group: groupId, row: rec.id }));
   };
-  var getRec = (chop, groupId, recId, throwError2 = false) => {
+  var _chopGetRec = (chop, groupId, recId, throwError2 = false) => {
     if (!recId) {
       if (throwError2) {
         throw Error(chop.msg(`get(...) failed - id undefined`, { group: groupId }));
@@ -7027,11 +5894,11 @@
     const recs = prepareRecs(chop, recsByGroupId, groupId, throwError2, false);
     return recs?.get(recId);
   };
-  var getRecs = (chop, groupId, throwError2 = false) => {
+  var _chopGetRecs = (chop, groupId, throwError2 = false) => {
     const { recsByGroupId } = vault.get(chop);
     return prepareRecs(chop, recsByGroupId, groupId, throwError2, false);
   };
-  var getAllRecs = (chop) => vault.get(chop).groupIdsByRec;
+  var _chopGetAllRecs = (chop) => vault.get(chop).groupIdsByRec;
   var afterRemove = (chop, res, ctx) => {
     const { isMultiGroup, recsByGroupId, groupIdsByRec, filter: filter2, handlers, childs, state } = vault.get(chop);
     const rec = res.current;
@@ -7044,29 +5911,16 @@
     }
     if (isMultiGroup) {
       for (const groupId of from) {
-        deleteRec(chop, recsByGroupId, groupId, rec);
+        _chopDeleteRec(chop, recsByGroupId, groupId, rec);
       }
     } else {
-      deleteRec(chop, recsByGroupId, from, rec);
+      _chopDeleteRec(chop, recsByGroupId, from, rec);
     }
     groupIdsByRec.delete(rec);
     return runEvent(handlers, childs, state, "remove", res, ctx);
   };
-  var afterReset = (chop, ctx) => {
-    const _p = vault.get(chop);
-    const { recsByGroupId, groupIdsByRec, init, handlers, childs, state } = _p;
-    groupIdsByRec.clear();
-    recsByGroupId.clear();
-    _p.state = "init";
-    init(chop, ctx);
-    _p.state = "reset";
-    runEvent(handlers, childs, _p.state, "reset", void 0, ctx);
-    _p.state = "ready";
-    return true;
-  };
-  var afterUpdate = (chop, res, ctx) => {
+  var _afterUpdate = (chop, rec, event, res, ctx) => {
     const { isMultiGroup, recsByGroupId, groupIdsByRec, filter: filter2, handlers, childs, state } = vault.get(chop);
-    const rec = res.current;
     const from = groupIdsByRec.get(rec);
     if (!from) {
       if (filter2(rec)) {
@@ -7086,29 +5940,30 @@
           from.delete(groupId);
           continue;
         }
-        setRec(chop, recsByGroupId, groupId, rec);
+        _chopSetRec(chop, recsByGroupId, groupId, rec);
       }
       for (const groupId of from) {
-        deleteRec(chop, recsByGroupId, groupId, rec);
+        _chopDeleteRec(chop, recsByGroupId, groupId, rec);
       }
       groupIdsByRec.set(rec, results);
     } else if (to3 !== from) {
-      setRec(chop, recsByGroupId, to3, rec);
-      deleteRec(chop, recsByGroupId, from, rec);
+      _chopSetRec(chop, recsByGroupId, to3, rec);
+      _chopDeleteRec(chop, recsByGroupId, from, rec);
       groupIdsByRec.set(rec, to3);
+    }
+    if (!event) {
+      return true;
     }
     return runEvent(handlers, childs, state, "update", res, ctx);
   };
+  var afterUpdateInit = (chop, rec) => _afterUpdate(chop, rec);
+  var afterUpdate = (chop, res, ctx) => _afterUpdate(chop, res.current, "update", res, ctx);
   var runEvent = (handlers, childs, state, event, res, ctx) => {
     if (state === "init") {
       return;
     }
     if (childs.size) {
-      if (event === "reset") {
-        for (const child of childs) {
-          afterReset(child, ctx);
-        }
-      } else if (event === "add") {
+      if (event === "add") {
         for (const child of childs) {
           afterAdd(child, res, ctx);
         }
@@ -7135,6 +5990,20 @@
     }
     return true;
   };
+  var run2 = (handlers, process) => {
+    if (!handlers?.length) {
+      return;
+    }
+    for (let i = handlers.length - 1; i >= 0; i--) {
+      try {
+        if (handlers[i]) {
+          handlers[i](process);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
   var onEvent = (chop, callback, onlyOnce = false) => {
     if (!isFce(callback)) {
       throw Error(chop.msg(`on(...) require callback`));
@@ -7146,7 +6015,7 @@
       remove();
     } : callback;
     handlers.unshift(cb);
-    return remove = (_2) => {
+    return remove = (_) => {
       const x2 = handlers.indexOf(cb);
       if (x2 >= 0) {
         handlers.splice(x2, 1);
@@ -7154,7 +6023,7 @@
       return callback;
     };
   };
-  var put = (chop, rec, event, res, ctx) => {
+  var _afterAdd = (chop, rec, event, res, ctx) => {
     const { isMultiGroup, recsByGroupId, groupIdsByRec, filter: filter2, handlers, childs, state } = vault.get(chop);
     if (!filter2(rec)) {
       return false;
@@ -7166,12 +6035,12 @@
         if (results.has(groupId)) {
           continue;
         }
-        setRec(chop, recsByGroupId, groupId, rec);
+        _chopSetRec(chop, recsByGroupId, groupId, rec);
         results.add(groupId);
       }
       groupIdsByRec.set(rec, results);
     } else {
-      setRec(chop, recsByGroupId, valid, rec);
+      _chopSetRec(chop, recsByGroupId, valid, rec);
       groupIdsByRec.set(rec, valid);
     }
     if (!event) {
@@ -7179,8 +6048,8 @@
     }
     return runEvent(handlers, childs, state, event, res, ctx);
   };
-  var afterLoad = (chop, rec) => put(chop, rec);
-  var afterAdd = (chop, res, ctx) => put(chop, res.current, "add", res, ctx);
+  var afterAddInit = (chop, rec) => _afterAdd(chop, rec);
+  var afterAdd = (chop, res, ctx) => _afterAdd(chop, res.current, "add", res, ctx);
   var saveFn = (any, col) => anyToFn(any);
   var exportFn = (any) => {
     return typeof any !== "function" ? any : fnToStr(any);
@@ -7235,13 +6104,13 @@
     }
     return Critical.fail("Unknown error", err);
   };
-  var Chop2 = class {
-    constructor(id, opt = {}, parent) {
+  var Chop = class {
+    constructor(id, opt = {}) {
       id = toStr(id);
       if (!id) {
         throw Major.fail("missing id");
       }
-      const { init, group, autoReset = true, isMultiGroup = false } = opt;
+      const { parent, init, group, isMultiGroup = false } = opt;
       const filter2 = toFce(opt.filter, true);
       const _p = {
         state: "pending",
@@ -7263,23 +6132,21 @@
         isMultiGroup
       }, false);
       virtuals(this, {
-        state: (_2) => _p.state,
-        size: (_2) => _p.groupIdsByRec.size,
-        childs: (_2) => [..._p.childs]
+        state: (_) => _p.state,
+        size: (_) => _p.groupIdsByRec.size,
+        childs: (_) => [..._p.childs]
       });
       vault.set(this, _p);
-      if (parent) {
-        const _pp = vault.get(parent);
-        _pp.childs.add(this);
-        _p.init = (_2) => {
-          for (const [rec] of _pp.groupIdsByRec) {
-            afterLoad(this, rec);
-          }
-        };
+      if (!parent) {
+        return;
       }
-      if (autoReset) {
-        this.reset();
-      }
+      const _pp = vault.get(parent);
+      _pp.childs.add(this);
+      _p.init = (context) => {
+        for (const [rec] of _pp.groupIdsByRec) {
+          afterAddInit(this, rec, context);
+        }
+      };
     }
     msg(text, details = {}) {
       let msg2 = this.id;
@@ -7294,26 +6161,23 @@
     on(callback, onlyOnce = false) {
       return onEvent(this, callback, onlyOnce);
     }
-    reset(ctx) {
-      return afterReset(this, ctx);
-    }
     get(groupId, recId, throwError2 = false) {
-      return getRec(this, groupId, recId, throwError2);
+      return _chopGetRec(this, groupId, recId, throwError2);
     }
     getMap(groupId, throwError2 = false) {
-      const recs = getRecs(this, groupId, throwError2);
+      const recs = _chopGetRecs(this, groupId, throwError2);
       return recs ? new Map(recs) : /* @__PURE__ */ new Map();
     }
     getList(groupId, throwError2 = false) {
-      const recs = getRecs(this, groupId, throwError2);
+      const recs = _chopGetRecs(this, groupId, throwError2);
       return recs ? Array.from(recs.values()) : [];
     }
     getSize(groupId, throwError2 = false) {
-      return getRecs(this, groupId, throwError2)?.size || 0;
+      return _chopGetRecs(this, groupId, throwError2)?.size || 0;
     }
     map(callback) {
       const result2 = [];
-      const recs = getAllRecs(this);
+      const recs = _chopGetAllRecs(this);
       for (const [rec] of recs) {
         const r = callback(rec);
         if (r !== void 0) {
@@ -7334,7 +6198,8 @@
       return this.map(this.export);
     }
     chop(id, opt = {}) {
-      return new Chop2(id, opt, this);
+      opt.parent = this;
+      return new Chop(id, opt);
     }
   };
   var saveRegExp = (any, col) => {
@@ -7515,7 +6380,7 @@
         name: "setter",
         type: "function",
         isReadonly,
-        fallback: (_2) => setter
+        fallback: (_) => setter
       },
       "_types-getter": {
         meta: metaNumb,
@@ -7523,7 +6388,7 @@
         name: "getter",
         type: "function",
         isReadonly,
-        fallback: (_2) => getter
+        fallback: (_) => getter
       },
       //_cols
       "_cols-meta": {
@@ -7556,7 +6421,7 @@
         name: "type",
         type: "ref",
         ref: "_types",
-        fallback: (_2) => "string"
+        fallback: (_) => "string"
       },
       "_cols-ref": {
         meta: metaNumb,
@@ -7690,13 +6555,13 @@
       }
     ];
   };
-  var nregCol = (db, entId, _col, action) => {
+  var nregCol = (db, entId, _col, action2) => {
     const colsByEnt = vault.get(db)?.colsByEnt;
     if (!colsByEnt) {
       throw Critical.fail("columns not found");
     }
     let cols = colsByEnt.get(entId);
-    if (action) {
+    if (action2) {
       if (cols) {
         cols.add(_col);
       } else {
@@ -7754,8 +6619,8 @@
   };
   var createTraits = (_col) => {
     return cacheds({}, {}, {
-      getter: (_2) => createGetter(_col),
-      setter: (_2) => createSetter(_col)
+      getter: (_) => createGetter(_col),
+      setter: (_) => createSetter(_col)
     });
   };
   var setCol = (_rec, ctx) => {
@@ -7766,10 +6631,10 @@
     const ent = values.ent;
     nregCol(db, ent, _rec, true);
     solid3(_rec, "traits", createTraits(_rec), true, true);
-    const rows = getRecs(db, ent);
+    const rows = _chopGetRecs(db, ent);
     if (rows) {
-      for (const [_2, row] of rows) {
-        getRecPriv(db, row).colAdd(_rec);
+      for (const [_, row] of rows) {
+        getRecPriv(row).colAdd(_rec);
       }
     }
   };
@@ -7779,20 +6644,11 @@
       return;
     }
     nregCol(db, values.ent, _rec, false);
-    const rows = getRecs(db, values.ent);
+    const rows = _chopGetRecs(db, values.ent);
     if (rows) {
-      for (const [_2, row] of rows) {
-        getRecPriv(db, row).colRem(values.name);
+      for (const [_, row] of rows) {
+        getRecPriv(row).colRem(values.name);
       }
-    }
-  };
-  var addEnt = (_rec, ctx) => {
-    const { db, values } = _rec;
-    if (values._ent !== "_ents") {
-      return;
-    }
-    for (const mdd of metaDataDynamic(values.id)) {
-      addRec(db, mdd, ctx);
     }
   };
   var loadEnt = (_rec, ctx) => {
@@ -7804,33 +6660,27 @@
       loadRec(db, mdd, ctx);
     }
   };
-  var remEnt = (_rec, ctx) => {
-    const { db, values } = _rec;
-    if (values._ent !== "_ents") {
-      return;
-    }
-    for (const _col of getColsPriv(db, values.id)) {
-      _col.remove(ctx, true);
-    }
-    ;
-  };
-  var _results = /* @__PURE__ */ new WeakMap();
+  var _results2 = /* @__PURE__ */ new WeakMap();
   var Result = class {
-    constructor(_rec) {
+    constructor(_rec, context) {
       const _p = {
         _rec,
         isOk: true,
         fails: []
       };
-      solid3(this, "current", _rec.current);
-      virtuals(this, {
-        isOk: (_2) => _p.isOk,
-        fails: (_2) => [..._p.fails]
+      const { current } = _rec;
+      solids(this, {
+        current,
+        context
       });
-      _results.set(this, _p);
+      virtuals(this, {
+        isOk: (_) => _p.isOk,
+        fails: (_) => [..._p.fails]
+      });
+      _results2.set(this, _p);
     }
     addFail(fail, nonMinorThrow = false) {
-      const _p = _results.get(this);
+      const _p = _results2.get(this);
       const { values } = _p._rec;
       fail.setRow(values.id).setEnt(values._ent);
       if (fail.severity !== "minor") {
@@ -7847,16 +6697,16 @@
   var ResultTurn = class extends Result {
     constructor(_rec) {
       super(_rec);
-      const _p = _results.get(this);
+      const _p = _results2.get(this);
       _p.changed = /* @__PURE__ */ new Set();
       _p.isReal = _rec.state === "pending";
       virtuals(this, {
-        isReal: (_2) => _p.isReal,
-        changed: (_2) => new Set(_p.changed)
+        isReal: (_) => _p.isReal,
+        changed: (_) => new Set(_p.changed)
       });
     }
     addChange(change, isReal = false) {
-      const _p = _results.get(this);
+      const _p = _results2.get(this);
       _p.changed.add(change);
       if (isReal) {
         _p.isReal = true;
@@ -7984,8 +6834,67 @@
       return this.id;
     }
   };
+  var _priv = /* @__PURE__ */ new WeakMap();
+  var $end = (process) => {
+    const _p = _priv.get(process);
+    _p.processes.pop();
+    _p.isDone = true;
+    return process;
+  };
+  var Process = class {
+    static failEnd(fail, action2, context, chop, _rec) {
+      const process = new Process(action2, context, chop, _rec);
+      return $end(process.fail(fail));
+    }
+    constructor(action2, context, chop, _rec) {
+      const db = chop ? chop.db : void 0;
+      const processes = db ? vault.get(db).processes : void 0;
+      const depth = processes?.push(this) - 1 || 0;
+      const parent = !depth ? void 0 : processes[depth - 1];
+      if (parent) {
+        _priv.get(parent).childs.push(this);
+      }
+      const _p = {
+        isOk: true,
+        isDone: false,
+        fails: [],
+        childs: [],
+        processes
+      };
+      solids(this, {
+        db,
+        chop,
+        parent
+      }, false);
+      solids(this, {
+        depth,
+        action: action2,
+        context
+      });
+      virtuals(this, {
+        isOk: (_) => _p.isOk,
+        isDone: (_) => _p.isDone,
+        fails: (_) => [..._p.fails],
+        childs: (_) => [..._p.childs],
+        record: (_) => _rec?.current
+      });
+      _priv.set(this, _p);
+    }
+    fail(fail, nonMinorThrow = false) {
+      const _p = _results.get(this);
+      _p.fails.push(fail);
+      if (fail.severity !== "minor") {
+        if (nonMinorThrow) {
+          throw fail;
+        } else {
+          _p.isOk = false;
+        }
+      }
+      return this;
+    }
+  };
   var RecordPrivate = class {
-    constructor(db) {
+    constructor(db, values) {
       solids(this, {
         db,
         current: new Record(),
@@ -7994,6 +6903,7 @@
       this.state = "pending";
       this.values = {};
       regRec(this);
+      this.valsLoad(values);
     }
     msg(text, details = {}) {
       return this.db.msg(text, {
@@ -8010,18 +6920,18 @@
       const prop = {
         enumerable: true,
         configurable: true,
-        set: (_2) => {
+        set: (_) => {
           throw new Error(this.msg("for update use db.update(...) interface", { column: name }));
         }
       };
       if (isVirtual) {
-        prop.get = (_2) => t.getter(t.setter(current, this.values, this.values[name], this.state === "ready" ? before : void 0), this.state === "ready");
+        prop.get = (_) => t.getter(t.setter(current, this.values, this.values[name], this.state === "ready" ? before : void 0), this.state === "ready");
       } else {
-        prop.get = (_2) => t.getter(this.turn ? this.turn.pull(_col) : this.values[name], this);
+        prop.get = (_) => t.getter(this.turn ? this.turn.pull(_col) : this.values[name], this);
       }
       Object.defineProperty(current, name, prop);
       if (!isVirtual) {
-        prop.get = (_2) => t.getter(this.values[name], this);
+        prop.get = (_) => t.getter(this.values[name], this);
       }
       Object.defineProperty(before, name, prop);
       if (state === "ready") {
@@ -8081,17 +6991,17 @@
       }
       return result2;
     }
-    remove(ctx, force = false) {
+    remove(context, force = false) {
       const { db, meta } = this;
-      const result2 = new Result(this);
+      const process = new Process("remove", context, db, this);
       if (!force && meta) {
-        result2.addFail(Major.fail("is meta"));
+        process.fail(Major.fail("is meta"));
       } else {
         this.state = "removed";
-        afterRemove(db, result2, ctx);
+        afterRemove(db, process);
         unregRec(this);
       }
-      return result2;
+      return $end(process);
     }
   };
   var _records = /* @__PURE__ */ new WeakMap();
@@ -8103,33 +7013,32 @@
     _records.delete(_rec.current);
     return _rec;
   };
-  var createRec = (db, values) => new RecordPrivate(db).valsLoad(values);
-  var getRecPriv = (db, any, throwError2 = true) => {
+  var getRecPriv = (any, throwError2 = true) => {
     const _p = _records.get(any);
-    if (_p && (!db || db === _p.db)) {
+    if (_p) {
       return _p;
     }
     if (throwError2) {
-      throw Error(db.msg("is not record", { row: toRefId(any) }));
+      throw Major.fail("is not record");
     }
     ;
   };
   var loadRec = (db, values, ctx) => {
     const id = toRefId(values);
     const _ent = toRefId(values._ent);
-    const brother = getRec(db, _ent, id);
-    const _rec = brother ? getRecPriv(db, brother) : createRec(db, values);
+    const brother = _chopGetRec(db, _ent, id);
+    const _rec = brother ? getRecPriv(brother) : new RecordPrivate(db, values);
     if (brother) {
       _rec.valsLoad(values);
-      afterUpdate(db, { current: _rec.current }, ctx);
+      afterUpdateInit(db, _rec.current);
     } else {
-      afterLoad(db, _rec.current);
-      loadEnt(_rec, ctx);
+      afterAddInit(db, _rec.current);
+      loadEnt(_rec);
     }
     return _rec;
   };
   var addRec = (db, values, ctx) => {
-    const _rec = createRec(db, values);
+    const _rec = new RecordPrivate(db, values);
     const res = _rec.colsInit().colsPrepare().colsFinish();
     if (res.isOk) {
       afterAdd(db, res, ctx);
@@ -8137,11 +7046,11 @@
     return res;
   };
   var addOrSetRec = (db, values, ctx, isUpdate) => {
-    const _rec = createRec(db, values).valsLoad(values).colsInit().colsPrepare();
+    const _rec = new RecordPrivate(db, values).colsInit().colsPrepare();
     const { _ent, id } = _rec.current;
-    const brother = getRec(db, toRefId(_ent), id);
+    const brother = _chopGetRec(db, toRefId(_ent), id);
     if (brother) {
-      return getRecPriv(db, brother).valsPush(values, ctx, isUpdate);
+      return getRecPriv(brother).valsPush(values, ctx, isUpdate);
     }
     const res = _rec.colsFinish();
     if (res.isOk) {
@@ -8149,29 +7058,73 @@
     }
     return res;
   };
-  var removeRec = (db, record, ctx, force) => getRecPriv(db, record).remove(ctx, force);
-  var DB2 = class extends Chop2 {
+  var $reset = (chop, context) => {
+    const _p = vault.get(chop);
+    if (!_p) {
+      return Process.failEnd(Major.fail("is not chop"));
+    }
+    const process = new Process("reset", context, chop);
+    const { recsByGroupId, groupIdsByRec, init, handlers, childs } = _p;
+    groupIdsByRec.clear();
+    recsByGroupId.clear();
+    _p.state = "init";
+    init(process);
+    _p.state = "reset";
+    if (childs.size) {
+      for (const child of childs) {
+        $reset(child, context);
+      }
+    }
+    run2(handlers, process);
+    _p.state = "ready";
+    return $end(process);
+  };
+  var $remove = (record, context) => {
+    const _rec = getRecPriv(record, false);
+    if (!_rec) {
+      return Process.failEnd(Major.fail("is not record"), "remove", context);
+    }
+    return _rec.remove(context);
+  };
+  var $add = (db, values, context) => {
+    const process = new Process("add", context);
+    return addRec(db, values, context);
+  };
+  var set = (process, record, values, context) => {
+    return getRecPriv(record).valsPush(values, context, action === "update");
+  };
+  var $set = (record, values, context) => {
+    const process = new Process("set", context);
+    set("set", record, values, context);
+  };
+  var $update = (record, values, context) => set("update", record, values, context);
+  var addOrSet = (action2, db, values, context, isUpdate = false) => {
+    const process = new Process("addOrSet", context);
+    return addOrSetRec(db, values, context, isUpdate);
+  };
+  var $addOrSet = (db, values, context) => addOrSet("set", db, values, context);
+  var $addOrUpdate = (db, values, context) => addOrSet("update", db, values, context, true);
+  var DB = class extends Chop {
     constructor(id, opt = {}) {
       const { init } = opt;
       super(id, {
-        autoReset: false,
         group: (rec) => toRefId(rec._ent),
-        init: (self2, ctx) => {
-          const load = (values) => loadRec(this, values, ctx);
-          init(load, ctx);
+        init: (context) => {
+          const load = (values) => loadRec(this, values, context);
+          init(load, context);
           for (const _ent in metaData) {
             for (const id2 in metaData[_ent]) {
               load({ _ent, id: id2, ...metaData[_ent][id2] });
             }
             ;
           }
-          for (const [_2, rec] of getRecs(this, "_cols")) {
-            const _rec = getRecPriv(this, rec);
-            setCol(_rec, ctx);
+          for (const [_, rec] of _chopGetRecs(this, "_cols")) {
+            const _rec = getRecPriv(rec);
+            setCol(_rec, context);
           }
           const _recs = [];
-          for (const [rec] of getAllRecs(this)) {
-            const _rec = getRecPriv(this, rec);
+          for (const [rec] of _chopGetAllRecs(this)) {
+            const _rec = getRecPriv(rec);
             if (_rec.state === "pending") {
               _recs.push(_rec.colsPrepare());
             }
@@ -8179,85 +7132,73 @@
           for (const _rec of _recs) {
             _rec.colsFinish();
           }
-          return _recs;
         }
       });
-      this.on((event, res, ctx) => {
+      this.on((event, res, context) => {
         if (!res) {
           return;
         }
-        const _rec = getRecPriv(this, res.current);
+        const _rec = getRecPriv(res.current);
         const { _ent } = _rec.values;
         if (_ent == "_ents") {
-          if (event === "remove") {
-            remEnt(_rec, ctx);
-          } else if (event === "add") {
-            addEnt(_rec, ctx);
-          }
         } else if (_ent === "_cols") {
           if (event === "add" || event === "update") {
-            setCol(_rec, ctx);
+            setCol(_rec, context);
           } else if (event === "remove") {
-            remCol(_rec, ctx);
+            remCol(_rec, context);
           }
         }
       });
-      vault.get(this).colsByEnt = /* @__PURE__ */ new Map();
-      this.reset();
+      const _p = vault.get(this);
+      _p.colsByEnt = /* @__PURE__ */ new Map();
+      _p.processes = [];
     }
     isRecord(any, throwError2 = false) {
-      return !!getRecPriv(this, any, throwError2);
+      return !!getRecPriv(any, throwError2);
     }
-    remove(record, ctx) {
-      return removeRec(this, record, ctx);
+    reset(context) {
+      return $reset(this, context);
     }
-    add(values, ctx) {
-      return addRec(this, values, ctx);
+    remove(record, context) {
+      return $remove(record, context);
     }
-    addOrSet(values, ctx) {
-      return addOrSetRec(this, values, ctx);
+    add(values, context) {
+      return $add(this, values, context);
     }
-    addOrUpdate(values, ctx) {
-      return addOrSetRec(this, values, ctx, true);
+    set(record, values, context) {
+      return $set(record, values, context);
     }
-    set(record, values, ctx) {
-      return getRecPriv(this, record).valsPush(values, ctx);
+    update(record, values, context) {
+      return $update(record, values, context);
     }
-    update(record, values, ctx) {
-      return getRecPriv(this, record).valsPush(values, ctx, true);
+    addOrSet(values, context) {
+      return $addOrSet(this, values, context);
     }
-    removeBy(groupId, recId, ctx) {
-      const rec = this.get(groupId, recId);
-      if (rec) {
-        return this.remove(rec, ctx);
-      }
-    }
-    setBy(groupId, recId, values, ctx) {
-      const rec = this.get(groupId, recId);
-      if (rec) {
-        return this.set(rec, values, ctx);
-      }
-    }
-    updateBy(groupId, recId, values, ctx) {
-      const rec = this.get(groupId, recId);
-      if (rec) {
-        return this.update(rec, values, ctx);
-      }
+    addOrUpdate(values, context) {
+      return $addOrUpdate(this, values, context);
     }
   };
+  __publicField(DB, "reset", $reset);
+  __publicField(DB, "remove", $remove);
+  __publicField(DB, "add", $add);
+  __publicField(DB, "set", $set);
+  __publicField(DB, "update", $update);
+  __publicField(DB, "addOrSet", $addOrSet);
+  __publicField(DB, "addOrUpdate", $addOrUpdate);
 
   // demo/frontend/src/index.js
   var socket = lookup2(`localhost:${info.port + 1}`);
   var bifrost = new ClientRouter(socket);
   var beam = window.beam = bifrost.createBeam("data");
   beam.get().then((records) => {
-    const db = window.db = new DB2("db", {
+    const db = window.db = new DB("db", {
       init: (load, ctx) => {
         for (const rec of records) {
           load(rec, ctx);
         }
       }
     });
+    db.reset("test");
     db.on((event, res, ctx) => {
       if (res) {
       }
