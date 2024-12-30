@@ -1,28 +1,29 @@
-import { $end, Process } from "../Process";
+import { Process } from "../Process";
 import { vault } from "../../../../components/uni/consts";
-import { run } from "../../Chop/static/eventHandlers";
-import { Major } from "../../Result/Fails";
+import { runEvent } from "../../Chop/static/eventHandlers";
+import { throwMajor } from "../../../tools/traits/uni";
 
+const reset = (process, chop, context)=>{
 
-export const $reset = (chop, context)=>{
     const _p = vault.get(chop);
-    if (!_p) { return Process.failEnd(Major.fail("is not chop")); }
-
-    const process = new Process("reset", context, chop);
+    if (!_p) { throwMajor("not a chop"); }
     
-    const { recsByGroupId, groupIdsByRec, init, handlers, childs } = _p;
+    const { bundle, init, handlers, childs } = _p;
     
-    groupIdsByRec.clear();
-    recsByGroupId.clear();
+    bundle.clear();
     
     _p.state = "init";
-    init(process);
-
-    _p.state = "reset";
-    if (childs.size) { for (const child of childs) { $reset(child, context); } }
-    run(handlers, process);
+    init();
 
     _p.state = "ready";
 
-    return $end(process);
+    if (childs.size) { for (const child of childs) { $reset(child, context); } }
+    runEvent(handlers, process);
+    
+}
+
+
+//must be common function due to passing arguments
+export const $reset = function (chop, context) {
+    return Process.sandbox("reset", chop, context, arguments, reset);
 }

@@ -49,7 +49,7 @@
     "url": "https://www.linkedin.com/in/randajan/"
   },
   "dependencies": {
-    "@randajan/function-parser": "^0.0.4",
+    "@randajan/function-parser": "^0.1.0",
     "regex-parser": "^2.3.0"
   }
 }

@@ -4943,13 +4943,13 @@
   };
   var deflate = (any, includeMapable = false) => {
     const flat = {};
-    const add = ({ val, path }, next) => {
+    const add2 = ({ val, path }, next) => {
       flat[path] = val;
       if (next) {
         next();
       }
     };
-    each(any, add, includeMapable ? add : true);
+    each(any, add2, includeMapable ? add2 : true);
     if (includeMapable) {
       flat[""] = any;
     }
@@ -4967,12 +4967,12 @@
   };
   var _assign = (overwriteArray, to22, ...any) => {
     const flat = deflate(to22, true);
-    const add = ({ val, path }) => {
+    const add2 = ({ val, path }) => {
       to22 = digIn(to22, path, val);
     };
     const acumulate = ({ val, path, def }, next) => {
       if (!flat[path]) {
-        add(flat[path] = def.create(), path);
+        add2(flat[path] = def.create(), path);
       }
       if (Array.isArray(val) && Array.isArray(flat[path])) {
         flat[path].push(...val);
@@ -4981,7 +4981,7 @@
       }
     };
     for (const a of any) {
-      each(a, add, !!overwriteArray || acumulate);
+      each(a, add2, !!overwriteArray || acumulate);
     }
     return to22;
   };
@@ -5624,65 +5624,70 @@
   var fcePass = (v) => v;
   var fceTrue = (_) => true;
 
-  // dist/chunk-T2T6Q22Z.js
+  // dist/chunk-XSJ6ZNAW.js
   init_define_slib_info();
   var __defProp3 = Object.defineProperty;
   var __defNormalProp = (obj, key, value2) => key in obj ? __defProp3(obj, key, { enumerable: true, configurable: true, writable: true, value: value2 }) : obj[key] = value2;
+  var __export3 = (target, all) => {
+    for (var name in all)
+      __defProp3(target, name, { get: all[name], enumerable: true });
+  };
   var __publicField = (obj, key, value2) => {
     __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value2);
     return value2;
   };
+  var define_slib_info_default2 = { isBuild: true, name: "@randajan/ram-db", description: "Realtime database", version: "2.8.4", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "web", port: 3005, dir: { root: "C:\\dev\\lib\\ram-db", dist: "dist" } };
 
   // node_modules/@randajan/props/dist/index.js
   init_define_slib_info();
-  var solid3 = (obj, name, value2, enumerable4 = true, configurable = false) => {
-    return Object.defineProperty(obj, name, { enumerable: enumerable4, value: value2, configurable });
+  var solid3 = (obj, name, value2, enumerable5 = true, configurable = false) => {
+    return Object.defineProperty(obj, name, { enumerable: enumerable5, value: value2, configurable });
   };
-  var solids = (obj, namedValues, enumerable4 = true, configurable = false) => {
+  var solids = (obj, namedValues, enumerable5 = true, configurable = false) => {
     for (const name in namedValues) {
       const value2 = namedValues[name];
-      solid3(obj, name, value2, enumerable4, configurable);
+      solid3(obj, name, value2, enumerable5, configurable);
     }
     return obj;
   };
-  var virtual2 = (obj, name, get, enumerable4 = true, configurable = false) => {
-    return Object.defineProperty(obj, name, { enumerable: enumerable4, get, configurable });
+  var virtual2 = (obj, name, get, enumerable5 = true, configurable = false) => {
+    return Object.defineProperty(obj, name, { enumerable: enumerable5, get, configurable });
   };
-  var virtuals = (obj, namedGets, enumerable4 = true, configurable = false) => {
+  var virtuals = (obj, namedGets, enumerable5 = true, configurable = false) => {
     for (const name in namedGets) {
       const get = namedGets[name];
-      virtual2(obj, name, get, enumerable4, configurable);
+      virtual2(obj, name, get, enumerable5, configurable);
     }
     return obj;
   };
-  var safe2 = (obj, priv, name, set2, get, enumerable4 = true, configurable = false) => {
+  var safe2 = (obj, priv, name, set2, get, enumerable5 = true, configurable = false) => {
     return Object.defineProperty(obj, name, {
       set: set2 ? (v) => priv[name] = set2(v, priv[name], name) : void 0,
       get: get ? (_) => get(priv[name], name) : (_) => priv[name],
-      enumerable: enumerable4,
+      enumerable: enumerable5,
       configurable
     });
   };
-  var cached3 = (obj, priv, name, reset, get, enumerable4 = true, configurable = false) => {
+  var cached3 = (obj, priv, name, reset2, get, enumerable5 = true, configurable = false) => {
     const setAndGet = (v) => {
       if (!priv.hasOwnProperty(name)) {
-        v = priv[name] = reset(name);
+        v = priv[name] = reset2(name);
       }
       return get ? get(v, name) : v;
     };
-    return safe2(obj, priv, name, null, setAndGet, enumerable4, configurable);
+    return safe2(obj, priv, name, null, setAndGet, enumerable5, configurable);
   };
-  var cacheds = (obj, priv, namedResetsAndGets, enumerable4 = true) => {
+  var cacheds = (obj, priv, namedResetsAndGets, enumerable5 = true) => {
     for (const name in namedResetsAndGets) {
       const resetGet = namedResetsAndGets[name];
-      let reset, get;
+      let reset2, get;
       if (typeof resetGet !== "object") {
-        reset = resetGet;
+        reset2 = resetGet;
       } else {
-        reset = resetGet.reset || resetGet[0];
+        reset2 = resetGet.reset || resetGet[0];
         get = resetGet.get || resetGet[1];
       }
-      cached3(obj, priv, name, reset, get, enumerable4);
+      cached3(obj, priv, name, reset2, get, enumerable5);
     }
     return obj;
   };
@@ -5739,22 +5744,21 @@
     return fstr.startsWith("function") ? splitCommon(fstr) : splitArrow(fstr);
   };
   var argRegExp = /^[a-zA-Z_$][a-zA-Z_$0-9]*$/;
-  var parseArgs = (args) => {
+  var parseArgs = (args, to3 = []) => {
     if (args == null) {
       throw Error("Parsing arguments - missing");
     }
     args = unbracket(args.trim());
-    let result2 = [];
     if (args) {
       for (let a of args.split(",")) {
         a = a.trim();
         if (!argRegExp.test(a)) {
           throw Error("Parsing arguments - malformatted");
         }
-        result2.push(a);
+        to3.push(a);
       }
     }
-    return result2;
+    return to3;
   };
   var fnToStr = (fn) => {
     const t = typeof fn;
@@ -5779,9 +5783,19 @@
     }
     return `${args}=>${body}`;
   };
-  var fromStr = (str) => {
+  var fromStr = (str, injectScope) => {
     const f = split2(str);
-    return new Function(parseArgs(f[0]), f[1]);
+    const args = parseArgs(f[0]);
+    const body = f[1];
+    const origin = new Function(args, body);
+    if (!injectScope) {
+      return origin;
+    }
+    const keys = Object.keys(injectScope);
+    const vals = Object.values(injectScope);
+    const injected = new Function([...keys, ...args], body);
+    const binded = (...a) => injected(...vals, ...a);
+    return Object.defineProperty(binded, "toString", (_) => origin.toString());
   };
   var fromAny = (any, type = "string") => {
     let body;
@@ -5806,14 +5820,33 @@
     }
     return new Function(`return ${body}`);
   };
-  var anyToFn = (any) => {
+  var anyToFn = (any, injectScope) => {
     const type = typeof any;
-    return type !== "string" || any.startsWith("'") ? fromAny(any, type) : fromStr(any);
+    return type !== "string" || any.startsWith("'") ? fromAny(any, type) : fromStr(any, injectScope);
   };
 
   // dist/v3/index.js
   var import_regex_parser = __toESM(require_lib(), 1);
-  var toRefId = (ref) => typeof ref !== "string" ? ref?.id : ref;
+  var enumerable4 = true;
+  var lockObject2 = (o) => {
+    if (typeof o !== "object") {
+      return o;
+    }
+    const r = {};
+    for (const i in o) {
+      const descriptor = { enumerable: enumerable4 };
+      let val = o[i];
+      if (val instanceof Array) {
+        descriptor.get = (_) => [...val];
+      } else {
+        descriptor.value = lockObject2(val);
+      }
+      Object.defineProperty(r, i, descriptor);
+    }
+    return r;
+  };
+  var info2 = lockObject2(define_slib_info_default2);
+  var info_default = info2;
   var isNull = (v) => v == null || typeof v === "number" && isNaN(v);
   var isFce = (fce) => typeof fce === "function";
   var toFce = (fce, defReturn) => isFce(fce) ? fce : () => defReturn;
@@ -5837,167 +5870,40 @@
     }
     return res;
   };
-  var join = (separator, ...vals) => {
-    let s = "";
-    for (let v of vals) {
-      v = toStr(v);
-      if (!v) {
-        return;
-      }
-      s += (!s ? "" : separator) + v;
-    }
-    return s;
-  };
-  var prepareRecs = (chop, recsByGroupId, groupId, throwError2 = true, autoCreate = false) => {
-    let recs = recsByGroupId.get(groupId);
-    if (recs) {
-      return recs;
-    }
-    if (autoCreate) {
-      recsByGroupId.set(groupId, recs = /* @__PURE__ */ new Map());
-    } else if (throwError2) {
-      throw Error(chop.msg(`not found`, { group: groupId }));
-    }
-    return recs;
-  };
-  var _chopDeleteRec = (chop, recsByGroupId, groupId, rec) => {
-    const recs = prepareRecs(chop, recsByGroupId, groupId, true, false);
-    if (!recs?.has(rec.id)) {
-      throw Error(chop.msg(`delete(...) critical error - inconsistency`, { group: groupId, row: rec.id }));
-    }
-    if (recs.size <= 1) {
-      recsByGroupId.delete(groupId);
-    } else {
-      recs.delete(rec.id);
-    }
-  };
-  var _chopSetRec = (chop, recsByGroupId, groupId, rec) => {
-    const recs = prepareRecs(chop, recsByGroupId, groupId, false, true);
-    const current = recs.get(rec.id);
-    if (!current) {
-      recs.set(rec.id, rec);
+  var prepare = (chop, rec, inc, process2, syncs, hands) => {
+    const { bundle, childs, handlers } = vault.get(chop);
+    const sync2 = bundle.prepare(rec);
+    if (!sync2) {
       return;
     }
-    if (current === rec) {
-      return;
-    }
-    throw Error(chop.msg(`add(...) failed - duplicate`, { group: groupId, row: rec.id }));
-  };
-  var _chopGetRec = (chop, groupId, recId, throwError2 = false) => {
-    if (!recId) {
-      if (throwError2) {
-        throw Error(chop.msg(`get(...) failed - id undefined`, { group: groupId }));
-      }
-      return;
-    }
-    const { recsByGroupId } = vault.get(chop);
-    const recs = prepareRecs(chop, recsByGroupId, groupId, throwError2, false);
-    return recs?.get(recId);
-  };
-  var _chopGetRecs = (chop, groupId, throwError2 = false) => {
-    const { recsByGroupId } = vault.get(chop);
-    return prepareRecs(chop, recsByGroupId, groupId, throwError2, false);
-  };
-  var _chopGetAllRecs = (chop) => vault.get(chop).groupIdsByRec;
-  var afterRemove = (chop, res, ctx) => {
-    const { isMultiGroup, recsByGroupId, groupIdsByRec, filter: filter2, handlers, childs, state } = vault.get(chop);
-    const rec = res.current;
-    const from = groupIdsByRec.get(rec);
-    if (!from) {
-      if (filter2(rec)) {
-        throw Error(chop.msg(`remove(...) failed - missing`, { row: rec.id }));
-      }
-      return false;
-    }
-    if (isMultiGroup) {
-      for (const groupId of from) {
-        _chopDeleteRec(chop, recsByGroupId, groupId, rec);
-      }
-    } else {
-      _chopDeleteRec(chop, recsByGroupId, from, rec);
-    }
-    groupIdsByRec.delete(rec);
-    return runEvent(handlers, childs, state, "remove", res, ctx);
-  };
-  var _afterUpdate = (chop, rec, event, res, ctx) => {
-    const { isMultiGroup, recsByGroupId, groupIdsByRec, filter: filter2, handlers, childs, state } = vault.get(chop);
-    const from = groupIdsByRec.get(rec);
-    if (!from) {
-      if (filter2(rec)) {
-        throw Error(chop.msg(`update(...) failed - missing`, { row: rec.id }));
-      }
-      return false;
-    }
-    const to3 = chop.getGroup(rec);
-    if (isMultiGroup) {
-      const results = /* @__PURE__ */ new Set();
-      for (const groupId of to3) {
-        if (results.has(groupId)) {
-          continue;
-        }
-        results.add(groupId);
-        if (from.has(groupId)) {
-          from.delete(groupId);
-          continue;
-        }
-        _chopSetRec(chop, recsByGroupId, groupId, rec);
-      }
-      for (const groupId of from) {
-        _chopDeleteRec(chop, recsByGroupId, groupId, rec);
-      }
-      groupIdsByRec.set(rec, results);
-    } else if (to3 !== from) {
-      _chopSetRec(chop, recsByGroupId, to3, rec);
-      _chopDeleteRec(chop, recsByGroupId, from, rec);
-      groupIdsByRec.set(rec, to3);
-    }
-    if (!event) {
-      return true;
-    }
-    return runEvent(handlers, childs, state, "update", res, ctx);
-  };
-  var afterUpdateInit = (chop, rec) => _afterUpdate(chop, rec);
-  var afterUpdate = (chop, res, ctx) => _afterUpdate(chop, res.current, "update", res, ctx);
-  var runEvent = (handlers, childs, state, event, res, ctx) => {
-    if (state === "init") {
+    syncs.push(sync2);
+    if (!process2) {
       return;
     }
     if (childs.size) {
-      if (event === "add") {
-        for (const child of childs) {
-          afterAdd(child, res, ctx);
-        }
-      } else if (event === "remove") {
-        for (const child of childs) {
-          afterRemove(child, res, ctx);
-        }
-      } else if (event === "update") {
-        for (const child of childs) {
-          afterUpdate(child, res, ctx);
-        }
+      for (const child of childs) {
+        prepare(child, rec, inc, process2, syncs);
       }
     }
-    if (handlers?.length) {
-      for (let i = handlers.length - 1; i >= 0; i--) {
-        try {
-          if (handlers[i]) {
-            handlers[i](event, res, ctx);
-          }
-        } catch (err) {
-          console.error(err);
-        }
-      }
+    if (handlers.length) {
+      hands.push(handlers);
     }
-    return true;
   };
-  var run2 = (handlers, process) => {
-    if (!handlers?.length) {
-      return;
+  var sync = (chop, rec, inc, process2) => {
+    const syncs = [], hands = [];
+    prepare(chop, rec, inc, process2, syncs, hands);
+    for (const sync2 of syncs) {
+      sync2();
     }
+    for (const hand of hands) {
+      runEvent(hand, process2);
+    }
+  };
+  var runEvent = (handlers, process2) => {
     for (let i = handlers.length - 1; i >= 0; i--) {
       try {
         if (handlers[i]) {
-          handlers[i](process);
+          handlers[i](process2);
         }
       } catch (err) {
         console.error(err);
@@ -6023,37 +5929,9 @@
       return callback;
     };
   };
-  var _afterAdd = (chop, rec, event, res, ctx) => {
-    const { isMultiGroup, recsByGroupId, groupIdsByRec, filter: filter2, handlers, childs, state } = vault.get(chop);
-    if (!filter2(rec)) {
-      return false;
-    }
-    const valid = chop.getGroup(rec);
-    if (isMultiGroup) {
-      const results = /* @__PURE__ */ new Set();
-      for (const groupId of valid) {
-        if (results.has(groupId)) {
-          continue;
-        }
-        _chopSetRec(chop, recsByGroupId, groupId, rec);
-        results.add(groupId);
-      }
-      groupIdsByRec.set(rec, results);
-    } else {
-      _chopSetRec(chop, recsByGroupId, valid, rec);
-      groupIdsByRec.set(rec, valid);
-    }
-    if (!event) {
-      return true;
-    }
-    return runEvent(handlers, childs, state, event, res, ctx);
-  };
-  var afterAddInit = (chop, rec) => _afterAdd(chop, rec);
-  var afterAdd = (chop, res, ctx) => _afterAdd(chop, res.current, "add", res, ctx);
-  var saveFn = (any, col) => anyToFn(any);
-  var exportFn = (any) => {
-    return typeof any !== "function" ? any : fnToStr(any);
-  };
+  var _chopGetAllRecs = (chop) => vault.get(chop).bundle.byRec;
+  var _chopGetRecs = (chop, groupId) => vault.get(chop).bundle.byGroup.getAll(groupId);
+  var _chopGetRec = (chop, groupId, recId) => vault.get(chop).bundle.byGroup.get(groupId, recId);
   var Fail = class {
     constructor(severity, reason, details) {
       solids(this, { severity, reason, details });
@@ -6104,50 +5982,471 @@
     }
     return Critical.fail("Unknown error", err);
   };
+  var _priv = /* @__PURE__ */ new WeakMap();
+  var $end = (process2) => {
+    const _p = _priv.get(process2);
+    _p.processes?.pop();
+    _p.isDone = true;
+    return process2;
+  };
+  var Process = class {
+    static failEnd(fail, action2, context, chop, _rec) {
+      const process2 = new Process(action2, context, chop, _rec);
+      return $end(process2.fail(fail));
+    }
+    static sandbox(action2, chop, context, args, exe) {
+      return new Process(action2, context, chop).sandbox(exe, args);
+    }
+    constructor(action2, context, chop, _rec) {
+      const db = chop ? chop.db : void 0;
+      const processes = db ? vault.get(db).processes : void 0;
+      const depth = processes?.push(this) - 1 || 0;
+      const parent = !depth ? void 0 : processes[depth - 1];
+      if (parent) {
+        _priv.get(parent).childs.push(this);
+      }
+      const _p = {
+        isOk: true,
+        isDone: false,
+        fails: [],
+        childs: [],
+        processes
+      };
+      solids(this, {
+        db,
+        chop,
+        parent
+      }, false);
+      solids(this, {
+        depth,
+        action: action2,
+        context
+      });
+      virtuals(this, {
+        isOk: (_) => _p.isOk,
+        isDone: (_) => _p.isDone,
+        fails: (_) => [..._p.fails],
+        childs: (_) => [..._p.childs],
+        record: (_) => _rec?.current
+      });
+      _priv.set(this, _p);
+    }
+    fail(fail, nonMinorThrow = false) {
+      const _p = _priv.get(this);
+      _p.fails.push(fail);
+      if (fail.severity !== "minor") {
+        if (nonMinorThrow) {
+          throw fail;
+        } else {
+          _p.isOk = false;
+        }
+      }
+      return this;
+    }
+    sandbox(exe, args) {
+      try {
+        exe(this, ...args);
+      } catch (err) {
+        this.fail(err);
+      }
+      return $end(this);
+    }
+  };
+  var uni_exports = {};
+  __export3(uni_exports, {
+    isEmpty: () => isEmpty,
+    join: () => join,
+    throwMajor: () => throwMajor,
+    throwMinor: () => throwMinor,
+    toId: () => toId
+  });
+  var strings_exports = {};
+  __export3(strings_exports, {
+    toString: () => toString3
+  });
+  var toString3 = (any, opt = {}) => {
+    const t = typeof any;
+    let str;
+    if (any == null) {
+      str = "";
+    } else if (t === "string") {
+      str = any;
+    } else if (t === "function") {
+      str = fnToStr(any);
+    } else {
+      str = String(any);
+    }
+    if (str === "[object Object]") {
+      try {
+        str = JSON.stringify(any);
+      } catch (e) {
+        throw Major.fail("unparseable");
+      }
+    }
+    const { min, max } = opt;
+    if (min != null && str.length < min) {
+      throw Major.fail("too short", min);
+    }
+    if (max != null && str.length > max) {
+      str = str.substring(0, max);
+    }
+    return str;
+  };
+  var toId = (ref) => typeof ref !== "string" ? ref?.id : ref;
+  var isEmpty = (any) => {
+    if (any == null) {
+      return true;
+    }
+    const t = typeof any;
+    if (t === "string") {
+      return !any;
+    }
+    if (t === "number") {
+      return isNaN(any);
+    }
+    if (t === "object") {
+      if (any instanceof Date) {
+        return isNaN(any.getTime());
+      }
+      if (any instanceof Array) {
+        return !any.length;
+      }
+      if (any instanceof Set || any instanceof Map) {
+        return !any.size;
+      }
+      for (let i in any) {
+        return false;
+      }
+      return true;
+    }
+    return false;
+  };
+  var join = (separator, ...vals) => {
+    let s = "";
+    for (let v of vals) {
+      v = toString3(v);
+      if (!v) {
+        continue;
+      }
+      s += (!s ? "" : separator) + v;
+    }
+    return s;
+  };
+  var throwMajor = (reason, details) => {
+    throw Major.fail(reason, details);
+  };
+  var throwMinor = (reason, details) => {
+    throw Minor.fail(reason, details);
+  };
+  var reset = (process2, chop, context) => {
+    const _p = vault.get(chop);
+    if (!_p) {
+      throwMajor("not a chop");
+    }
+    const { bundle, init, handlers, childs } = _p;
+    bundle.clear();
+    _p.state = "init";
+    init();
+    _p.state = "ready";
+    if (childs.size) {
+      for (const child of childs) {
+        $reset(child, context);
+      }
+    }
+    runEvent(handlers, process2);
+  };
+  var $reset = function(chop, context) {
+    return Process.sandbox("reset", chop, context, arguments, reset);
+  };
+  var booleans_exports = {};
+  __export3(booleans_exports, {
+    toBoolean: () => toBoolean
+  });
+  var _bols = /^(0|f|n|no|not|off|false)$/i;
+  var toBoolean = (any) => typeof any !== "string" ? !!any : !_bols.test(any);
+  var functions_exports = {};
+  __export3(functions_exports, {
+    toFunction: () => toFunction
+  });
+  var dates_exports = {};
+  __export3(dates_exports, {
+    toDate: () => toDate
+  });
+  var toDate = (any, opt = {}) => {
+    let date = any instanceof Date ? any : new Date(any);
+    let num = date.getTime();
+    if (isNaN(num)) {
+      throw Major.fail("not a date");
+    }
+    const { min, max } = opt;
+    if (min == null && max == null) {
+      return date;
+    }
+    if (max != null) {
+      num = Math.min(num, max);
+    }
+    if (min != null) {
+      num = Math.max(num, min);
+    }
+    return new Date(num);
+  };
+  var numbers_exports = {};
+  __export3(numbers_exports, {
+    toNumber: () => toNumber
+  });
+  var _nums = /-?(\d+(\s+\d+)*)*[,.]?\d+/;
+  var strToNum = (str) => {
+    const match = String(str).replace(/\u00A0/g, " ").match(_nums);
+    if (!match || !match[0]) {
+      return NaN;
+    }
+    const res = Number(match[0].replaceAll(" ", "").replace(",", "."));
+    return res;
+  };
+  var toNumber = (any, opt = {}) => {
+    const t = typeof any;
+    let num;
+    if (t === "number") {
+      num = any;
+    }
+    if (t === "string") {
+      num = strToNum(any);
+    } else {
+      num = Number(any);
+    }
+    const { min, max, dec } = opt;
+    if (isNaN(num)) {
+      throw Major.fail("not a number");
+    }
+    if (max != null) {
+      num = Math.min(num, max);
+    }
+    if (min != null) {
+      num = Math.max(num, min);
+    }
+    if (dec == 0) {
+      num = Math.round(num);
+    } else if (dec > 0) {
+      const pow = Math.pow(10, dec);
+      num = Math.round(num * pow) / pow;
+    }
+    return num;
+  };
+  var objects_exports = {};
+  __export3(objects_exports, {
+    toObject: () => toObject
+  });
+  var toObject = (obj) => {
+    const t = typeof obj;
+    if (t === "object") {
+      return obj;
+    }
+    if (t !== "string") {
+      throw Major.fail("unparseable");
+    }
+    try {
+      return JSON.parse(obj);
+    } catch (e) {
+      throw Major.fail("unparseable");
+    }
+  };
+  var regexp_exports = {};
+  __export3(regexp_exports, {
+    toRegExp: () => toRegExp
+  });
+  var toRegExp = (any) => {
+    if (any instanceof RegExp) {
+      return any;
+    }
+    if (typeof any != "string") {
+      throw Major.fail("not a regexp");
+    }
+    try {
+      return (0, import_regex_parser.default)(any);
+    } catch (err) {
+      throw Major.fail("unparseable");
+    }
+  };
+  var modules = [booleans_exports, dates_exports, functions_exports, numbers_exports, objects_exports, regexp_exports, strings_exports, uni_exports];
+  var __default = modules;
+  var tools = {};
+  for (const file of __default) {
+    solids(tools, file);
+  }
+  var toFunction = (any) => typeof any === "function" ? any : anyToFn(any, tools);
+  var SuperMap = class extends Map {
+    getAll(groupId) {
+      return super.get(groupId);
+    }
+    get(groupId, keyId) {
+      return super.get(groupId)?.get(keyId);
+    }
+    has(groupId, keyId) {
+      const sub = super.get(groupId);
+      return sub && sub.has(keyId);
+    }
+    set(groupId, keyId, obj) {
+      let sub = super.get(groupId);
+      if (!sub) {
+        super.set(groupId, sub = /* @__PURE__ */ new Map());
+      }
+      sub.set(keyId, obj);
+    }
+    delete(groupId, keyId) {
+      const sub = super.get(groupId);
+      if (!sub) {
+        return;
+      } else if (sub.size <= 1) {
+        super.delete(groupId);
+      } else {
+        sub.delete(keyId);
+      }
+    }
+  };
+  var prepareSingleGroup = (bundle, id, rec, from, to3) => {
+    if (from == to3) {
+      return;
+    }
+    if (to3 != null) {
+      const current = bundle.byGroup.get(to3, id);
+      if (current && current !== rec) {
+        throw Major.fail(`Duplicate id '${id} at ${to3}'`);
+      }
+    }
+    return (_) => syncSingleGroup(bundle, id, rec, from, to3);
+  };
+  var syncSingleGroup = (bundle, id, rec, from, to3) => {
+    const { byRec, byGroup } = bundle;
+    if (to3 == null) {
+      byRec.delete(rec);
+    } else {
+      byGroup.set(to3, id, rec);
+      byRec.set(rec, to3);
+    }
+    byGroup.delete(from, id);
+  };
+  var prepareMultiGroup = (bundle, id, rec, from, to3) => {
+    let hasNew, toUniq;
+    if (to3 != null) {
+      toUniq = /* @__PURE__ */ new Set();
+      to3 = toArr(to3);
+      for (const groupId of to3) {
+        if (toUniq.has(groupId)) {
+          continue;
+        }
+        toUniq.add(groupId);
+        if (from?.has(groupId)) {
+          continue;
+        }
+        hasNew = true;
+        const current = bundle.byGroup.get(groupId, id);
+        if (current && current !== rec) {
+          throw Major.fail(`Duplicate id '${id}' at '${groupId}'`);
+        }
+      }
+    }
+    if (!hasNew && from?.size === toUniq?.size) {
+      return;
+    }
+    return (_) => syncMultiGroup(bundle, id, rec, from, toUniq);
+  };
+  var syncMultiGroup = (bundle, id, rec, from, to3) => {
+    const { byRec, byGroup } = bundle;
+    if (to3 == null) {
+      byRec.delete(rec);
+    } else {
+      for (const groupId of to3) {
+        if (from?.has(groupId)) {
+          from.delete(groupId);
+          continue;
+        }
+        byGroup.set(groupId, id, rec);
+      }
+      byRec.set(rec, to3);
+    }
+    if (from != null) {
+      for (const groupId of from) {
+        byGroup.delete(groupId, id);
+      }
+    }
+  };
+  var Bundle = class {
+    constructor(opt = {}) {
+      const isMultiGroup = toBoolean(opt.isMultiGroup);
+      const filter2 = toFce(opt.filter, true);
+      const getId = isFce(opt.getId) ? opt.getId : (r) => r.id;
+      const getGroup = !isMultiGroup ? toFce(opt.getGroup) : wrapFce(toArr, toFce(opt.getGroup, [void 0]));
+      solids(this, {
+        byRec: /* @__PURE__ */ new Map(),
+        byGroup: new SuperMap(),
+        getId,
+        getGroup,
+        filter: filter2,
+        isMultiGroup
+      });
+    }
+    isInGroup(groupId, rec) {
+      const group = this.getGroup(rec);
+      return this.isMultiGroup ? group.includes(groupId) : group === groupId;
+    }
+    clear() {
+      this.byRec.clear();
+      this.byGroup.clear();
+    }
+    prepare(rec, inc = true) {
+      const { byRec, getId, getGroup, filter: filter2, isMultiGroup } = this;
+      inc = inc && filter2(rec);
+      const has = byRec.has(rec);
+      if (!inc && !has) {
+        return;
+      }
+      const id = getId(rec);
+      const to3 = inc ? getGroup(rec) : null;
+      const from = byRec.get(rec);
+      if (isMultiGroup) {
+        return prepareMultiGroup(this, id, rec, from, to3);
+      } else if (to3 != from) {
+        return prepareSingleGroup(this, id, rec, from, to3);
+      }
+    }
+    sync(rec) {
+      const sync2 = this.prepare(rec);
+      if (sync2) {
+        sync2();
+      }
+    }
+  };
   var Chop = class {
     constructor(id, opt = {}) {
       id = toStr(id);
       if (!id) {
         throw Major.fail("missing id");
       }
-      const { parent, init, group, isMultiGroup = false } = opt;
-      const filter2 = toFce(opt.filter, true);
+      const { parent, init } = opt;
       const _p = {
         state: "pending",
         handlers: [],
         childs: /* @__PURE__ */ new Set(),
-        groupIdsByRec: /* @__PURE__ */ new Map(),
-        // rec -> groupIds
-        recsByGroupId: /* @__PURE__ */ new Map(),
-        // groupId -> recs
-        isMultiGroup,
         init: toFce(init),
-        filter: parent ? (rec) => parent.getGroup(rec) === id && filter2(rec) : filter2
+        bundle: new Bundle(opt)
       };
       solids(this, {
         id,
         db: parent?.db || this,
-        parent,
-        getGroup: !isMultiGroup ? toFce(group) : wrapFce(toArr, toFce(group, [void 0])),
-        isMultiGroup
+        parent
       }, false);
       virtuals(this, {
         state: (_) => _p.state,
-        size: (_) => _p.groupIdsByRec.size,
-        childs: (_) => [..._p.childs]
+        size: (_) => _p.bundle.byRec.size,
+        childs: (_) => [..._p.childs],
+        isMultiGroup: (_) => _p.bundle.isMultiGroup
       });
-      vault.set(this, _p);
-      if (!parent) {
-        return;
+      if (!info_default.isBuild) {
+        virtual2(this, "bundle", (_) => _p.bundle);
       }
-      const _pp = vault.get(parent);
-      _pp.childs.add(this);
-      _p.init = (context) => {
-        for (const [rec] of _pp.groupIdsByRec) {
-          afterAddInit(this, rec, context);
-        }
-      };
+      vault.set(this, _p);
     }
+    //TODO
     msg(text, details = {}) {
       let msg2 = this.id;
       for (let i in details) {
@@ -6190,370 +6489,109 @@
       const res = {};
       for (const i in rec) {
         const v = rec[i];
-        res[i] = Array.isArray(v) ? v.map(exportFn) : exportFn(v);
       }
       return res;
     }
     exportAll() {
       return this.map(this.export);
     }
-    chop(id, opt = {}) {
+    chop(id, opt = {}, context) {
+      const { state, bundle, childs } = vault.get(this);
+      const filter2 = toFce(opt.filter, true);
       opt.parent = this;
-      return new Chop(id, opt);
-    }
-  };
-  var saveRegExp = (any, col) => {
-    if (any instanceof RegExp) {
-      return any;
-    }
-    if (typeof any != "string") {
-      throw Major.fail("not a regexp");
-    }
-    try {
-      return (0, import_regex_parser.default)(any);
-    } catch (err) {
-      throw Major.fail("unparseable");
-    }
-  };
-  var _bols = /^(0|n|no|not|off|false)$/i;
-  var saveBol = (val, col) => typeof val !== "string" ? !!val : !_bols.test(val);
-  var _nums = /-?(\d+(\s+\d+)*)*[,.]?\d+/;
-  var strToNum = (str) => {
-    const match = String(str).replace(/\u00A0/g, " ").match(_nums);
-    if (!match || !match[0]) {
-      return NaN;
-    }
-    const res = Number(match[0].replaceAll(" ", "").replace(",", "."));
-    return res;
-  };
-  var saveNum = (num, col) => {
-    const t = typeof num;
-    if (t === "string") {
-      num = strToNum(num);
-    } else if (t !== "number") {
-      num = Number(num);
-    }
-    const { name, min, max, dec } = col;
-    if (isNaN(num)) {
-      throw Major.fail("not a number");
-    }
-    if (max != null) {
-      num = Math.min(num, max);
-    }
-    if (min != null) {
-      num = Math.max(num, min);
-    }
-    if (dec == 0) {
-      num = Math.round(num);
-    } else if (dec > 0) {
-      const pow = Math.pow(10, dec);
-      num = Math.round(num * pow) / pow;
-    }
-    return num;
-  };
-  var saveStr = (str, col) => {
-    str = isNull(str) ? "" : String(str);
-    if (str === "[object Object]") {
-      try {
-        str = JSON.stringify(str);
-      } catch (e) {
-        throw Major.fail("unparseable");
+      opt.filter = (rec) => bundle.isInGroup(id, rec) && filter2(rec);
+      opt.init = (_) => {
+        for (const [rec] of bundle.byRec) {
+          sync(child, rec, true);
+        }
+      };
+      const child = new Chop(id, opt);
+      childs.add(child);
+      if (state !== "init") {
+        $reset(child, context);
       }
+      return child;
     }
-    const { name, min, max } = col;
-    if (min != null && str.length < min) {
-      throw Major("too short", min);
-    }
-    if (max != null && str.length > max) {
-      str = str.substr(0, max);
-    }
-    return str;
-  };
-  var saveObj = (obj, col) => {
-    const t = typeof obj;
-    if (t === "object") {
-      return obj;
-    }
-    if (t !== "string") {
-      throw Major.fail("unparseable");
-    }
-    try {
-      return JSON.parse(obj);
-    } catch (e) {
-      throw Major.fail("unparseable");
-    }
-  };
-  var saveDate = (date, col) => {
-    if (!(date instanceof Date)) {
-      date = new Date(date);
-    }
-    const { name, min, max } = col;
-    let num = date.getTime();
-    if (isNaN(num)) {
-      throw Major.fail("not a date");
-    }
-    if (min == null && max == null) {
-      return date;
-    }
-    if (max != null) {
-      num = Math.min(num, max);
-    }
-    if (min != null) {
-      num = Math.max(num, min);
-    }
-    return new Date(num);
   };
   var getter = fcePass;
   var setter = fcePass;
   var isRequired = fceTrue;
   var isReadonly = fceTrue;
-  var metaSoft = Symbol("soft");
-  var metaHard = Symbol("hard");
-  var metaNumb = Symbol("numb");
-  var metaToStr = (v) => v === metaNumb ? "numb" : v === metaHard ? "hard" : v === metaSoft ? "soft" : void 0;
-  var isMetaEnt = (v) => v === "_ents" || v === "_types" || v === "_cols";
+  var isMetaEnt = (v) => metaData.hasOwnProperty(v);
   var metaData = {
     "_ents": {
-      "_ents": { meta: metaNumb },
-      "_cols": { meta: metaNumb },
-      "_types": { meta: metaNumb }
+      "_ents": { meta: "numb" },
+      "_cols": { meta: "numb" },
+      "_types": { meta: "numb" }
     },
     "_types": {
-      "meta": { meta: metaNumb, setter: metaToStr, getter },
-      "string": { meta: metaNumb, setter: saveStr, getter },
-      "boolean": { meta: metaNumb, setter: saveBol, getter },
-      "number": { meta: metaNumb, setter: saveNum, getter },
-      "datetime": { meta: metaNumb, setter: saveDate, getter },
-      "duration": { meta: metaNumb, setter: saveNum, getter },
-      "function": { meta: metaNumb, setter: saveFn, getter },
-      "regexp": { meta: metaNumb, setter: saveRegExp, getter },
-      "object": { meta: metaNumb, setter: saveObj, getter },
-      "ref": { meta: metaNumb, setter: toRefId, getter },
-      "nref": { meta: metaNumb, setter, getter }
+      "string": { meta: "numb", setter: (v, c) => toString3(v, c), getter },
+      "boolean": { meta: "numb", setter: (v, c) => toBoolean(v, c), getter },
+      "number": { meta: "numb", setter: (v, c) => toNumber(v, c), getter },
+      "datetime": { meta: "numb", setter: (v, c) => toDate(v, c), getter },
+      "duration": { meta: "numb", setter: (v, c) => toNumber(v, c), getter },
+      "function": { meta: "numb", setter: (v, c) => toFunction(v, c), getter, saver: (v) => toString3(v) },
+      "regexp": { meta: "numb", setter: (v, c) => toRegExp(v, c), getter },
+      "object": { meta: "numb", setter: (v, c) => toObject(v, c), getter, saver: (v) => toString3(v) },
+      "ref": { meta: "numb", setter: (v, c) => toId(v, c), getter },
+      "nref": { meta: "numb", setter, getter }
     },
     "_cols": {
-      "_ents-meta": {
-        meta: metaNumb,
-        ent: "_ents",
-        name: "meta",
-        type: "meta",
-        isReadonly
-      },
-      "_ents-cols": {
-        meta: metaNumb,
-        ent: "_ents",
-        name: "cols",
-        type: "ref",
-        ref: "_cols",
-        parent: "_cols-ent",
-        isList: true,
-        noCache: true,
-        store: (c, db) => {
-          const { ref, parent: { name, isList } } = c;
-          return db.chop(ref.id, {
-            group: (r) => r[name],
-            isMultiGroup: isList
-          });
-        },
-        formula: (r, b, s) => s.getList(r, false)
-      },
-      "_ents-size": {
-        meta: metaNumb,
-        ent: "_ents",
-        name: "size",
-        type: "number",
-        noCache: true,
-        store: (c, db) => db,
-        formula: (r, b, s) => s.getSize(r.id, false)
-      },
+      "_ents-_ent": { meta: "numb", ent: "_ents", name: "_ent", type: "ref", ref: "_ents", isReadonly, isRequired },
+      "_ents-id": { meta: "numb", ent: "_ents", name: "id", type: "string", isReadonly, isRequired },
+      "_ents-meta": { meta: "numb", ent: "_ents", name: "meta", type: "string", isReadonly },
+      // "_ents-cols":{
+      //     meta:"numb", ent:"_ents", name:"cols", type:"ref", ref:"_cols", parent:"_cols-ent", isList:true, noCache:true,
+      //     store:(c, db)=>{
+      //         const { ref, parent:{ name, isList }} = c;
+      //         return db.chop(ref.id, {
+      //             group:r=>r[name],
+      //             isMultiGroup:isList
+      //         })
+      //     },
+      //     formula:(r, b, s)=>s.getList(r, false)
+      // },
+      // "_ents-size":{
+      //     meta:"numb", ent:"_ents", name:"size", type:"number", noCache:true,
+      //     store:(c, db)=>db,
+      //     formula:(r, b, s)=>s.getSize(r.id, false)
+      // },
       //_types
-      "_types-meta": {
-        meta: metaNumb,
-        ent: "_types",
-        name: "meta",
-        type: "meta",
-        isReadonly
-      },
-      "_types-setter": {
-        meta: metaNumb,
-        ent: "_types",
-        name: "setter",
-        type: "function",
-        isReadonly,
-        fallback: (_) => setter
-      },
-      "_types-getter": {
-        meta: metaNumb,
-        ent: "_types",
-        name: "getter",
-        type: "function",
-        isReadonly,
-        fallback: (_) => getter
-      },
+      "_types-_ent": { meta: "numb", ent: "_types", name: "_ent", type: "ref", ref: "_ents", isReadonly, isRequired },
+      "_types-id": { meta: "numb", ent: "_types", name: "id", type: "string", isReadonly, isRequired, formula: (r) => join("-", r.ent?.id, r.name) },
+      "_types-meta": { meta: "numb", ent: "_types", name: "meta", type: "string", isReadonly },
+      "_types-setter": { meta: "numb", ent: "_types", name: "setter", type: "function", isReadonly, fallback: (_) => (v) => v },
+      "_types-getter": { meta: "numb", ent: "_types", name: "getter", type: "function", isReadonly, fallback: (_) => (v) => v },
+      "_types-saver": { meta: "numb", ent: "_types", name: "saver", type: "function", isReadonly },
+      "_types-loader": { meta: "numb", ent: "_types", name: "loader", type: "function", isReadonly },
       //_cols
-      "_cols-meta": {
-        meta: metaNumb,
-        ent: "_cols",
-        name: "meta",
-        type: "meta",
-        isReadonly
-      },
-      "_cols-ent": {
-        meta: metaNumb,
-        ent: "_cols",
-        name: "ent",
-        type: "ref",
-        ref: "_ents",
-        isReadonly,
-        isRequired
-      },
-      "_cols-name": {
-        meta: metaNumb,
-        ent: "_cols",
-        name: "name",
-        type: "string",
-        isReadonly,
-        isRequired
-      },
-      "_cols-type": {
-        meta: metaNumb,
-        ent: "_cols",
-        name: "type",
-        type: "ref",
-        ref: "_types",
-        fallback: (_) => "string"
-      },
-      "_cols-ref": {
-        meta: metaNumb,
-        ent: "_cols",
-        name: "ref",
-        type: "ref",
-        ref: "_ents"
-      },
-      "_cols-parent": {
-        meta: metaNumb,
-        ent: "_cols",
-        name: "parent",
-        type: "ref",
-        ref: "_cols"
-      },
-      "_cols-store": {
-        meta: metaNumb,
-        ent: "_cols",
-        name: "store",
-        type: "function"
-      },
-      "_cols-isList": {
-        meta: metaNumb,
-        ent: "_cols",
-        name: "isList",
-        type: "boolean"
-      },
-      "_cols-isReadonly": {
-        meta: metaNumb,
-        ent: "_cols",
-        name: "isReadonly",
-        type: "function"
-      },
-      "_cols-isRequired": {
-        meta: metaNumb,
-        ent: "_cols",
-        name: "isRequired",
-        type: "function"
-      },
-      "_cols-resetIf": {
-        meta: metaNumb,
-        ent: "_cols",
-        name: "resetIf",
-        type: "function"
-      },
-      "_cols-init": {
-        meta: metaHard,
-        ent: "_cols",
-        name: "init",
-        type: "function"
-        //Type should be defined as a function
-      },
-      "_cols-fallback": {
-        meta: metaHard,
-        ent: "_cols",
-        name: "fallback",
-        type: "function"
-        //Type should be defined as a function
-      },
-      "_cols-validator": {
-        meta: metaHard,
-        ent: "_cols",
-        name: "validator",
-        type: "function"
-      },
-      "_cols-decimal": {
-        meta: metaHard,
-        ent: "_cols",
-        name: "decimal",
-        type: "number",
-        decimal: 0,
-        min: 0
-      },
-      "_cols-min": {
-        meta: metaHard,
-        ent: "_cols",
-        name: "min",
-        type: "number"
-        //decimal:_=>r.decimal //decimal should be defined as a function
-      },
-      "_cols-max": {
-        meta: metaHard,
-        ent: "_cols",
-        name: "max",
-        type: "number"
-        //decimal:_=>r.decimal, min:_=>r.min //decimal & min should be defined as a function
-      },
-      "_cols-formula": {
-        meta: metaHard,
-        ent: "_cols",
-        name: "formula",
-        type: "function"
-      },
-      "_cols-noCache": {
-        meta: metaNumb,
-        ent: "_cols",
-        name: "noCache",
-        type: "boolean"
-      },
-      "_cols-omitChange": {
-        meta: metaNumb,
-        ent: "_cols",
-        name: "omitChange",
-        type: "boolean"
-      }
+      "_cols-_ent": { meta: "numb", ent: "_cols", name: "_ent", type: "ref", ref: "_ents", isReadonly, isRequired },
+      "_cols-id": { meta: "numb", ent: "_cols", name: "id", type: "string", isReadonly, isRequired },
+      "_cols-meta": { meta: "numb", ent: "_cols", name: "meta", type: "string", isReadonly },
+      "_cols-ent": { meta: "numb", ent: "_cols", name: "ent", type: "ref", ref: "_ents", isReadonly, isRequired },
+      "_cols-name": { meta: "numb", ent: "_cols", name: "name", type: "string", isReadonly, isRequired },
+      "_cols-type": { meta: "numb", ent: "_cols", name: "type", type: "ref", ref: "_types", fallback: (_) => "string" },
+      "_cols-ref": { meta: "numb", ent: "_cols", name: "ref", type: "ref", ref: "_ents" },
+      "_cols-parent": { meta: "numb", ent: "_cols", name: "parent", type: "ref", ref: "_cols" },
+      "_cols-store": { meta: "numb", ent: "_cols", name: "store", type: "function" },
+      "_cols-isList": { meta: "numb", ent: "_cols", name: "isList", type: "boolean" },
+      "_cols-isReadonly": { meta: "numb", ent: "_cols", name: "isReadonly", type: "function" },
+      "_cols-isRequired": { meta: "numb", ent: "_cols", name: "isRequired", type: "function" },
+      "_cols-resetIf": { meta: "numb", ent: "_cols", name: "resetIf", type: "function" },
+      "_cols-init": { meta: "hard", ent: "_cols", name: "init", type: "function" },
+      //Type should be defined as a function
+      "_cols-fallback": { meta: "hard", ent: "_cols", name: "fallback", type: "function" },
+      //Type should be defined as a function
+      "_cols-validator": { meta: "hard", ent: "_cols", name: "validator", type: "function" },
+      "_cols-decimal": { meta: "hard", ent: "_cols", name: "decimal", type: "number", decimal: 0, min: 0 },
+      "_cols-min": { meta: "hard", ent: "_cols", name: "min", type: "number" },
+      //decimal should be defined as a function
+      "_cols-max": { meta: "hard", ent: "_cols", name: "max", type: "number" },
+      //decimal:_=>r.decimal //decimal should be defined as a function
+      "_cols-formula": { meta: "hard", ent: "_cols", name: "formula", type: "function" },
+      "_cols-noCache": { meta: "numb", ent: "_cols", name: "noCache", type: "boolean" },
+      "_cols-omitChange": { meta: "numb", ent: "_cols", name: "omitChange", type: "boolean" }
     }
-  };
-  var metaDataDynamic = (entId) => {
-    return [
-      {
-        _ent: `_cols`,
-        id: `${entId}-_ent`,
-        ent: entId,
-        name: "_ent",
-        type: "ref",
-        ref: "_ents",
-        isReadonly,
-        isRequired,
-        meta: metaNumb
-      },
-      {
-        _ent: `_cols`,
-        id: `${entId}-id`,
-        ent: entId,
-        name: "id",
-        type: "string",
-        isReadonly,
-        isRequired,
-        meta: isMetaEnt(entId) ? metaNumb : metaSoft,
-        formula: entId === "_cols" ? (r) => join("-", r.ent?.id, r.name) : void 0
-      }
-    ];
   };
   var nregCol = (db, entId, _col, action2) => {
     const colsByEnt = vault.get(db)?.colsByEnt;
@@ -6623,7 +6661,7 @@
       setter: (_) => createSetter(_col)
     });
   };
-  var setCol = (_rec, ctx) => {
+  var setCol = (_rec) => {
     const { db, values } = _rec;
     if (values._ent !== "_cols") {
       return;
@@ -6651,16 +6689,7 @@
       }
     }
   };
-  var loadEnt = (_rec, ctx) => {
-    const { db, values } = _rec;
-    if (values._ent !== "_ents") {
-      return;
-    }
-    for (const mdd of metaDataDynamic(values.id)) {
-      loadRec(db, mdd, ctx);
-    }
-  };
-  var _results2 = /* @__PURE__ */ new WeakMap();
+  var _results = /* @__PURE__ */ new WeakMap();
   var Result = class {
     constructor(_rec, context) {
       const _p = {
@@ -6677,10 +6706,10 @@
         isOk: (_) => _p.isOk,
         fails: (_) => [..._p.fails]
       });
-      _results2.set(this, _p);
+      _results.set(this, _p);
     }
     addFail(fail, nonMinorThrow = false) {
-      const _p = _results2.get(this);
+      const _p = _results.get(this);
       const { values } = _p._rec;
       fail.setRow(values.id).setEnt(values._ent);
       if (fail.severity !== "minor") {
@@ -6697,7 +6726,7 @@
   var ResultTurn = class extends Result {
     constructor(_rec) {
       super(_rec);
-      const _p = _results2.get(this);
+      const _p = _results.get(this);
       _p.changed = /* @__PURE__ */ new Set();
       _p.isReal = _rec.state === "pending";
       virtuals(this, {
@@ -6706,7 +6735,7 @@
       });
     }
     addChange(change, isReal = false) {
-      const _p = _results2.get(this);
+      const _p = _results.get(this);
       _p.changed.add(change);
       if (isReal) {
         _p.isReal = true;
@@ -6715,11 +6744,12 @@
     }
   };
   var Turn = class {
-    static attach(_rec, input, isUpdate = false) {
-      return _rec.turn = new Turn(_rec, input, isUpdate);
+    static attach(_rec, process2, input, isUpdate = false) {
+      return _rec.turn = new Turn(_rec, process2, input, isUpdate);
     }
-    constructor(_rec, input, isUpdate = false) {
+    constructor(_rec, process2, input, isUpdate = false) {
       this._rec = _rec;
+      this.process = process2;
       this.result = new ResultTurn(_rec);
       solids(this, {
         isUpdate,
@@ -6827,6 +6857,9 @@
     }
   };
   var Record = class {
+    constructor(values) {
+      Object.assign(this, values);
+    }
     toString() {
       return this.id;
     }
@@ -6834,76 +6867,21 @@
       return this.id;
     }
   };
-  var _priv = /* @__PURE__ */ new WeakMap();
-  var $end = (process) => {
-    const _p = _priv.get(process);
-    _p.processes.pop();
-    _p.isDone = true;
-    return process;
-  };
-  var Process = class {
-    static failEnd(fail, action2, context, chop, _rec) {
-      const process = new Process(action2, context, chop, _rec);
-      return $end(process.fail(fail));
-    }
-    constructor(action2, context, chop, _rec) {
-      const db = chop ? chop.db : void 0;
-      const processes = db ? vault.get(db).processes : void 0;
-      const depth = processes?.push(this) - 1 || 0;
-      const parent = !depth ? void 0 : processes[depth - 1];
-      if (parent) {
-        _priv.get(parent).childs.push(this);
-      }
-      const _p = {
-        isOk: true,
-        isDone: false,
-        fails: [],
-        childs: [],
-        processes
-      };
-      solids(this, {
-        db,
-        chop,
-        parent
-      }, false);
-      solids(this, {
-        depth,
-        action: action2,
-        context
-      });
-      virtuals(this, {
-        isOk: (_) => _p.isOk,
-        isDone: (_) => _p.isDone,
-        fails: (_) => [..._p.fails],
-        childs: (_) => [..._p.childs],
-        record: (_) => _rec?.current
-      });
-      _priv.set(this, _p);
-    }
-    fail(fail, nonMinorThrow = false) {
-      const _p = _results.get(this);
-      _p.fails.push(fail);
-      if (fail.severity !== "minor") {
-        if (nonMinorThrow) {
-          throw fail;
-        } else {
-          _p.isOk = false;
-        }
-      }
-      return this;
-    }
-  };
   var RecordPrivate = class {
     constructor(db, values) {
+      this.state = "pending";
+      const v = this.values = Object.assign({}, values);
+      v._ent = toId(v._ent);
+      if (v._ent === "_cols") {
+        v.ent = toId(v.ent);
+      }
+      this.meta = isMetaEnt(v._ent) ? v.meta : void 0;
       solids(this, {
         db,
-        current: new Record(),
+        current: new Record(v),
         before: new Record()
       });
-      this.state = "pending";
-      this.values = {};
       regRec(this);
-      this.valsLoad(values);
     }
     msg(text, details = {}) {
       return this.db.msg(text, {
@@ -6954,10 +6932,10 @@
       }
       return this;
     }
-    colsPrepare() {
+    colsPrepare(process2) {
       const { state, values } = this;
       if (state === "pending") {
-        Turn.attach(this, values);
+        Turn.attach(this, process2, values);
       }
       return this;
     }
@@ -6969,39 +6947,26 @@
       }
       return this.turn.detach();
     }
-    valsLoad(values) {
-      const { state, current, values: v } = this;
-      if (state !== "pending") {
-      }
-      Object.assign(v, values);
-      v._ent = toRefId(v._ent);
-      if (v._ent === "_cols") {
-        v.ent = toRefId(v.ent);
-      }
-      this.meta = isMetaEnt(v._ent) ? v.meta = metaToStr(v.meta) : void 0;
-      Object.assign(this.current, v);
-      return this;
-    }
     valsPush(values, ctx, isUpdate = false) {
-      this.values = Turn.attach(this, values, isUpdate).execute();
+      this.values = Turn.attach(this, process, values, isUpdate).execute();
       const result2 = this.turn.detach();
       if (this.turn.isReal) {
-        setCol(this, ctx);
-        afterUpdate(this.db, result2, ctx);
+        setCol(this);
+        sync(this.db, this.current, true, result2);
       }
       return result2;
     }
     remove(context, force = false) {
-      const { db, meta } = this;
-      const process = new Process("remove", context, db, this);
+      const { db, meta, current } = this;
+      const process2 = new Process("remove", context, db, this);
       if (!force && meta) {
-        process.fail(Major.fail("is meta"));
+        process2.fail(Major.fail("is meta"));
       } else {
         this.state = "removed";
-        afterRemove(db, process);
+        sync(db, current, false, process2);
         unregRec(this);
       }
-      return $end(process);
+      return $end(process2);
     }
   };
   var _records = /* @__PURE__ */ new WeakMap();
@@ -7023,32 +6988,15 @@
     }
     ;
   };
-  var loadRec = (db, values, ctx) => {
-    const id = toRefId(values);
-    const _ent = toRefId(values._ent);
-    const brother = _chopGetRec(db, _ent, id);
-    const _rec = brother ? getRecPriv(brother) : new RecordPrivate(db, values);
-    if (brother) {
-      _rec.valsLoad(values);
-      afterUpdateInit(db, _rec.current);
-    } else {
-      afterAddInit(db, _rec.current);
-      loadEnt(_rec);
-    }
-    return _rec;
-  };
-  var addRec = (db, values, ctx) => {
+  var loadRec = (db, values) => {
     const _rec = new RecordPrivate(db, values);
-    const res = _rec.colsInit().colsPrepare().colsFinish();
-    if (res.isOk) {
-      afterAdd(db, res, ctx);
-    }
-    return res;
+    sync(db, _rec.current, true);
+    return _rec;
   };
   var addOrSetRec = (db, values, ctx, isUpdate) => {
     const _rec = new RecordPrivate(db, values).colsInit().colsPrepare();
     const { _ent, id } = _rec.current;
-    const brother = _chopGetRec(db, toRefId(_ent), id);
+    const brother = _chopGetRec(db, toId(_ent), id);
     if (brother) {
       return getRecPriv(brother).valsPush(values, ctx, isUpdate);
     }
@@ -7058,27 +7006,6 @@
     }
     return res;
   };
-  var $reset = (chop, context) => {
-    const _p = vault.get(chop);
-    if (!_p) {
-      return Process.failEnd(Major.fail("is not chop"));
-    }
-    const process = new Process("reset", context, chop);
-    const { recsByGroupId, groupIdsByRec, init, handlers, childs } = _p;
-    groupIdsByRec.clear();
-    recsByGroupId.clear();
-    _p.state = "init";
-    init(process);
-    _p.state = "reset";
-    if (childs.size) {
-      for (const child of childs) {
-        $reset(child, context);
-      }
-    }
-    run2(handlers, process);
-    _p.state = "ready";
-    return $end(process);
-  };
   var $remove = (record, context) => {
     const _rec = getRecPriv(record, false);
     if (!_rec) {
@@ -7086,20 +7013,24 @@
     }
     return _rec.remove(context);
   };
-  var $add = (db, values, context) => {
-    const process = new Process("add", context);
-    return addRec(db, values, context);
+  var add = (process2, db, values) => {
+    const _rec = new RecordPrivate(db, values);
+    _rec.colsInit().colsPrepare(process2).colsFinish();
+    sync(db, _rec.current, true, process2);
   };
-  var set = (process, record, values, context) => {
+  function $add(db, values, context) {
+    return Process.sandbox("add", db, context, arguments, add);
+  }
+  var set = (process2, record, values, context) => {
     return getRecPriv(record).valsPush(values, context, action === "update");
   };
   var $set = (record, values, context) => {
-    const process = new Process("set", context);
+    const process2 = new Process("set", context);
     set("set", record, values, context);
   };
   var $update = (record, values, context) => set("update", record, values, context);
   var addOrSet = (action2, db, values, context, isUpdate = false) => {
-    const process = new Process("addOrSet", context);
+    const process2 = new Process("addOrSet", context);
     return addOrSetRec(db, values, context, isUpdate);
   };
   var $addOrSet = (db, values, context) => addOrSet("set", db, values, context);
@@ -7108,19 +7039,18 @@
     constructor(id, opt = {}) {
       const { init } = opt;
       super(id, {
-        group: (rec) => toRefId(rec._ent),
-        init: (context) => {
-          const load = (values) => loadRec(this, values, context);
-          init(load, context);
+        getId: (rec) => toId(rec.id),
+        getGroup: (rec) => toId(rec._ent),
+        init: (_) => {
           for (const _ent in metaData) {
             for (const id2 in metaData[_ent]) {
-              load({ _ent, id: id2, ...metaData[_ent][id2] });
+              loadRec(this, { _ent, id: id2, ...metaData[_ent][id2] });
             }
             ;
           }
-          for (const [_, rec] of _chopGetRecs(this, "_cols")) {
+          for (const [_2, rec] of _chopGetRecs(this, "_cols")) {
             const _rec = getRecPriv(rec);
-            setCol(_rec, context);
+            setCol(_rec);
           }
           const _recs = [];
           for (const [rec] of _chopGetAllRecs(this)) {
@@ -7159,11 +7089,14 @@
     reset(context) {
       return $reset(this, context);
     }
-    remove(record, context) {
-      return $remove(record, context);
-    }
     add(values, context) {
       return $add(this, values, context);
+    }
+    addOrSet(values, context) {
+      return $addOrSet(this, values, context);
+    }
+    addOrUpdate(values, context) {
+      return $addOrUpdate(this, values, context);
     }
     set(record, values, context) {
       return $set(record, values, context);
@@ -7171,11 +7104,8 @@
     update(record, values, context) {
       return $update(record, values, context);
     }
-    addOrSet(values, context) {
-      return $addOrSet(this, values, context);
-    }
-    addOrUpdate(values, context) {
-      return $addOrUpdate(this, values, context);
+    remove(record, context) {
+      return $remove(record, context);
     }
   };
   __publicField(DB, "reset", $reset);
@@ -7198,7 +7128,7 @@
         }
       }
     });
-    db.reset("test");
+    console.log(db.reset("test"));
     db.on((event, res, ctx) => {
       if (res) {
       }

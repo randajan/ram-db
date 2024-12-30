@@ -1,12 +1,11 @@
 import { solid, solids, virtual, virtuals } from "@randajan/props";
 import { vault } from "../../../components/uni/consts";
-import { Major } from "../Result/Fails";
 
 const _priv = new WeakMap();
 
 export const $end = (process)=>{
     const _p = _priv.get(process);
-    _p.processes.pop();
+    _p.processes?.pop();
     _p.isDone = true;
     return process;
 }
@@ -16,6 +15,10 @@ export class Process {
     static failEnd(fail, action, context, chop, _rec) {
         const process = new Process(action, context, chop, _rec);
         return $end(process.fail(fail));
+    }
+
+    static sandbox(action, chop, context, args, exe) {
+        return (new Process(action, context, chop)).sandbox(exe, args);
     }
 
     constructor(action, context, chop, _rec) {
@@ -60,7 +63,7 @@ export class Process {
     }
 
     fail(fail, nonMinorThrow=false) {
-        const _p = _results.get(this);
+        const _p = _priv.get(this);
 
         _p.fails.push(fail);
 
@@ -70,6 +73,12 @@ export class Process {
         }
 
         return this;
+    }
+
+    sandbox(exe, args) {
+        try { exe(this, ...args); }
+        catch(err) { this.fail(err); }
+        return $end(this);
     }
 
 }

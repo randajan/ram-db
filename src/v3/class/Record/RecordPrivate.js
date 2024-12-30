@@ -1,32 +1,33 @@
 import { solids } from "@randajan/props";
-import { toRefId } from "../../../components/uni/formats";
-import { afterRemove } from "../Chop/static/afterRemove";
-import { afterUpdate } from "../Chop/static/afterUpdate";
-import { metaToStr, isMetaEnt } from "../../metaData/interface";
+import { isMetaEnt } from "../../metaData/interface";
 import { Turn } from "../Result/Turn";
 import { getColsPriv, setCol } from "./static/_columns";
 import { Major } from "../Result/Fails";
 import { regRec, unregRec } from "./static/_records";
 import { Record } from "./Record";
 import { $end, Process } from "../Process/Process";
-import { vault } from "../../../components/uni/consts";
+import { toId } from "../../tools/traits/uni";
+import { sync } from "../Chop/static/eventHandlers";
 
 export class RecordPrivate {
 
     constructor(db, values) {
+
+        this.state = "pending"; //ready, removed;
+        const v = this.values = Object.assign({}, values);
+
+        v._ent = toId(v._ent);
+        if (v._ent === "_cols") { v.ent = toId(v.ent); }
+
+        this.meta = isMetaEnt(v._ent) ? v.meta : undefined; //TODO
         
         solids(this, {
             db,
-            current: new Record(),
+            current: new Record(v),
             before: new Record()
         });
 
-        this.state = "pending"; //ready, removed;
-        this.values = {};
-
         regRec(this);
-
-        this.valsLoad(values);
     }
 
     msg(text, details={}) {
@@ -73,9 +74,9 @@ export class RecordPrivate {
         return this;
     }
 
-    colsPrepare() {
+    colsPrepare(process) {
         const { state, values } = this;
-        if (state === "pending") { Turn.attach(this, values); }
+        if (state === "pending") { Turn.attach(this, process, values); }
         return this;
     }
 
@@ -89,42 +90,27 @@ export class RecordPrivate {
         return this.turn.detach();
     }
 
-    valsLoad(values) {
-        const { state, current, values:v } = this;
-        if (state !== "pending") {  } //TODO
-
-        Object.assign(v, values);
-
-        v._ent = toRefId(v._ent);
-        if (v._ent === "_cols") { v.ent = toRefId(v.ent); }
-        this.meta = isMetaEnt(v._ent) ? v.meta = metaToStr(v.meta) : undefined;
-
-        Object.assign(this.current, v);
-
-        return this;
-    }
-
     valsPush(values, ctx, isUpdate=false) {
-
-        this.values = Turn.attach(this, values, isUpdate).execute();
+        
+        this.values = Turn.attach(this, process, values, isUpdate).execute();
         const result = this.turn.detach();
 
         if (this.turn.isReal) {
-            setCol(this, ctx);
-            afterUpdate(this.db, result, ctx);
+            setCol(this);
+            sync(this.db, this.current, true, result); //TODO - here should be process
         }
 
         return result;
     }
 
     remove(context, force=false) {
-        const { db, meta } = this;
+        const { db, meta, current } = this;
         const process = new Process("remove", context, db, this);
 
         if (!force && meta) { process.fail(Major.fail("is meta")); }
         else {
             this.state = "removed";
-            afterRemove(db, process);
+            sync(db, current, false, process);
             unregRec(this);
         }
         

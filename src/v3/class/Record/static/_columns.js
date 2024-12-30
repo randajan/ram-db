@@ -1,7 +1,7 @@
-import { isNull, reArray, toRefId } from "../../../../components/uni/formats";
+import { isNull, reArray } from "../../../../components/uni/formats";
 import { getRecPriv } from "./_records";
 import { metaData } from "../../../metaData/interface";
-import { _chopGetRecs } from "../../Chop/static/_private";
+import { _chopGetRecs } from "../../Chop/static/gets";
 import { cacheds, solid } from "@randajan/props";
 import { Critical, Major, Minor } from "../../Result/Fails";
 import { vault } from "../../../../components/uni/consts";
@@ -76,7 +76,7 @@ const createTraits = _col=>{
     });
 }
 
-export const setCol = (_rec, ctx)=>{
+export const setCol = _rec=>{
     const { db, values } = _rec;
     if (values._ent !== "_cols") { return; }
 

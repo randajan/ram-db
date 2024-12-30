@@ -138,10 +138,10 @@
   resolved "https://registry.yarnpkg.com/@randajan/bifrost/-/bifrost-1.4.2.tgz#e21b9cea7e6b365b19d9162bbca352cb5885458c"
   integrity sha512-qaU2p9q28evezmR9+71ry8EuBL6wxPHwbPWNKproellF531S30NlTuwLHSRhz377MIiz1AyOla1pemdmThHfQg==
 
-"@randajan/function-parser@^0.0.4":
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/@randajan/function-parser/-/function-parser-0.0.4.tgz#462ee37ea132c7551f6bec590be1c86d3195c3ff"
-  integrity sha512-i04799iibU2CPbrV11/nEdMhTMPTMlLntKUo1UXyoy3jXuSRD/6fLMa/mmS4GRomWCzXxmWkzM5xpLGVefFdvA==
+"@randajan/function-parser@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@randajan/function-parser/-/function-parser-0.1.0.tgz#0b89aae9923b064c1d31d862ea7dccb44eb255c5"
+  integrity sha512-uFSSJ5MtDJRBRG8ycHNOW3PDlBi94f/C1HnVU7a2UxlfCRA/2TE8URJNMnhxkWkZIWsxAiHFepj3SPmfBPFvzA==
   dependencies:
     "@randajan/simple-lib" "^2.3.2"
 

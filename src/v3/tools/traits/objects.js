@@ -1,8 +1,8 @@
-import { Major } from "../class/Result/Fails";
+import { Major } from "../../class/Result/Fails";
 
 
 
-export const saveObj = (obj, col)=>{
+export const toObject = obj=>{
     const t = typeof obj;
     if (t === "object") { return obj; }
     if (t !== "string") { throw Major.fail("unparseable"); }

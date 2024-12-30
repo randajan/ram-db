@@ -12,6 +12,7 @@ slib(
         minify: false,
         lib: {
             external: ["chalk"],
+            plugins: [ImportGlobPlugin.default()],
             entries: ["index.js", "async.js", "api/odata.js", "v3/index.js"]
         },
         demo:{

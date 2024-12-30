@@ -1,19 +1,11 @@
 import { metaDataDynamic } from "../../../metaData/interface";
 import { getColsPriv } from "./_columns";
-import { addRec, loadRec } from "./_records";
 
 export const addEnt = (_rec, ctx)=>{
     const { db, values } = _rec;
     if (values._ent !== "_ents") { return; }
 
-    for (const mdd of metaDataDynamic(values.id)) { addRec(db, mdd, ctx); }
-}
-
-export const loadEnt = (_rec, ctx)=>{
-    const { db, values } = _rec;
-    if (values._ent !== "_ents") { return; }
-
-    for (const mdd of metaDataDynamic(values.id)) { loadRec(db, mdd, ctx); }
+    //for (const mdd of metaDataDynamic(values.id)) { addRec(db, mdd, ctx); }
 }
 
 

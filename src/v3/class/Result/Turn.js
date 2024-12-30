@@ -6,13 +6,14 @@ import { ResultTurn } from "./Result";
 
 export class Turn {
 
-    static attach(_rec, input, isUpdate=false) {
-        return _rec.turn = new Turn(_rec, input, isUpdate);
+    static attach(_rec, process, input, isUpdate=false) {
+        return _rec.turn = new Turn(_rec, process, input, isUpdate);
     }
 
-    constructor(_rec, input, isUpdate=false) {
+    constructor(_rec, process, input, isUpdate=false) {
 
         this._rec = _rec;
+        this.process = process;
         this.result = new ResultTurn(_rec);
         
         solids(this, {

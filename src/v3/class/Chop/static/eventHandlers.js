@@ -1,43 +1,36 @@
 import { vault } from "../../../../components/uni/consts";
 import { isFce } from "../../../../components/uni/formats";
-import { afterAdd } from "./afterAdd";
-import { afterRemove } from "./afterRemove";
-import { afterUpdate } from "./afterUpdate";
 
+const prepare = (chop, rec, inc, process, syncs, hands)=>{
+    const { bundle, childs, handlers } = vault.get(chop);
 
-export const runEvent = (handlers, childs, state, event, res, ctx)=>{
-    if (state === "init") { return; }
+    const sync = bundle.prepare(rec);
+    if (!sync) { return; }
 
-    if (childs.size) {
-        if (event === "add") {
-            for (const child of childs) { afterAdd(child, res, ctx); }
-        }
-        else if (event === "remove") {
-            for (const child of childs) { afterRemove(child, res, ctx); }
-        }
-        else if (event === "update") {
-            for (const child of childs) { afterUpdate(child, res, ctx); }
-        }
-    }
+    syncs.push(sync);
 
-    if (handlers?.length) {
-        for (let i = handlers.length - 1; i >= 0; i--) {
-            try { if (handlers[i]) { handlers[i](event, res, ctx); } }
-            catch(err) { console.error(err); } //TODO better fail handler
-        }
-    }
+    if (!process) { return; }
 
-    return true;
+    if (childs.size) { for (const child of childs) { prepare(child, rec, inc, process, syncs); }}
+    if (handlers.length) { hands.push(handlers); }
+
 }
 
-export const run = (handlers, process)=>{
-    if (!handlers?.length) { return; }
-    
+export const sync = (chop, rec, inc, process)=>{
+
+    const syncs = [], hands = [];
+
+    prepare(chop, rec, inc, process, syncs, hands);
+
+    for (const sync of syncs) { sync(); }
+    for (const hand of hands) { runEvent(hand, process); }
+}
+
+export const runEvent = (handlers, process)=>{
     for (let i = handlers.length - 1; i >= 0; i--) {
         try { if (handlers[i]) { handlers[i](process); } }
         catch(err) { console.error(err); } //TODO better fail handler
     }
-
 }
 
 

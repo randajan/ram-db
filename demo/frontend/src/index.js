@@ -17,7 +17,7 @@ beam.get().then(records=>{
         }
     });
 
-    db.reset("test");
+    console.log(db.reset("test"));
     
     db.on((event, res, ctx)=>{
         if (res) {

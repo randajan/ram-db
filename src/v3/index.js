@@ -7,7 +7,7 @@ import { $remove } from "./class/Process/static/remove";
 import { $reset } from "./class/Process/static/reset";
 import { $set, $update } from "./class/Process/static/update";
 
-
+import { tools } from "./tools";
 
 export {
     DB,

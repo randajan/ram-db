@@ -42,13 +42,3 @@ export const reArray = (val, trait)=>{
 
     return res;
 }
-
-export const join = (separator, ...vals)=>{
-    let s = "";
-    for (let v of vals) {
-        v = toStr(v);
-        if (!v) { return; }
-        s += (!s ? "" : separator) + v;
-    }
-    return s;
-}

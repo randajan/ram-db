@@ -1,4 +1,4 @@
-import { Major } from "../class/Result/Fails";
+import { Major } from "../../class/Result/Fails";
 
 const _nums = /-?(\d+(\s+\d+)*)*[,.]?\d+/;
 const strToNum = str=>{
@@ -8,12 +8,16 @@ const strToNum = str=>{
     return res;
 }
 
-export const saveNum = (num, col)=>{
-    const t = typeof num;
-    if (t === "string") { num = strToNum(num); }
-    else if (t !== "number") { num = Number(num); }
 
-    const { name, min, max, dec } = col;
+export const toNumber = (any, opt={})=>{
+    const t = typeof any;
+
+    let num;
+    if (t === "number") { num = any; }
+    if (t === "string") { num = strToNum(any); }
+    else { num = Number(any); }
+
+    const { min, max, dec } = opt;
 
     if (isNaN(num)) { throw Major.fail("not a number"); }
     if (max != null) { num = Math.min(num, max); }

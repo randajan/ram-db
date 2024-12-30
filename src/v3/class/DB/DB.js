@@ -1,10 +1,9 @@
 
 import { Chop } from "../Chop/Chop";
 
-import { toRefId } from "../../../components/uni/formats";
 import { metaData } from "../../metaData/interface";
-import { addOrSetRec, addRec, getRecPriv, loadRec } from "../Record/static/_records";
-import { _chopGetAllRecs, _chopGetRecs } from "../Chop/static/_private";
+import { getRecPriv, loadRec } from "../Record/static/_records";
+import { _chopGetAllRecs, _chopGetRecs } from "../Chop/static/gets";
 import { vault } from "../../../components/uni/consts";
 import { getColsPriv, remCol, setCol } from "../Record/static/_columns";
 import { addEnt, remEnt } from "../Record/static/_ents";
@@ -13,6 +12,7 @@ import { $remove } from "../Process/static/remove";
 import { $add } from "../Process/static/add";
 import { $set, $update } from "../Process/static/update";
 import { $addOrSet, $addOrUpdate } from "../Process/static/addOrUpdate";
+import { toId } from "../../tools/traits/uni";
 
 export class DB extends Chop {
 
@@ -29,25 +29,24 @@ export class DB extends Chop {
         const { init } = opt;
 
         super(id, {
-            group:rec=>toRefId(rec._ent),
-            init:(context)=>{
-
-                const load = values=>loadRec(this, values, context);
+            getId:rec=>toId(rec.id),
+            getGroup:rec=>toId(rec._ent),
+            init:_=>{
 
                 //load database
-                init(load, context);
+                //init(load, context);
 
                 //override with metadata
                 for (const _ent in metaData) {
                     for (const id in metaData[_ent]) {
-                        load({_ent, id, ...metaData[_ent][id]}); //TODO
+                        loadRec(this, {_ent, id, ...metaData[_ent][id]}); //TODO
                     };
                 }
 
                 //set columns definitions
                 for (const [_, rec] of _chopGetRecs(this, "_cols")) {
                     const _rec = getRecPriv(rec);
-                    setCol(_rec, context);
+                    setCol(_rec);
                 }
 
                 //prepare columns for rows
@@ -92,13 +91,14 @@ export class DB extends Chop {
     isRecord(any, throwError=false) { return !!getRecPriv(any, throwError); }
 
     reset(context) { return $reset(this, context); }
-    remove(record, context) { return $remove(record, context); }
     add(values, context) { return $add(this, values, context); }
+
+    addOrSet(values, context) { return $addOrSet(this, values, context); }
+    addOrUpdate(values, context) { return $addOrUpdate(this, values, context); }
 
     set(record, values, context) { return $set(record, values, context); }
     update(record, values, context) { return $update(record, values, context); }
 
-    addOrSet(values, context) { return $addOrSet(this, values, context); }
-    addOrUpdate(values, context) { return $addOrUpdate(this, values, context); }
+    remove(record, context) { return $remove(record, context); }
 
 }
