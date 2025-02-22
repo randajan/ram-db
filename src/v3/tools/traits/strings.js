@@ -1,6 +1,7 @@
-import { Major } from "../../class/Result/Fails";
+import { Major } from "../../class/Process/Fails";
 
 import { fnToStr } from "@randajan/function-parser";
+import { throwMajor } from "./uni";
 
 export const toString = (any, opt={})=>{
     const t = typeof any;
@@ -14,12 +15,12 @@ export const toString = (any, opt={})=>{
     
     if (str === '[object Object]') {
         try { str = JSON.stringify(any); }
-        catch(e) { throw Major.fail("unparseable"); }
+        catch(e) { throwMajor("unparseable"); }
     }
 
     const { min, max } = opt;
 
-    if (min != null && str.length < min) { throw Major.fail("too short", min); }
+    if (min != null && str.length < min) { throwMajor("too short", min); }
     if (max != null && str.length > max) { str = str.substring(0, max); }
 
     return str;

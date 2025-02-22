@@ -1,5 +1,5 @@
 
-import { Major, Minor } from "../../class/Result/Fails";
+import { Major, Minor } from "../../class/Process/Fails";
 import { toString } from "./strings";
 
 export const toId = ref=>(typeof ref !== "string") ? ref?.id : ref;

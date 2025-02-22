@@ -1,19 +1,18 @@
-import { solids } from "@randajan/props";
+import { solid, solids } from "@randajan/props";
 import { isMetaEnt } from "../../metaData/interface";
-import { Turn } from "../Result/Turn";
-import { getColsPriv, setCol } from "./static/_columns";
-import { Major } from "../Result/Fails";
-import { regRec, unregRec } from "./static/_records";
+import { Turn } from "../Turn/Turn";
+import { getColsPriv, colSet } from "./static/_columns";
+import { recReg, recUnreg } from "./static/_records";
 import { Record } from "./Record";
-import { $end, Process } from "../Process/Process";
-import { toId } from "../../tools/traits/uni";
-import { sync } from "../Chop/static/eventHandlers";
+import { throwMajor, toId } from "../../tools/traits/uni";
+import { syncIn, syncOut } from "../Chop/static/eventHandlers";
+import { Major } from "../Process/Fails";
 
 export class RecordPrivate {
 
     constructor(db, values) {
 
-        this.state = "pending"; //ready, removed;
+        this.state = "pending"; //created, pending, ready, removed;
         const v = this.values = Object.assign({}, values);
 
         v._ent = toId(v._ent);
@@ -27,19 +26,11 @@ export class RecordPrivate {
             before: new Record()
         });
 
-        regRec(this);
-    }
-
-    msg(text, details={}) {
-        return this.db.msg(text, {
-            ent:this.values._ent,
-            row:this.values.id,
-            ...details
-        });
+        recReg(this);
     }
 
     colAdd(_col) {
-        const { current, before, state } = this;
+        const { db, current, before, state } = this;
 
         const { name, formula, noCache } = _col.current;
         const t = _col.traits;
@@ -47,7 +38,7 @@ export class RecordPrivate {
     
         const prop = {
             enumerable:true, configurable:true,
-            set:_=>{ throw new Error(this.msg("for update use db.update(...) interface", {column:name})) }
+            set:_=>{ throw Major.fail("For update use db.update(...) interface").setCol(name); }
         };
 
         if (isVirtual) { prop.get = _=>t.getter(t.setter(current, this.values, this.values[name], this.state === "ready" ? before : undefined), this.state === "ready"); }
@@ -68,53 +59,52 @@ export class RecordPrivate {
     }
 
     colsInit() {
-        const { db, values } = this;
+        const { db, state, values } = this;
+        if (state !== "pending") { throwMajor("record is not pending"); }
         const cols = getColsPriv(db, values._ent);
         if (cols) { for (const _col of cols) { this.colAdd(_col); } }
         return this;
     }
 
-    colsPrepare(process) {
+    init(process) {
         const { state, values } = this;
-        if (state === "pending") { Turn.attach(this, process, values); }
+        if (state !== "pending") { throwMajor("record is not pending"); }
+        Turn.attach(process, this, values, true);
+        this.state = "init";
         return this;
     }
 
-    colsFinish() {
+    ready() {
         const { state, turn } = this;
-        if (state === "pending") {
-            this.values = turn.execute();
-            this.state = "ready";
-        }
-
-        return this.turn.detach();
+        if (state !== "init") { throwMajor("record is not init"); }
+        this.values = turn.execute();
+        this.turn.detach();
+        this.state = "ready";
+        return this;
     }
 
-    valsPush(values, ctx, isUpdate=false) {
+    update(process, values, force=false) {
+        if (this.state !== "ready") { throwMajor("record is not ready"); }
+
+        this.values = Turn.attach(process, this, values, force).execute();
         
-        this.values = Turn.attach(this, process, values, isUpdate).execute();
-        const result = this.turn.detach();
-
-        if (this.turn.isReal) {
-            setCol(this);
-            sync(this.db, this.current, true, result); //TODO - here should be process
+        if (this.turn.isChange) {
+            colSet(this);
+            syncIn(process, this.current);
         }
 
-        return result;
+        this.turn.detach();
     }
 
-    remove(context, force=false) {
+    remove(process, force=false) {
         const { db, meta, current } = this;
-        const process = new Process("remove", context, db, this);
 
-        if (!force && meta) { process.fail(Major.fail("is meta")); }
-        else {
-            this.state = "removed";
-            sync(db, current, false, process);
-            unregRec(this);
-        }
+        if (!force && meta) { throwMajor("is meta"); }
         
-        return $end(process);
+        this.state = "removed";
+        syncOut(db, current, process);
+        recUnreg(this);
+
     }
 
 }

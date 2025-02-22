@@ -2,27 +2,17 @@
 import { Chop } from "../Chop/Chop";
 
 import { metaData } from "../../metaData/interface";
-import { getRecPriv, loadRec } from "../Record/static/_records";
-import { _chopGetAllRecs, _chopGetRecs } from "../Chop/static/gets";
+import { recAddOrSet, recAddOrUpdate, recGetPriv } from "../Record/static/_records";
+import { _chopGetAllRecs, _chopGetRecs, syncIn } from "../Chop/static/eventHandlers";
 import { vault } from "../../../components/uni/consts";
-import { getColsPriv, remCol, setCol } from "../Record/static/_columns";
-import { addEnt, remEnt } from "../Record/static/_ents";
-import { $reset } from "../Process/static/reset";
-import { $remove } from "../Process/static/remove";
-import { $add } from "../Process/static/add";
-import { $set, $update } from "../Process/static/update";
-import { $addOrSet, $addOrUpdate } from "../Process/static/addOrUpdate";
+import { colRem, colSet } from "../Record/static/_columns";
+import { recAdd, recRemove, recSet, recUpdate } from "../Record/static/_records";
 import { toId } from "../../tools/traits/uni";
+import { RecordPrivate } from "../Record/RecordPrivate";
+import { processRun } from "../Process/Process";
+import { entAdd, entRem } from "../Record/static/_ents";
 
 export class DB extends Chop {
-
-    static reset = $reset;
-    static remove = $remove;
-    static add = $add;
-    static set = $set;
-    static update = $update;
-    static addOrSet = $addOrSet;
-    static addOrUpdate = $addOrUpdate;
 
     constructor(id, opt={}) {
 
@@ -31,53 +21,53 @@ export class DB extends Chop {
         super(id, {
             getId:rec=>toId(rec.id),
             getGroup:rec=>toId(rec._ent),
-            init:_=>{
+            init:process=>{
 
                 //load database
                 //init(load, context);
 
-                //override with metadata
                 for (const _ent in metaData) {
                     for (const id in metaData[_ent]) {
-                        loadRec(this, {_ent, id, ...metaData[_ent][id]}); //TODO
+                        const _rec = new RecordPrivate(this, {_ent, id, ...metaData[_ent][id]});
+                        syncIn(process, _rec.current, true);
                     };
                 }
 
                 //set columns definitions
                 for (const [_, rec] of _chopGetRecs(this, "_cols")) {
-                    const _rec = getRecPriv(rec);
-                    setCol(_rec);
+                    const _rec = recGetPriv(this, rec);
+                    colSet(_rec);
                 }
 
                 //prepare columns for rows
                 const _recs = [];
                 for (const [rec] of _chopGetAllRecs(this)) {
-                    const _rec = getRecPriv(rec);
-                    if (_rec.state === "pending") { _recs.push(_rec.colsPrepare()); }
+                    const _rec = recGetPriv(this, rec);
+                    if (_rec.state === "pending") { _recs.push(_rec.init(process)); }
                 }
                 
                 //set columns for rows
-                for (const _rec of _recs) { 
-                    _rec.colsFinish();
-                }
+                for (const _rec of _recs) { _rec.ready(); }
 
                 //return _recs;
 
             }
         });
 
-        this.on((event, res, context)=>{
-            if (!res) { return; }
-            const _rec = getRecPriv(res.current);
+        this.before(process=>{
+            const { action, record, isBatch } = process;
+            if (isBatch) { return; }
+
+            const _rec = recGetPriv(this, record);
             const { _ent } = _rec.values;
 
             if (_ent == "_ents") {
-                // if (event === "remove") { remEnt(_rec, context); } TODO with process 
-                // else if (event === "add") { addEnt(_rec, context); }
+                if (action === "remove") { entRem(process, _rec); }
+                else if (action === "add") { entAdd(process, _rec); }
             }
             else if (_ent === "_cols") {
-                if (event === "add" || event === "update") { setCol(_rec, context); }
-                else if (event === "remove") { remCol(_rec, context); }
+                if (action === "add" || action === "update") { colSet(_rec); }
+                else if (action === "remove") { colRem(_rec); }
             }
 
         });
@@ -85,20 +75,18 @@ export class DB extends Chop {
         const _p = vault.get(this);
 
         _p.colsByEnt = new Map();
-        _p.processes = [];
     }
 
-    isRecord(any, throwError=false) { return !!getRecPriv(any, throwError); }
+    isRecord(any, throwError=false) { return !!recGetPriv(any, throwError); }
 
-    reset(context) { return $reset(this, context); }
-    add(values, context) { return $add(this, values, context); }
+    add(values, context) { return processRun(this, context, arguments, recAdd); }
 
-    addOrSet(values, context) { return $addOrSet(this, values, context); }
-    addOrUpdate(values, context) { return $addOrUpdate(this, values, context); }
+    addOrSet(values, context) { return processRun(this, context, arguments, recAddOrSet); }
+    addOrUpdate(values, context) { return processRun(this, context, arguments, recAddOrUpdate); }
 
-    set(record, values, context) { return $set(record, values, context); }
-    update(record, values, context) { return $update(record, values, context); }
+    set(record, values, context) { return processRun(this, context, arguments, recSet); }
+    update(record, values, context) { return processRun(this, context, arguments, recUpdate); }
 
-    remove(record, context) { return $remove(record, context); }
+    remove(record, context) { return processRun(this, context, arguments, recRemove); }
 
 }

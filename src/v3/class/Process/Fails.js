@@ -1,25 +1,12 @@
 import { solid, solids } from "@randajan/props";
 
-class Fail {
+class Fail extends Error {
 
     constructor(severity, reason, details) {
+        super(reason);
         solids(this, { severity, reason, details });
     }
 
-    setEnt(entId) {
-        solid(this, "ent", entId);
-        return this;
-    }
-
-    setCol(colId) {
-        solid(this, "col", colId);
-        return this;
-    }
-
-    setRow(rowId) {
-        solid(this, "row", rowId);
-        return this;
-    }
 }
 
 
@@ -50,8 +37,10 @@ export class Critical extends Fail {
     }
 }
 
-export const toFail = err=>{
+const _toFail = (err)=>{
     if (err instanceof Fail) { return err; }
     if (err instanceof Error) { return Critical.fail(err.message, err.stack); }
     return Critical.fail("Unknown error", err);
 }
+
+export const toFail = (err, colName)=>solid(_toFail(err), "column", colName);

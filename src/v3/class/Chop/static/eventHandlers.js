@@ -1,50 +1,65 @@
+import { solid } from "@randajan/props";
 import { vault } from "../../../../components/uni/consts";
 import { isFce } from "../../../../components/uni/formats";
+import { throwMajor } from "../../../tools/traits/uni";
 
-const prepare = (chop, rec, inc, process, syncs, hands)=>{
-    const { bundle, childs, handlers } = vault.get(chop);
+export const _chopGetAllRecs = chop=>vault.get(chop).bundle.byRec;
+export const _chopGetRecs = (chop, groupId)=>vault.get(chop).bundle.byGroup.getAll(groupId);
+export const _chopGetRec = (chop, groupId, recId)=>vault.get(chop).bundle.byGroup.get(groupId, recId);
 
-    const sync = bundle.prepare(rec);
-    if (!sync) { return; }
+const propagate = (chop, process, rec, inc, befs, afts)=>{
+    const { bundle, childs, befores, afters } = vault.get(chop);
+    const isChange = bundle.sync(rec, inc);
 
-    syncs.push(sync);
+    if (isChange) {
+        for (const child of childs) { propagate(child, process, rec, inc, hands); }
+        if (befs && befores.length) { befs.push(befores); }
+        if (afts && afters.length) { afts.push(afters); }
+    }
 
-    if (!process) { return; }
+    return isChange;
+}
 
-    if (childs.size) { for (const child of childs) { prepare(child, rec, inc, process, syncs); }}
-    if (handlers.length) { hands.push(handlers); }
+const _sync = (inc, process, rec, isBatch=false)=>{
+
+    solid(process, "isBatch", isBatch);
+
+    if (isBatch) { return propagate(process.chop, process, rec, inc); }
+
+    const befs = [], afts = [];
+
+    solid(process, "record", rec);
+    propagate(process.chop, process, rec, inc, befs, afts);
+    for (const b of befs) { runEvent(process, b); }
+    
+    for (const a of afts) { runEvent(process, a, false); }
 
 }
 
-export const sync = (chop, rec, inc, process)=>{
+export const syncIn = (process, rec, isBatch=false)=>_sync(true, process, rec, isBatch);
+export const syncOut = (process, rec, isBatch=false)=>_sync(false, process, rec, isBatch);
 
-    const syncs = [], hands = [];
-
-    prepare(chop, rec, inc, process, syncs, hands);
-
-    for (const sync of syncs) { sync(); }
-    for (const hand of hands) { runEvent(hand, process); }
-}
-
-export const runEvent = (handlers, process)=>{
+export const runEvent = (process, handlers, throwErrors=true)=>{
     for (let i = handlers.length - 1; i >= 0; i--) {
-        try { if (handlers[i]) { handlers[i](process); } }
-        catch(err) { console.error(err); } //TODO better fail handler
+        if (!handlers[i]) { return; }
+        try { handlers[i](process); }
+        catch(err) {
+            if (throwErrors) { throw err; }
+            console.warn(err); //TODO better non important errors handler
+        }
     }
 }
 
 
-export const onEvent = (chop, callback, onlyOnce = false)=>{
-    if (!isFce(callback)) { throw Error(chop.msg(`on(...) require callback`)); }
-    const { handlers } = vault.get(chop);
+export const onEvent = (chop, isBefore, callback)=>{
+    if (!isFce(callback)) { throwMajor(`on(...) require function`); }
+    const { befores, afters } = vault.get(chop);
+    const handlers = isBefore ? befores : afters;
 
-    let remove;
-    const cb = onlyOnce ? (...args) => { callback(...args); remove(); } : callback;
+    handlers.unshift(callback);
 
-    handlers.unshift(cb);
-
-    return remove = _ => {
-        const x = handlers.indexOf(cb);
+    return _ => {
+        const x = handlers.indexOf(callback);
         if (x >= 0) { handlers.splice(x, 1); }
         return callback;
     }

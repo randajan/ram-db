@@ -1,4 +1,5 @@
-import { Major } from "../../class/Result/Fails";
+import { Major } from "../../class/Process/Fails";
+import { throwMajor } from "./uni";
 
 const _nums = /-?(\d+(\s+\d+)*)*[,.]?\d+/;
 const strToNum = str=>{
@@ -19,7 +20,7 @@ export const toNumber = (any, opt={})=>{
 
     const { min, max, dec } = opt;
 
-    if (isNaN(num)) { throw Major.fail("not a number"); }
+    if (isNaN(num)) { throwMajor("not a number"); }
     if (max != null) { num = Math.min(num, max); }
     if (min != null) { num = Math.max(num, min); }
 

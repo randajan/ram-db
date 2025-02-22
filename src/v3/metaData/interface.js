@@ -59,7 +59,7 @@ export const metaData = {
 
         //_types
         "_types-_ent":{ meta:"numb", ent:"_types", name:"_ent", type:"ref", ref:"_ents", isReadonly, isRequired },
-        "_types-id":{ meta:"numb", ent:"_types", name:"id", type:"string", isReadonly, isRequired, formula:r=>join("-", r.ent?.id, r.name) },
+        "_types-id":{ meta:"numb", ent:"_types", name:"id", type:"string", isReadonly, isRequired },
         "_types-meta":{ meta:"numb", ent:"_types", name:"meta", type:"string", isReadonly },
         "_types-setter":{ meta:"numb", ent:"_types", name:"setter", type:"function", isReadonly, fallback:_=>v=>v },
         "_types-getter":{ meta:"numb", ent:"_types", name:"getter", type:"function", isReadonly, fallback:_=>v=>v },
@@ -68,7 +68,7 @@ export const metaData = {
 
         //_cols
         "_cols-_ent":{ meta:"numb", ent:"_cols", name:"_ent", type:"ref", ref:"_ents", isReadonly, isRequired },
-        "_cols-id":{ meta:"numb", ent:"_cols", name:"id", type:"string", isReadonly, isRequired },
+        "_cols-id":{ meta:"numb", ent:"_cols", name:"id", type:"string", isReadonly, isRequired, formula:r=>join("-", r.ent?.id, r.name) },
         "_cols-meta":{ meta:"numb", ent:"_cols", name:"meta", type:"string", isReadonly },
         "_cols-ent":{ meta:"numb", ent:"_cols", name:"ent", type:"ref", ref:"_ents", isReadonly, isRequired },
         "_cols-name":{ meta:"numb", ent:"_cols", name:"name", type:"string", isReadonly, isRequired },
@@ -90,19 +90,4 @@ export const metaData = {
         "_cols-noCache":{ meta:"numb", ent:"_cols", name:"noCache", type:"boolean" },
         "_cols-omitChange":{ meta:"numb", ent:"_cols", name:"omitChange", type:"boolean" }
     }
-}
-
-export const metaDataDynamic = entId=>{
-    return [
-        {
-            _ent:`_cols`, id:`${entId}-_ent`, ent:entId, name:"_ent", type:"ref", ref:"_ents",
-            isReadonly, isRequired, meta:"numb"
-        },
-        {
-            _ent:`_cols`, id:`${entId}-id`, ent:entId, name:"id", type:"string",
-            isReadonly, isRequired,
-            meta:isMetaEnt(entId) ? "numb" :"soft",
-            formula:entId === "_cols" ? r=>join("-", r.ent?.id, r.name) :undefined
-        }   
-    ];
 }

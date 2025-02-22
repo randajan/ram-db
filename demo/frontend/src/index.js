@@ -19,7 +19,7 @@ beam.get().then(records=>{
 
     console.log(db.reset("test"));
     
-    db.on((event, res, ctx)=>{
+    db.after((process)=>{
         if (res) {
             //console.log(event);
             //beam.set(db.exportAll());

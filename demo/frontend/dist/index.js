@@ -5,8 +5,8 @@
   var __getOwnPropNames = Object.getOwnPropertyNames;
   var __getProtoOf = Object.getPrototypeOf;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
-  var __esm = (fn, res) => function __init() {
-    return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+  var __esm = (fn, res2) => function __init() {
+    return fn && (res2 = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res2;
   };
   var __commonJS = (cb, mod) => function __require() {
     return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
@@ -238,11 +238,11 @@
           if (value2 === 0) {
             return 30;
           }
-          let result2 = 30 + (Math.round(blue) << 2 | Math.round(green) << 1 | Math.round(red));
+          let result = 30 + (Math.round(blue) << 2 | Math.round(green) << 1 | Math.round(red));
           if (value2 === 2) {
-            result2 += 60;
+            result += 60;
           }
-          return result2;
+          return result;
         },
         enumerable: false
       },
@@ -3959,8 +3959,8 @@
   var _pass = ["all", "first", "last"];
   var fakePromise = () => {
     const prom = {};
-    prom.result = new Promise((res, rej) => {
-      prom.resolve = res;
+    prom.result = new Promise((res2, rej) => {
+      prom.resolve = res2;
       prom.reject = rej;
     });
     return prom;
@@ -4080,10 +4080,10 @@
     };
   };
   var emit = async (socket2, channel, body, onError) => {
-    return new Promise((res, rej) => {
+    return new Promise((res2, rej) => {
       socket2.emit(_bifrostEvent, { channel, body }, (ok, response) => {
         if (ok) {
-          return res(response);
+          return res2(response);
         }
         const err = unpackError(response);
         rej(err);
@@ -4120,9 +4120,9 @@
   var mapList = async (map, list, ...args) => {
     for (let i = list.length - 1; i >= 0; i--) {
       try {
-        const res = await list[i](...args);
-        if (map && typeof res === "function") {
-          map.push(res);
+        const res2 = await list[i](...args);
+        if (map && typeof res2 === "function") {
+          map.push(res2);
         }
       } catch (err) {
         console.warn(err);
@@ -4171,14 +4171,14 @@
       return;
     }
     return (state, args) => {
-      const { action: action2, actionArguments } = state || {};
-      if (!action2) {
+      const { action, actionArguments } = state || {};
+      if (!action) {
         throw Error(msg(".Beam", `undefined action`));
       }
-      if (!reactions[action2]) {
-        throw Error(msg(".Beam", `unknown action '${action2}'`));
+      if (!reactions[action]) {
+        throw Error(msg(".Beam", `unknown action '${action}'`));
       }
-      return reactions[action2](...actionArguments || [], ...args);
+      return reactions[action](...actionArguments || [], ...args);
     };
   };
   var formatOpt = (channel, opt, isMultiState) => {
@@ -4240,10 +4240,10 @@
         get,
         actions
       };
-      const propagate = (state, args) => {
+      const propagate2 = (state, args) => {
         mapList(void 0, _p.watchers, state, ...args);
       };
-      const set2 = async (state, args) => {
+      const set = async (state, args) => {
         let local;
         try {
           if (react) {
@@ -4256,27 +4256,27 @@
           }
           local = await onError(error, ...args);
         }
-        propagate(stateExtract(localStateProp, local), args);
+        propagate2(stateExtract(localStateProp, local), args);
         return local;
       };
       const setRx = async (state, ...args) => {
         if (ac && ac != "remote") {
           throw Error(msg(".Beam", "doesn't allow remote changes", { channel }));
         }
-        return set2(state, args);
+        return set(state, args);
       };
       const push = async (state, args) => {
         if (ac && ac != "local") {
           throw Error(msg(".Beam", "doesn't allow local changes", { channel }));
         }
         if (!pushRaw) {
-          return set2(state, args);
+          return set(state, args);
         }
         const remote = await pushRaw(state, ...args);
-        const local = await set2(stateExtract(remoteStateProp, remote), args);
+        const local = await set(stateExtract(remoteStateProp, remote), args);
         return stateAttach(remoteStateProp, remote, stateExtract(localStateProp, local));
       };
-      const pull = !pullRaw ? async (args) => propagate(await get(...args), args) : async (args) => set2(await pullRaw(...args), args);
+      const pull = !pullRaw ? async (args) => propagate2(await get(...args), args) : async (args) => set(await pullRaw(...args), args);
       const processWithStatus = async (status, pending) => {
         let state;
         _p.status = status;
@@ -4354,9 +4354,9 @@
     }
     applyActions(setMethod, target = {}) {
       const { actions } = _privates.get(this);
-      for (let action2 of actions) {
-        const act = (...a) => setMethod({ action: action2, actionArguments: a });
-        Object.defineProperty(target, action2, { value: act });
+      for (let action of actions) {
+        const act = (...a) => setMethod({ action, actionArguments: a });
+        Object.defineProperty(target, action, { value: act });
       }
       return target;
     }
@@ -4408,8 +4408,8 @@
         push: (state) => {
           return this.tx(channel, { isSet: true, state });
         },
-        register: (beam2, set2) => {
-          this.rx(channel, (socket2, state) => set2(state));
+        register: (beam2, set) => {
+          this.rx(channel, (socket2, state) => set(state));
         }
       }, opt);
     }
@@ -4687,7 +4687,7 @@
     if (!constructor) {
       throwError("constructor missing", name);
     }
-    let { create, is: is2, isFull: isFull2, copy: copy2, rnd, keys, vals, entries, get, set: set2, rem, to: to22, extend: extend2 } = options;
+    let { create, is: is2, isFull: isFull2, copy: copy2, rnd, keys, vals, entries, get, set, rem, to: to22, extend: extend2 } = options;
     const unknownOptions = Object.keys(options).filter((opt) => !accepts.includes(opt));
     if (unknownOptions.length) {
       throwWarn(`unknown options appeared at definition. '${unknownOptions.join("', '")}'`, name);
@@ -4703,10 +4703,10 @@
     isFull2 = isFull2 || ((any) => isFull(any, vals));
     if (entries) {
       get = get || ((x, k) => x[k]);
-      set2 = set2 || ((x, k, v) => x[k] = v);
+      set = set || ((x, k, v) => x[k] = v);
       rem = rem || ((x, k) => delete x[k]);
     }
-    const def = { name, constructor, prototype, is: is2, create, isFull: isFull2, copy: copy2, rnd, keys, vals, entries, get, set: set2, rem, to: {} };
+    const def = { name, constructor, prototype, is: is2, create, isFull: isFull2, copy: copy2, rnd, keys, vals, entries, get, set, rem, to: {} };
     register(def);
     defineTo(name, to22);
     if (extend2 !== false) {
@@ -4731,7 +4731,7 @@
           vals,
           entries,
           get,
-          set: set2,
+          set,
           rem,
           getRND: (any, min, max, sqr) => getRND(vals(any), min, max, sqr)
         }, true);
@@ -4773,30 +4773,30 @@
     }
   );
   var safe = new Plex_default(
-    (obj, priv, name, set2, get, enumerable22 = true) => {
+    (obj, priv, name, set, get, enumerable22 = true) => {
       return Object.defineProperty(obj, name, {
-        set: set2 ? (v) => priv[name] = set2(v, priv[name], name) : void 0,
+        set: set ? (v) => priv[name] = set(v, priv[name], name) : void 0,
         get: get ? (_) => get(priv[name], name) : (_) => priv[name],
         enumerable: enumerable22
       });
     },
     {
       all: (obj, priv, namedSetsAndGets, enumerable22 = true) => {
-        for (const [name, { set: set2, get }] of Object.entries(namedSetsAndGets)) {
-          safe(obj, priv, name, set2, get, enumerable22);
+        for (const [name, { set, get }] of Object.entries(namedSetsAndGets)) {
+          safe(obj, priv, name, set, get, enumerable22);
         }
         return obj;
       }
     }
   );
   var cached = new Plex_default(
-    (obj, priv, name, set2, enumerable22 = true) => {
-      return safe(obj, priv, name, null, (v) => v != null ? v : priv[name] = set2(name), enumerable22);
+    (obj, priv, name, set, enumerable22 = true) => {
+      return safe(obj, priv, name, null, (v) => v != null ? v : priv[name] = set(name), enumerable22);
     },
     {
       all: (obj, priv, namedSets, enumerable22 = true) => {
-        for (const [name, set2] of Object.entries(namedSets)) {
-          cached(obj, priv, name, set2, enumerable22);
+        for (const [name, set] of Object.entries(namedSets)) {
+          cached(obj, priv, name, set, enumerable22);
         }
         return obj;
       }
@@ -4866,19 +4866,19 @@
       isPending = false;
     };
     const dprun = base_default.isRunnable(deep);
-    const exe = (ctx2, skipDeep = false) => {
-      const { parent, path, def } = ctx2;
+    const exe = (ctx22, skipDeep = false) => {
+      const { parent, path, def } = ctx22;
       const de = def?.entries;
       if (!de || !deep && parent) {
-        fce(ctx2);
+        fce(ctx22);
       } else if (dprun && !skipDeep) {
-        deep(ctx2, (_) => {
-          exe(ctx2, true);
+        deep(ctx22, (_) => {
+          exe(ctx22, true);
         });
       } else {
-        for (let [key, val] of de(ctx2.val)) {
+        for (let [key, val] of de(ctx22.val)) {
           exe({
-            parent: ctx2,
+            parent: ctx22,
             val,
             key,
             stop,
@@ -4891,13 +4891,13 @@
         }
         ;
       }
-      return ctx2.result;
+      return ctx22.result;
     };
-    const ctx = { val: any, stop, def: getDefByInst(any) };
+    const ctx2 = { val: any, stop, def: getDefByInst(any) };
     if (init) {
-      init(ctx);
+      init(ctx2);
     }
-    return exe(ctx, true);
+    return exe(ctx2, true);
   };
   var reducer = (reductor) => {
     let i = 0, next;
@@ -4943,13 +4943,13 @@
   };
   var deflate = (any, includeMapable = false) => {
     const flat = {};
-    const add2 = ({ val, path }, next) => {
+    const add = ({ val, path }, next) => {
       flat[path] = val;
       if (next) {
         next();
       }
     };
-    each(any, add2, includeMapable ? add2 : true);
+    each(any, add, includeMapable ? add : true);
     if (includeMapable) {
       flat[""] = any;
     }
@@ -4967,12 +4967,12 @@
   };
   var _assign = (overwriteArray, to22, ...any) => {
     const flat = deflate(to22, true);
-    const add2 = ({ val, path }) => {
+    const add = ({ val, path }) => {
       to22 = digIn(to22, path, val);
     };
     const acumulate = ({ val, path, def }, next) => {
       if (!flat[path]) {
-        add2(flat[path] = def.create(), path);
+        add(flat[path] = def.create(), path);
       }
       if (Array.isArray(val) && Array.isArray(flat[path])) {
         flat[path].push(...val);
@@ -4981,7 +4981,7 @@
       }
     };
     for (const a of any) {
-      each(a, add2, !!overwriteArray || acumulate);
+      each(a, add, !!overwriteArray || acumulate);
     }
     return to22;
   };
@@ -4991,39 +4991,39 @@
     if (a === b) {
       return changeList ? [] : true;
     }
-    const res = [];
+    const res2 = [];
     const flat = deflate(a);
     each(b, ({ val, path, stop }) => {
       if (flat[path] !== val) {
-        res.push(path);
+        res2.push(path);
       }
       delete flat[path];
-      if (!diffList && res.length) {
+      if (!diffList && res2.length) {
         stop();
       }
     }, true);
     for (let path in flat) {
-      if (!diffList && res.length) {
+      if (!diffList && res2.length) {
         break;
       }
-      res.push(path);
+      res2.push(path);
     }
-    return diffList ? res : !res.length;
+    return diffList ? res2 : !res2.length;
   };
   var copy = (any, deep = false, copyUnmapable = false) => {
-    return each(any, (ctx) => {
-      const { parent, val, key, def } = ctx;
+    return each(any, (ctx2) => {
+      const { parent, val, key, def } = ctx2;
       if (!parent) {
         return;
       }
-      parent.def.set(parent.result, key, ctx.result = copyUnmapable ? def.copy(val) : val);
-    }, !deep ? false : (ctx, next) => {
-      const { parent, key, def } = ctx;
-      parent.def.set(parent.result, key, ctx.result = def.create());
+      parent.def.set(parent.result, key, ctx2.result = copyUnmapable ? def.copy(val) : val);
+    }, !deep ? false : (ctx2, next) => {
+      const { parent, key, def } = ctx2;
+      parent.def.set(parent.result, key, ctx2.result = def.create());
       next();
-    }, (ctx) => {
-      const { val, def } = ctx;
-      ctx.result = def.entries ? def.create() : def.copy(val);
+    }, (ctx2) => {
+      const { val, def } = ctx2;
+      ctx2.result = def.entries ? def.create() : def.copy(val);
     });
   };
   var melt = (any, comma, trait) => {
@@ -5055,11 +5055,11 @@
     if (!base_default.isMapable(any)) {
       return void 0;
     }
-    const res = [];
+    const res2 = [];
     each(any, ({ val }) => {
-      res.push(base_default.isRunnable(val) ? val(...args) : void 0);
+      res2.push(base_default.isRunnable(val) ? val(...args) : void 0);
     }, true);
-    return res;
+    return res2;
   };
   var enumFactory = (enums, { before, after, def } = {}) => (raw, ...args) => {
     const input = before ? before(raw, ...args) : raw;
@@ -5428,11 +5428,11 @@
     set: (x, k, v) => x.add(v) ? v : void 0,
     rem: (x, k) => x.delete(k),
     to: {
-      "*": (set2) => Array.from(set2),
-      Function: (set2) => (_) => set2,
-      Boolean: (set2) => Set.jet.isFull(set2),
-      Object: (set2) => defs_default.merge(set2),
-      Promise: async (set2) => set2
+      "*": (set) => Array.from(set),
+      Function: (set) => (_) => set,
+      Boolean: (set) => Set.jet.isFull(set),
+      Object: (set) => defs_default.merge(set),
+      Promise: async (set) => set
     }
   });
   var hidePats = {
@@ -5624,17 +5624,12 @@
   var fcePass = (v) => v;
   var fceTrue = (_) => true;
 
-  // dist/chunk-XSJ6ZNAW.js
+  // dist/chunk-QH2HNO5N.js
   init_define_slib_info();
   var __defProp3 = Object.defineProperty;
-  var __defNormalProp = (obj, key, value2) => key in obj ? __defProp3(obj, key, { enumerable: true, configurable: true, writable: true, value: value2 }) : obj[key] = value2;
   var __export3 = (target, all) => {
     for (var name in all)
       __defProp3(target, name, { get: all[name], enumerable: true });
-  };
-  var __publicField = (obj, key, value2) => {
-    __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value2);
-    return value2;
   };
   var define_slib_info_default2 = { isBuild: true, name: "@randajan/ram-db", description: "Realtime database", version: "2.8.4", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "web", port: 3005, dir: { root: "C:\\dev\\lib\\ram-db", dist: "dist" } };
 
@@ -5660,18 +5655,18 @@
     }
     return obj;
   };
-  var safe2 = (obj, priv, name, set2, get, enumerable5 = true, configurable = false) => {
+  var safe2 = (obj, priv, name, set, get, enumerable5 = true, configurable = false) => {
     return Object.defineProperty(obj, name, {
-      set: set2 ? (v) => priv[name] = set2(v, priv[name], name) : void 0,
+      set: set ? (v) => priv[name] = set(v, priv[name], name) : void 0,
       get: get ? (_) => get(priv[name], name) : (_) => priv[name],
       enumerable: enumerable5,
       configurable
     });
   };
-  var cached3 = (obj, priv, name, reset2, get, enumerable5 = true, configurable = false) => {
+  var cached3 = (obj, priv, name, reset, get, enumerable5 = true, configurable = false) => {
     const setAndGet = (v) => {
       if (!priv.hasOwnProperty(name)) {
-        v = priv[name] = reset2(name);
+        v = priv[name] = reset(name);
       }
       return get ? get(v, name) : v;
     };
@@ -5680,14 +5675,14 @@
   var cacheds = (obj, priv, namedResetsAndGets, enumerable5 = true) => {
     for (const name in namedResetsAndGets) {
       const resetGet = namedResetsAndGets[name];
-      let reset2, get;
+      let reset, get;
       if (typeof resetGet !== "object") {
-        reset2 = resetGet;
+        reset = resetGet;
       } else {
-        reset2 = resetGet.reset || resetGet[0];
+        reset = resetGet.reset || resetGet[0];
         get = resetGet.get || resetGet[1];
       }
-      cached3(obj, priv, name, reset2, get, enumerable5);
+      cached3(obj, priv, name, reset, get, enumerable5);
     }
     return obj;
   };
@@ -5854,99 +5849,34 @@
   var toStr = (any, def) => isNull(any) ? def : String(any);
   var toArr = (any) => any instanceof Array ? any : [any];
   var reArray = (val, trait) => {
-    const res = [];
+    const res2 = [];
     if (isNull(val)) {
-      return res;
+      return res2;
     }
     if (!Array.isArray(val)) {
-      res.push(trait(val));
-      return res;
+      res2.push(trait(val));
+      return res2;
     }
     for (const v of val) {
       const r = trait(v);
       if (!isNull(r)) {
-        res.push(r);
+        res2.push(r);
       }
     }
-    return res;
+    return res2;
   };
-  var prepare = (chop, rec, inc, process2, syncs, hands) => {
-    const { bundle, childs, handlers } = vault.get(chop);
-    const sync2 = bundle.prepare(rec);
-    if (!sync2) {
-      return;
-    }
-    syncs.push(sync2);
-    if (!process2) {
-      return;
-    }
-    if (childs.size) {
-      for (const child of childs) {
-        prepare(child, rec, inc, process2, syncs);
-      }
-    }
-    if (handlers.length) {
-      hands.push(handlers);
-    }
-  };
-  var sync = (chop, rec, inc, process2) => {
-    const syncs = [], hands = [];
-    prepare(chop, rec, inc, process2, syncs, hands);
-    for (const sync2 of syncs) {
-      sync2();
-    }
-    for (const hand of hands) {
-      runEvent(hand, process2);
-    }
-  };
-  var runEvent = (handlers, process2) => {
-    for (let i = handlers.length - 1; i >= 0; i--) {
-      try {
-        if (handlers[i]) {
-          handlers[i](process2);
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    }
-  };
-  var onEvent = (chop, callback, onlyOnce = false) => {
-    if (!isFce(callback)) {
-      throw Error(chop.msg(`on(...) require callback`));
-    }
-    const { handlers } = vault.get(chop);
-    let remove;
-    const cb = onlyOnce ? (...args) => {
-      callback(...args);
-      remove();
-    } : callback;
-    handlers.unshift(cb);
-    return remove = (_) => {
-      const x2 = handlers.indexOf(cb);
-      if (x2 >= 0) {
-        handlers.splice(x2, 1);
-      }
-      return callback;
-    };
-  };
-  var _chopGetAllRecs = (chop) => vault.get(chop).bundle.byRec;
-  var _chopGetRecs = (chop, groupId) => vault.get(chop).bundle.byGroup.getAll(groupId);
-  var _chopGetRec = (chop, groupId, recId) => vault.get(chop).bundle.byGroup.get(groupId, recId);
-  var Fail = class {
+  var uni_exports = {};
+  __export3(uni_exports, {
+    isEmpty: () => isEmpty,
+    join: () => join,
+    throwMajor: () => throwMajor2,
+    throwMinor: () => throwMinor,
+    toId: () => toId
+  });
+  var Fail = class extends Error {
     constructor(severity, reason, details) {
+      super(reason);
       solids(this, { severity, reason, details });
-    }
-    setEnt(entId) {
-      solid3(this, "ent", entId);
-      return this;
-    }
-    setCol(colId) {
-      solid3(this, "col", colId);
-      return this;
-    }
-    setRow(rowId) {
-      solid3(this, "row", rowId);
-      return this;
     }
   };
   var Minor = class extends Fail {
@@ -5973,7 +5903,7 @@
       super("critical", reason, details);
     }
   };
-  var toFail = (err) => {
+  var _toFail = (err) => {
     if (err instanceof Fail) {
       return err;
     }
@@ -5982,84 +5912,7 @@
     }
     return Critical.fail("Unknown error", err);
   };
-  var _priv = /* @__PURE__ */ new WeakMap();
-  var $end = (process2) => {
-    const _p = _priv.get(process2);
-    _p.processes?.pop();
-    _p.isDone = true;
-    return process2;
-  };
-  var Process = class {
-    static failEnd(fail, action2, context, chop, _rec) {
-      const process2 = new Process(action2, context, chop, _rec);
-      return $end(process2.fail(fail));
-    }
-    static sandbox(action2, chop, context, args, exe) {
-      return new Process(action2, context, chop).sandbox(exe, args);
-    }
-    constructor(action2, context, chop, _rec) {
-      const db = chop ? chop.db : void 0;
-      const processes = db ? vault.get(db).processes : void 0;
-      const depth = processes?.push(this) - 1 || 0;
-      const parent = !depth ? void 0 : processes[depth - 1];
-      if (parent) {
-        _priv.get(parent).childs.push(this);
-      }
-      const _p = {
-        isOk: true,
-        isDone: false,
-        fails: [],
-        childs: [],
-        processes
-      };
-      solids(this, {
-        db,
-        chop,
-        parent
-      }, false);
-      solids(this, {
-        depth,
-        action: action2,
-        context
-      });
-      virtuals(this, {
-        isOk: (_) => _p.isOk,
-        isDone: (_) => _p.isDone,
-        fails: (_) => [..._p.fails],
-        childs: (_) => [..._p.childs],
-        record: (_) => _rec?.current
-      });
-      _priv.set(this, _p);
-    }
-    fail(fail, nonMinorThrow = false) {
-      const _p = _priv.get(this);
-      _p.fails.push(fail);
-      if (fail.severity !== "minor") {
-        if (nonMinorThrow) {
-          throw fail;
-        } else {
-          _p.isOk = false;
-        }
-      }
-      return this;
-    }
-    sandbox(exe, args) {
-      try {
-        exe(this, ...args);
-      } catch (err) {
-        this.fail(err);
-      }
-      return $end(this);
-    }
-  };
-  var uni_exports = {};
-  __export3(uni_exports, {
-    isEmpty: () => isEmpty,
-    join: () => join,
-    throwMajor: () => throwMajor,
-    throwMinor: () => throwMinor,
-    toId: () => toId
-  });
+  var toFail = (err, colName) => solid3(_toFail(err), "column", colName);
   var strings_exports = {};
   __export3(strings_exports, {
     toString: () => toString3
@@ -6080,12 +5933,12 @@
       try {
         str = JSON.stringify(any);
       } catch (e) {
-        throw Major.fail("unparseable");
+        throwMajor2("unparseable");
       }
     }
     const { min, max } = opt;
     if (min != null && str.length < min) {
-      throw Major.fail("too short", min);
+      throwMajor2("too short", min);
     }
     if (max != null && str.length > max) {
       str = str.substring(0, max);
@@ -6132,31 +5985,104 @@
     }
     return s;
   };
-  var throwMajor = (reason, details) => {
+  var throwMajor2 = (reason, details) => {
     throw Major.fail(reason, details);
   };
   var throwMinor = (reason, details) => {
     throw Minor.fail(reason, details);
   };
-  var reset = (process2, chop, context) => {
-    const _p = vault.get(chop);
-    if (!_p) {
-      throwMajor("not a chop");
+  var _chopGetAllRecs = (chop) => vault.get(chop).bundle.byRec;
+  var _chopGetRecs = (chop, groupId) => vault.get(chop).bundle.byGroup.getAll(groupId);
+  var _chopGetRec = (chop, groupId, recId) => vault.get(chop).bundle.byGroup.get(groupId, recId);
+  var propagate = (chop, process2, rec, inc, befs, afts) => {
+    const { bundle, childs, befores, afters } = vault.get(chop);
+    const isChange = bundle.sync(rec, inc);
+    if (isChange) {
+      for (const child of childs) {
+        propagate(child, process2, rec, inc, hands);
+      }
+      if (befs && befores.length) {
+        befs.push(befores);
+      }
+      if (afts && afters.length) {
+        afts.push(afters);
+      }
     }
-    const { bundle, init, handlers, childs } = _p;
+    return isChange;
+  };
+  var _sync = (inc, process2, rec, isBatch = false) => {
+    solid3(process2, "isBatch", isBatch);
+    if (isBatch) {
+      return propagate(process2.chop, process2, rec, inc);
+    }
+    const befs = [], afts = [];
+    solid3(process2, "record", rec);
+    propagate(process2.chop, process2, rec, inc, befs, afts);
+    for (const b of befs) {
+      runEvent(process2, b);
+    }
+    for (const a of afts) {
+      runEvent(process2, a, false);
+    }
+  };
+  var syncIn = (process2, rec, isBatch = false) => _sync(true, process2, rec, isBatch);
+  var syncOut = (process2, rec, isBatch = false) => _sync(false, process2, rec, isBatch);
+  var runEvent = (process2, handlers, throwErrors = true) => {
+    for (let i = handlers.length - 1; i >= 0; i--) {
+      if (!handlers[i]) {
+        return;
+      }
+      try {
+        handlers[i](process2);
+      } catch (err) {
+        if (throwErrors) {
+          throw err;
+        }
+        console.warn(err);
+      }
+    }
+  };
+  var onEvent = (chop, isBefore, callback) => {
+    if (!isFce(callback)) {
+      throwMajor2(`on(...) require function`);
+    }
+    const { befores, afters } = vault.get(chop);
+    const handlers = isBefore ? befores : afters;
+    handlers.unshift(callback);
+    return (_) => {
+      const x2 = handlers.indexOf(callback);
+      if (x2 >= 0) {
+        handlers.splice(x2, 1);
+      }
+      return callback;
+    };
+  };
+  var chopReset = (process2) => {
+    solid3(process2, "action", "reset");
+    const _p = vault.get(process2.chop);
+    if (!_p) {
+      throwMajor2("not a chop");
+    }
+    const { bundle, init, befores, afters, childs } = _p;
     bundle.clear();
     _p.state = "init";
-    init();
+    init(process2);
     _p.state = "ready";
     if (childs.size) {
       for (const child of childs) {
-        $reset(child, context);
+        child.reset(process2.context);
       }
     }
-    runEvent(handlers, process2);
+    runEvent(process2, befores);
+    runEvent(process2, afters, false);
   };
-  var $reset = function(chop, context) {
-    return Process.sandbox("reset", chop, context, arguments, reset);
+  var chopResetRollback = (process2) => {
+    const _p = vault.get(process2.chop);
+    if (!_p) {
+      return;
+    }
+    _p.bundle.clear();
+    _p.state = "pending";
   };
   var booleans_exports = {};
   __export3(booleans_exports, {
@@ -6164,116 +6090,6 @@
   });
   var _bols = /^(0|f|n|no|not|off|false)$/i;
   var toBoolean = (any) => typeof any !== "string" ? !!any : !_bols.test(any);
-  var functions_exports = {};
-  __export3(functions_exports, {
-    toFunction: () => toFunction
-  });
-  var dates_exports = {};
-  __export3(dates_exports, {
-    toDate: () => toDate
-  });
-  var toDate = (any, opt = {}) => {
-    let date = any instanceof Date ? any : new Date(any);
-    let num = date.getTime();
-    if (isNaN(num)) {
-      throw Major.fail("not a date");
-    }
-    const { min, max } = opt;
-    if (min == null && max == null) {
-      return date;
-    }
-    if (max != null) {
-      num = Math.min(num, max);
-    }
-    if (min != null) {
-      num = Math.max(num, min);
-    }
-    return new Date(num);
-  };
-  var numbers_exports = {};
-  __export3(numbers_exports, {
-    toNumber: () => toNumber
-  });
-  var _nums = /-?(\d+(\s+\d+)*)*[,.]?\d+/;
-  var strToNum = (str) => {
-    const match = String(str).replace(/\u00A0/g, " ").match(_nums);
-    if (!match || !match[0]) {
-      return NaN;
-    }
-    const res = Number(match[0].replaceAll(" ", "").replace(",", "."));
-    return res;
-  };
-  var toNumber = (any, opt = {}) => {
-    const t = typeof any;
-    let num;
-    if (t === "number") {
-      num = any;
-    }
-    if (t === "string") {
-      num = strToNum(any);
-    } else {
-      num = Number(any);
-    }
-    const { min, max, dec } = opt;
-    if (isNaN(num)) {
-      throw Major.fail("not a number");
-    }
-    if (max != null) {
-      num = Math.min(num, max);
-    }
-    if (min != null) {
-      num = Math.max(num, min);
-    }
-    if (dec == 0) {
-      num = Math.round(num);
-    } else if (dec > 0) {
-      const pow = Math.pow(10, dec);
-      num = Math.round(num * pow) / pow;
-    }
-    return num;
-  };
-  var objects_exports = {};
-  __export3(objects_exports, {
-    toObject: () => toObject
-  });
-  var toObject = (obj) => {
-    const t = typeof obj;
-    if (t === "object") {
-      return obj;
-    }
-    if (t !== "string") {
-      throw Major.fail("unparseable");
-    }
-    try {
-      return JSON.parse(obj);
-    } catch (e) {
-      throw Major.fail("unparseable");
-    }
-  };
-  var regexp_exports = {};
-  __export3(regexp_exports, {
-    toRegExp: () => toRegExp
-  });
-  var toRegExp = (any) => {
-    if (any instanceof RegExp) {
-      return any;
-    }
-    if (typeof any != "string") {
-      throw Major.fail("not a regexp");
-    }
-    try {
-      return (0, import_regex_parser.default)(any);
-    } catch (err) {
-      throw Major.fail("unparseable");
-    }
-  };
-  var modules = [booleans_exports, dates_exports, functions_exports, numbers_exports, objects_exports, regexp_exports, strings_exports, uni_exports];
-  var __default = modules;
-  var tools = {};
-  for (const file of __default) {
-    solids(tools, file);
-  }
-  var toFunction = (any) => typeof any === "function" ? any : anyToFn(any, tools);
   var SuperMap = class extends Map {
     getAll(groupId) {
       return super.get(groupId);
@@ -6303,66 +6119,51 @@
       }
     }
   };
-  var prepareSingleGroup = (bundle, id, rec, from, to3) => {
+  var syncSingleGroup = (bundle, id, rec, from, to3) => {
+    const { byRec, byGroup } = bundle;
     if (from == to3) {
       return;
     }
-    if (to3 != null) {
-      const current = bundle.byGroup.get(to3, id);
-      if (current && current !== rec) {
-        throw Major.fail(`Duplicate id '${id} at ${to3}'`);
-      }
-    }
-    return (_) => syncSingleGroup(bundle, id, rec, from, to3);
-  };
-  var syncSingleGroup = (bundle, id, rec, from, to3) => {
-    const { byRec, byGroup } = bundle;
     if (to3 == null) {
       byRec.delete(rec);
     } else {
+      const current = byGroup.get(to3, id);
+      if (current && current !== rec) {
+        throwMajor2(`Duplicate index '${id}' at '${to3}'`);
+      }
       byGroup.set(to3, id, rec);
       byRec.set(rec, to3);
     }
     byGroup.delete(from, id);
   };
-  var prepareMultiGroup = (bundle, id, rec, from, to3) => {
-    let hasNew, toUniq;
-    if (to3 != null) {
-      toUniq = /* @__PURE__ */ new Set();
-      to3 = toArr(to3);
-      for (const groupId of to3) {
-        if (toUniq.has(groupId)) {
-          continue;
-        }
-        toUniq.add(groupId);
-        if (from?.has(groupId)) {
-          continue;
-        }
-        hasNew = true;
-        const current = bundle.byGroup.get(groupId, id);
-        if (current && current !== rec) {
-          throw Major.fail(`Duplicate id '${id}' at '${groupId}'`);
-        }
-      }
-    }
-    if (!hasNew && from?.size === toUniq?.size) {
-      return;
-    }
-    return (_) => syncMultiGroup(bundle, id, rec, from, toUniq);
-  };
   var syncMultiGroup = (bundle, id, rec, from, to3) => {
     const { byRec, byGroup } = bundle;
+    let hasNew, toGroups;
     if (to3 == null) {
       byRec.delete(rec);
     } else {
+      to3 = toArr(to3);
+      toGroups = /* @__PURE__ */ new Set();
       for (const groupId of to3) {
+        if (toGroups.has(groupId)) {
+          continue;
+        }
+        toGroups.add(groupId);
         if (from?.has(groupId)) {
           from.delete(groupId);
           continue;
         }
+        hasNew = true;
+        const current = byGroup.get(groupId, id);
+        if (current && current !== rec) {
+          throwMajor2(`Duplicate index '${id}' at '${groupId}'`);
+        }
         byGroup.set(groupId, id, rec);
+        byRec.set(rec, toGroups);
       }
-      byRec.set(rec, to3);
+    }
+    if (!hasNew && from?.size === toGroups?.size) {
+      return;
     }
     if (from != null) {
       for (const groupId of from) {
@@ -6393,39 +6194,120 @@
       this.byRec.clear();
       this.byGroup.clear();
     }
-    prepare(rec, inc = true) {
+    sync(rec, inc = true) {
       const { byRec, getId, getGroup, filter: filter2, isMultiGroup } = this;
       inc = inc && filter2(rec);
       const has = byRec.has(rec);
       if (!inc && !has) {
-        return;
+        return false;
       }
       const id = getId(rec);
       const to3 = inc ? getGroup(rec) : null;
       const from = byRec.get(rec);
       if (isMultiGroup) {
-        return prepareMultiGroup(this, id, rec, from, to3);
+        syncMultiGroup(this, id, rec, from, to3);
       } else if (to3 != from) {
-        return prepareSingleGroup(this, id, rec, from, to3);
+        syncSingleGroup(this, id, rec, from, to3);
+      }
+      return true;
+    }
+    syncIn(rec) {
+      this.sync(rec, true);
+    }
+    syncOut(rec) {
+      this.sync(rec, false);
+    }
+  };
+  var _priv = /* @__PURE__ */ new WeakMap();
+  var Process = class {
+    constructor(db, chop, context, parent) {
+      const _p = {
+        isOk: true,
+        isDone: false,
+        childs: !parent ? [] : void 0
+      };
+      solids(this, {
+        db,
+        chop,
+        parent
+      }, false);
+      solids(this, {
+        context
+      });
+      virtuals(this, {
+        isOk: (_) => _p.isOk,
+        isDone: (_) => _p.isDone,
+        fails: (_) => !_p.fails ? void 0 : [..._p.fails],
+        childs: (_) => !_p.childs.length ? void 0 : [..._p.childs]
+      });
+      _priv.set(this, _p);
+    }
+  };
+  var processFail = (process2, err, colName) => {
+    const _p = _priv.get(process2);
+    const fail = toFail(err, colName);
+    if (fail.severity !== "minor") {
+      if (colName) {
+        throw fail;
+      }
+      _p.isOk = false;
+      if (process2.parent) {
+        _priv.get(process2.parent).isOk = false;
       }
     }
-    sync(rec) {
-      const sync2 = this.prepare(rec);
-      if (sync2) {
-        sync2();
-      }
+    if (!_p.fails) {
+      _p.fails = [fail];
+    } else {
+      _p.fails.push(fail);
     }
+  };
+  var processRun = (chop, context, args, exe, rollback) => {
+    const db = chop.db;
+    const _pdb = vault.get(db);
+    const parent = _pdb.process;
+    const process2 = new Process(db, chop, context, parent);
+    if (!parent) {
+      _pdb.process = process2;
+    } else {
+      _priv.get(parent).push(process2);
+    }
+    const _p = _priv.get(process2);
+    _p.args = args;
+    _p.rollback = rollback;
+    try {
+      exe(process2, ...args);
+    } catch (err) {
+      processFail(process2, err);
+    }
+    delete _pdb.process;
+    _p.isDone = true;
+    if (parent) {
+      return process2;
+    }
+    if (!_p.isOk) {
+      rollback(process2, ...args);
+    }
+    for (const child of _p.childs) {
+      if (!_p.isOk) {
+        const _pc = _priv.get(child);
+        _pc.rollback(..._pc.args);
+      }
+      _priv.delete(child);
+    }
+    _priv.delete(process2);
+    return process2;
   };
   var Chop = class {
     constructor(id, opt = {}) {
       id = toStr(id);
       if (!id) {
-        throw Major.fail("missing id");
+        throwMajor2("missing id");
       }
       const { parent, init } = opt;
       const _p = {
         state: "pending",
-        handlers: [],
+        befores: [],
+        afters: [],
         childs: /* @__PURE__ */ new Set(),
         init: toFce(init),
         bundle: new Bundle(opt)
@@ -6446,19 +6328,14 @@
       }
       vault.set(this, _p);
     }
-    //TODO
-    msg(text, details = {}) {
-      let msg2 = this.id;
-      for (let i in details) {
-        msg2 += ` ${i}[${details[i]}]`;
-      }
-      if (text) {
-        msg2 += " " + text;
-      }
-      return msg2.trim();
+    on(isBefore, callback) {
+      return onEvent(this, isBefore, callback);
     }
-    on(callback, onlyOnce = false) {
-      return onEvent(this, callback, onlyOnce);
+    before(callback) {
+      return onEvent(this, true, callback);
+    }
+    after(callback) {
+      return onEvent(this, false, callback);
     }
     get(groupId, recId, throwError2 = false) {
       return _chopGetRec(this, groupId, recId, throwError2);
@@ -6474,23 +6351,26 @@
     getSize(groupId, throwError2 = false) {
       return _chopGetRecs(this, groupId, throwError2)?.size || 0;
     }
+    reset(context) {
+      return processRun(this, context, arguments, chopReset, chopResetRollback);
+    }
     map(callback) {
-      const result2 = [];
+      const result = [];
       const recs = _chopGetAllRecs(this);
       for (const [rec] of recs) {
         const r = callback(rec);
         if (r !== void 0) {
-          result2.push(r);
+          result.push(r);
         }
       }
-      return result2;
+      return result;
     }
     export(rec) {
-      const res = {};
+      const res2 = {};
       for (const i in rec) {
         const v = rec[i];
       }
-      return res;
+      return res2;
     }
     exportAll() {
       return this.map(this.export);
@@ -6500,9 +6380,9 @@
       const filter2 = toFce(opt.filter, true);
       opt.parent = this;
       opt.filter = (rec) => bundle.isInGroup(id, rec) && filter2(rec);
-      opt.init = (_) => {
+      opt.init = (process2) => {
         for (const [rec] of bundle.byRec) {
-          sync(child, rec, true);
+          syncIn(process2, rec, true);
         }
       };
       const child = new Chop(id, opt);
@@ -6513,6 +6393,116 @@
       return child;
     }
   };
+  var functions_exports = {};
+  __export3(functions_exports, {
+    toFunction: () => toFunction
+  });
+  var dates_exports = {};
+  __export3(dates_exports, {
+    toDate: () => toDate
+  });
+  var toDate = (any, opt = {}) => {
+    let date = any instanceof Date ? any : new Date(any);
+    let num = date.getTime();
+    if (isNaN(num)) {
+      throwMajor2("not a date");
+    }
+    const { min, max } = opt;
+    if (min == null && max == null) {
+      return date;
+    }
+    if (max != null) {
+      num = Math.min(num, max);
+    }
+    if (min != null) {
+      num = Math.max(num, min);
+    }
+    return new Date(num);
+  };
+  var numbers_exports = {};
+  __export3(numbers_exports, {
+    toNumber: () => toNumber
+  });
+  var _nums = /-?(\d+(\s+\d+)*)*[,.]?\d+/;
+  var strToNum = (str) => {
+    const match = String(str).replace(/\u00A0/g, " ").match(_nums);
+    if (!match || !match[0]) {
+      return NaN;
+    }
+    const res2 = Number(match[0].replaceAll(" ", "").replace(",", "."));
+    return res2;
+  };
+  var toNumber = (any, opt = {}) => {
+    const t = typeof any;
+    let num;
+    if (t === "number") {
+      num = any;
+    }
+    if (t === "string") {
+      num = strToNum(any);
+    } else {
+      num = Number(any);
+    }
+    const { min, max, dec } = opt;
+    if (isNaN(num)) {
+      throwMajor2("not a number");
+    }
+    if (max != null) {
+      num = Math.min(num, max);
+    }
+    if (min != null) {
+      num = Math.max(num, min);
+    }
+    if (dec == 0) {
+      num = Math.round(num);
+    } else if (dec > 0) {
+      const pow = Math.pow(10, dec);
+      num = Math.round(num * pow) / pow;
+    }
+    return num;
+  };
+  var objects_exports = {};
+  __export3(objects_exports, {
+    toObject: () => toObject
+  });
+  var toObject = (obj) => {
+    const t = typeof obj;
+    if (t === "object") {
+      return obj;
+    }
+    if (t !== "string") {
+      throwMajor2("unparseable");
+    }
+    try {
+      return JSON.parse(obj);
+    } catch (e) {
+      throwMajor2("unparseable");
+    }
+  };
+  var regexp_exports = {};
+  __export3(regexp_exports, {
+    toRegExp: () => toRegExp
+  });
+  var toRegExp = (any) => {
+    if (any instanceof RegExp) {
+      return any;
+    }
+    if (typeof any != "string") {
+      throwMajor("not a regexp");
+    }
+    try {
+      return (0, import_regex_parser.default)(any);
+    } catch (err) {
+      throwMajor("unparseable");
+    }
+  };
+  var modules = [booleans_exports, dates_exports, functions_exports, numbers_exports, objects_exports, regexp_exports, strings_exports, uni_exports];
+  var __default = modules;
+  var tools = {};
+  for (const file of __default) {
+    solids(tools, file);
+  }
+  var toFunction = (any) => typeof any === "function" ? any : anyToFn(any, tools);
   var getter = fcePass;
   var setter = fcePass;
   var isRequired = fceTrue;
@@ -6558,7 +6548,7 @@
       // },
       //_types
       "_types-_ent": { meta: "numb", ent: "_types", name: "_ent", type: "ref", ref: "_ents", isReadonly, isRequired },
-      "_types-id": { meta: "numb", ent: "_types", name: "id", type: "string", isReadonly, isRequired, formula: (r) => join("-", r.ent?.id, r.name) },
+      "_types-id": { meta: "numb", ent: "_types", name: "id", type: "string", isReadonly, isRequired },
       "_types-meta": { meta: "numb", ent: "_types", name: "meta", type: "string", isReadonly },
       "_types-setter": { meta: "numb", ent: "_types", name: "setter", type: "function", isReadonly, fallback: (_) => (v) => v },
       "_types-getter": { meta: "numb", ent: "_types", name: "getter", type: "function", isReadonly, fallback: (_) => (v) => v },
@@ -6566,7 +6556,7 @@
       "_types-loader": { meta: "numb", ent: "_types", name: "loader", type: "function", isReadonly },
       //_cols
       "_cols-_ent": { meta: "numb", ent: "_cols", name: "_ent", type: "ref", ref: "_ents", isReadonly, isRequired },
-      "_cols-id": { meta: "numb", ent: "_cols", name: "id", type: "string", isReadonly, isRequired },
+      "_cols-id": { meta: "numb", ent: "_cols", name: "id", type: "string", isReadonly, isRequired, formula: (r) => join("-", r.ent?.id, r.name) },
       "_cols-meta": { meta: "numb", ent: "_cols", name: "meta", type: "string", isReadonly },
       "_cols-ent": { meta: "numb", ent: "_cols", name: "ent", type: "ref", ref: "_ents", isReadonly, isRequired },
       "_cols-name": { meta: "numb", ent: "_cols", name: "name", type: "string", isReadonly, isRequired },
@@ -6593,13 +6583,13 @@
       "_cols-omitChange": { meta: "numb", ent: "_cols", name: "omitChange", type: "boolean" }
     }
   };
-  var nregCol = (db, entId, _col, action2) => {
+  var nregCol = (db, entId, _col, action) => {
     const colsByEnt = vault.get(db)?.colsByEnt;
     if (!colsByEnt) {
-      throw Critical.fail("columns not found");
+      throwMajor2("columns not found");
     }
     let cols = colsByEnt.get(entId);
-    if (action2) {
+    if (action) {
       if (cols) {
         cols.add(_col);
       } else {
@@ -6634,12 +6624,12 @@
       } else {
         if (isReadonly2 && isReadonly2(current, before, stored)) {
           if (before) {
-            throw Minor.fail(`is readonly`);
+            throwMino(`is readonly`);
           }
         } else {
           to3 = output[name] = n(to3);
           if (validator && !validator(current, before, stored)) {
-            throw Major.fail("is invalid");
+            throwMajor2("is invalid");
           }
         }
         if (!before && isNull(to3) || resetIf && resetIf(current, before, stored)) {
@@ -6650,7 +6640,7 @@
         to3 = output[name] = n(fallback(current, before, stored));
       }
       if (isRequired2 && isNull(to3) && isRequired2(current, before, stored)) {
-        throw Major.fail("is required");
+        throwMajor2("is required");
       }
       return output[name];
     };
@@ -6661,116 +6651,57 @@
       setter: (_) => createSetter(_col)
     });
   };
-  var setCol = (_rec) => {
-    const { db, values } = _rec;
-    if (values._ent !== "_cols") {
+  var colSet = (_rec) => {
+    const { db, values: { _ent, ent } } = _rec;
+    if (_ent !== "_cols") {
       return;
     }
-    const ent = values.ent;
     nregCol(db, ent, _rec, true);
     solid3(_rec, "traits", createTraits(_rec), true, true);
     const rows = _chopGetRecs(db, ent);
     if (rows) {
       for (const [_, row] of rows) {
-        getRecPriv(row).colAdd(_rec);
+        recGetPriv(db, row).colAdd(_rec);
       }
     }
   };
-  var remCol = (_rec, ctx) => {
-    const { db, values } = _rec;
-    if (values._ent !== "_cols") {
+  var colRem = (_rec) => {
+    const { db, values: values2 } = _rec;
+    if (values2._ent !== "_cols") {
       return;
     }
-    nregCol(db, values.ent, _rec, false);
-    const rows = _chopGetRecs(db, values.ent);
+    nregCol(db, values2.ent, _rec, false);
+    const rows = _chopGetRecs(db, values2.ent);
     if (rows) {
       for (const [_, row] of rows) {
-        getRecPriv(row).colRem(values.name);
+        recGetPriv(db, row).colRem(values2.name);
       }
-    }
-  };
-  var _results = /* @__PURE__ */ new WeakMap();
-  var Result = class {
-    constructor(_rec, context) {
-      const _p = {
-        _rec,
-        isOk: true,
-        fails: []
-      };
-      const { current } = _rec;
-      solids(this, {
-        current,
-        context
-      });
-      virtuals(this, {
-        isOk: (_) => _p.isOk,
-        fails: (_) => [..._p.fails]
-      });
-      _results.set(this, _p);
-    }
-    addFail(fail, nonMinorThrow = false) {
-      const _p = _results.get(this);
-      const { values } = _p._rec;
-      fail.setRow(values.id).setEnt(values._ent);
-      if (fail.severity !== "minor") {
-        if (nonMinorThrow) {
-          throw fail;
-        } else {
-          _p.isOk = false;
-        }
-      }
-      _p.fails.push(fail);
-      return true;
-    }
-  };
-  var ResultTurn = class extends Result {
-    constructor(_rec) {
-      super(_rec);
-      const _p = _results.get(this);
-      _p.changed = /* @__PURE__ */ new Set();
-      _p.isReal = _rec.state === "pending";
-      virtuals(this, {
-        isReal: (_) => _p.isReal,
-        changed: (_) => new Set(_p.changed)
-      });
-    }
-    addChange(change, isReal = false) {
-      const _p = _results.get(this);
-      _p.changed.add(change);
-      if (isReal) {
-        _p.isReal = true;
-      }
-      return true;
     }
   };
   var Turn = class {
-    static attach(_rec, process2, input, isUpdate = false) {
-      return _rec.turn = new Turn(_rec, process2, input, isUpdate);
+    static attach(process2, _rec, input, force = false) {
+      return _rec.turn = new Turn(process2, _rec, input, force);
     }
-    constructor(_rec, process2, input, isUpdate = false) {
-      this._rec = _rec;
+    constructor(process2, _rec, input, force = false) {
       this.process = process2;
-      this.result = new ResultTurn(_rec);
+      this._rec = _rec;
+      this.isChange = _rec.state === "pending";
       solids(this, {
-        isUpdate,
+        force,
         input,
         output: {},
+        changes: /* @__PURE__ */ new Set(),
         pendings: /* @__PURE__ */ new Set()
       });
-      this.isPending = false;
-      try {
-        this._prepare();
-      } catch (err) {
-        result.addFail(toFail(err));
-      }
+      this._prepare();
     }
     _prepare() {
-      const { _rec, result: result2 } = this;
-      const { db, values, state } = _rec;
-      if (!values._ent) {
+      const { _rec, process: process2 } = this;
+      const { db, values: values2, state } = _rec;
+      if (!values2._ent) {
         throw Major.fail("is required").setCol("_ent");
       }
-      const _cols = getColsPriv(db, values._ent);
+      const _cols = getColsPriv(db, values2._ent);
       if (!_cols) {
         throw Major.fail("invalid").setCol("_ent");
       }
@@ -6778,60 +6709,57 @@
         try {
           this._prepareCol(_col);
         } catch (err) {
-          result2.addFail(toFail(err).setCol(_col.values.name));
+          processFail(err, _col.values.name);
         }
       }
-      if (state === "ready" && !this.isPending) {
-        throw Major.fail("blank");
+      if (state === "ready") {
+        throwMajor2("blank");
       }
     }
     _prepareCol(_col) {
-      const { _rec, isUpdate, input, output, pendings } = this;
-      const { meta: metaRec, values, state } = _rec;
+      const { _rec, force, input, output, pendings } = this;
+      const { meta: metaRec, values: values2, state } = _rec;
       const { meta: metaCol, values: { name, formula, resetIf, noCache } } = _col;
       const isReal = input.hasOwnProperty(name);
       const isMeta = metaRec && metaCol && (metaCol === "numb" || metaRec !== "soft");
-      output[name] = values[name];
+      output[name] = values2[name];
       if (isReal && state === "ready") {
         if (isMeta) {
-          throw Minor.fail("is meta");
+          throwMinor("is meta");
         }
         if (formula) {
-          throw Minor.fail(`has formula`);
+          throwMinor(`has formula`);
         }
       }
       if (formula && noCache) {
-        return;
-      }
-      if (isMeta && state === "pending") {
         return;
       }
       if (formula) {
         pendings.add(_col);
         return;
       }
-      if (!isUpdate || isReal) {
+      if (isMeta && state === "pending") {
+        return;
+      }
+      if (force || isReal) {
         pendings.add(_col);
-        this.isPending = true;
         return;
       }
       if (resetIf) {
-        input[name] = values[name];
+        input[name] = values2[name];
         pendings.add(_col);
         return;
       }
     }
     execute() {
-      const { _rec, pendings, result: result2 } = this;
-      if (this.isPending) {
-        for (const _col of pendings) {
-          this.pull(_col);
-        }
+      const { process: process2, _rec, pendings, isChange } = this;
+      for (const _col of pendings) {
+        this.pull(_col);
       }
-      return result2.isOk && result2.isReal ? this.output : _rec.values;
+      return process2.isOk && isChange ? this.output : _rec.values;
     }
     pull(_col) {
-      const { _rec, pendings, output, input, result: result2 } = this;
+      const { process: process2, _rec, pendings, output, input, changes } = this;
       const { state, current, before } = _rec;
       const { name, omitChange } = _col.values;
       if (pendings.has(_col)) {
@@ -6840,25 +6768,26 @@
         try {
           setter2(current, output, input[name], state === "ready" ? before : void 0);
         } catch (err) {
-          result2.addFail(toFail(err).setCol(name));
+          processFail(err, name);
         }
         if (output[name] !== _rec.values[name]) {
-          result2.addChange(name, !omitChange);
+          changes.add(name);
+          if (!omitChange) {
+            this.isChange = true;
+          }
         }
       }
       return output[name];
     }
     detach() {
-      const { _rec, result: result2 } = this;
+      const { _rec } = this;
       delete this._rec;
-      delete this.result;
       delete _rec.turn;
-      return result2;
     }
   };
   var Record = class {
-    constructor(values) {
-      Object.assign(this, values);
+    constructor(values2) {
+      Object.assign(this, values2);
     }
     toString() {
       return this.id;
@@ -6868,9 +6797,9 @@
     }
   };
   var RecordPrivate = class {
-    constructor(db, values) {
+    constructor(db, values2) {
       this.state = "pending";
-      const v = this.values = Object.assign({}, values);
+      const v = this.values = Object.assign({}, values2);
       v._ent = toId(v._ent);
       if (v._ent === "_cols") {
         v.ent = toId(v.ent);
@@ -6881,17 +6810,10 @@
         current: new Record(v),
         before: new Record()
       });
-      regRec(this);
-    }
-    msg(text, details = {}) {
-      return this.db.msg(text, {
-        ent: this.values._ent,
-        row: this.values.id,
-        ...details
-      });
+      recReg(this);
     }
     colAdd(_col) {
-      const { current, before, state } = this;
+      const { db, current, before, state } = this;
       const { name, formula, noCache } = _col.current;
       const t = _col.traits;
       const isVirtual = formula && noCache;
@@ -6899,7 +6821,7 @@
         enumerable: true,
         configurable: true,
         set: (_) => {
-          throw new Error(this.msg("for update use db.update(...) interface", { column: name }));
+          throw Major.fail("For update use db.update(...) interface").setCol(name);
         }
       };
       if (isVirtual) {
@@ -6923,8 +6845,11 @@
       delete before[name];
     }
     colsInit() {
-      const { db, values } = this;
-      const cols = getColsPriv(db, values._ent);
+      const { db, state, values: values2 } = this;
+      if (state !== "pending") {
+        throwMajor2("record is not pending");
+      }
+      const cols = getColsPriv(db, values2._ent);
       if (cols) {
         for (const _col of cols) {
           this.colAdd(_col);
@@ -6932,189 +6857,186 @@
       }
       return this;
     }
-    colsPrepare(process2) {
-      const { state, values } = this;
-      if (state === "pending") {
-        Turn.attach(this, process2, values);
+    init(process2) {
+      const { state, values: values2 } = this;
+      if (state !== "pending") {
+        throwMajor2("record is not pending");
       }
+      Turn.attach(process2, this, values2, true);
+      this.state = "init";
       return this;
     }
-    colsFinish() {
+    ready() {
       const { state, turn } = this;
-      if (state === "pending") {
-        this.values = turn.execute();
-        this.state = "ready";
+      if (state !== "init") {
+        throwMajor2("record is not init");
       }
-      return this.turn.detach();
+      this.values = turn.execute();
+      this.turn.detach();
+      this.state = "ready";
+      return this;
     }
-    valsPush(values, ctx, isUpdate = false) {
-      this.values = Turn.attach(this, process, values, isUpdate).execute();
-      const result2 = this.turn.detach();
-      if (this.turn.isReal) {
-        setCol(this);
-        sync(this.db, this.current, true, result2);
+    update(process2, values2, force = false) {
+      if (this.state !== "ready") {
+        throwMajor2("record is not ready");
       }
-      return result2;
+      this.values = Turn.attach(process2, this, values2, force).execute();
+      if (this.turn.isChange) {
+        colSet(this);
+        syncIn(process2, this.current);
+      }
+      this.turn.detach();
     }
-    remove(context, force = false) {
+    remove(process2, force = false) {
       const { db, meta, current } = this;
-      const process2 = new Process("remove", context, db, this);
       if (!force && meta) {
-        process2.fail(Major.fail("is meta"));
-      } else {
-        this.state = "removed";
-        sync(db, current, false, process2);
-        unregRec(this);
+        throwMajor2("is meta");
       }
-      return $end(process2);
+      this.state = "removed";
+      syncOut(db, current, process2);
+      recUnreg(this);
     }
   };
   var _records = /* @__PURE__ */ new WeakMap();
-  var regRec = (_rec) => {
-    _records.set(_rec.current, _rec);
-    return _rec;
-  };
-  var unregRec = (_rec) => {
-    _records.delete(_rec.current);
-    return _rec;
-  };
-  var getRecPriv = (any, throwError2 = true) => {
+  var recReg = (_rec) => _records.set(_rec.current, _rec);
+  var recUnreg = (_rec) => _records.delete(_rec.current);
+  var recGetPriv = (db, any, throwError2 = true) => {
     const _p = _records.get(any);
-    if (_p) {
+    if (_p && _p.db === db) {
       return _p;
     }
     if (throwError2) {
-      throw Major.fail("is not record");
+      throwMajor2("is not record");
     }
     ;
   };
-  var loadRec = (db, values) => {
-    const _rec = new RecordPrivate(db, values);
-    sync(db, _rec.current, true);
-    return _rec;
+  var recAdd = (process2, values2) => {
+    solid3(process2, "action", "add");
+    const _rec = new RecordPrivate(process2.db, values2);
+    _rec.colsInit().init(process2).ready();
+    syncIn(process2, _rec.current);
   };
-  var addOrSetRec = (db, values, ctx, isUpdate) => {
-    const _rec = new RecordPrivate(db, values).colsInit().colsPrepare();
+  var recRemove = (process2, record) => {
+    solid3(process2, "action", "remove");
+    recGetPriv(process2.db, record).remove(process2, false);
+  };
+  var _recUpdate = (process2, record, force = false) => {
+    solid3(process2, "action", "update");
+    recGetPriv(process2.db, record).update(process2, values, force);
+  };
+  var recSet = (process2, record, values2) => _recUpdate(process2, record, values2, true);
+  var recUpdate = (process2, record, values2) => _recUpdate(process2, record, values2, false);
+  var _recAddOrUpdate = (process2, values2, force = false) => {
+    const { db } = process2;
+    process2.action = "addOrUpdate";
+    const _rec = new RecordPrivate(db, values2).colsInit().init(process2);
     const { _ent, id } = _rec.current;
     const brother = _chopGetRec(db, toId(_ent), id);
     if (brother) {
-      return getRecPriv(brother).valsPush(values, ctx, isUpdate);
+      solid3(process2, "action", "update");
+      recGetPriv(db, brother).update(values2, ctx, force);
+    } else {
+      solid3(process2, "action", "add");
+      _rec.ready();
+      syncIn(process2, _rec.current);
     }
-    const res = _rec.colsFinish();
-    if (res.isOk) {
-      afterAdd(db, res, ctx);
+  };
+  var recAddOrSet = (process2, values2) => _recAddOrUpdate(process2, values2, true);
+  var recAddOrUpdate = (process2, values2) => _recAddOrUpdate(process2, values2, false);
+  var entAdd = (process2, _rec) => {
+    const { db, values: { _ent, id } } = _rec;
+    if (_ent !== "_ents") {
+      return;
     }
-    return res;
+    db.add({ _ent: "_cols", ent: id, name: "_ent", type: "ref", ref: "_ents", meta: "numb", isReadonly: fceTrue, isRequired: fceTrue }, process2.context);
+    db.add({ _ent: "_cols", ent: id, name: "id", type: "string", meta: "soft", isReadonly: fceTrue, isRequired: fceTrue }, process2.context);
   };
-  var $remove = (record, context) => {
-    const _rec = getRecPriv(record, false);
-    if (!_rec) {
-      return Process.failEnd(Major.fail("is not record"), "remove", context);
+  var entRem = (_rec) => {
+    const { db, values: values2 } = _rec;
+    if (values2._ent !== "_ents") {
+      return;
     }
-    return _rec.remove(context);
+    for (const _col of getColsPriv(db, values2.id)) {
+      _col.remove(process.context, true);
+    }
+    ;
   };
-  var add = (process2, db, values) => {
-    const _rec = new RecordPrivate(db, values);
-    _rec.colsInit().colsPrepare(process2).colsFinish();
-    sync(db, _rec.current, true, process2);
-  };
-  function $add(db, values, context) {
-    return Process.sandbox("add", db, context, arguments, add);
-  }
-  var set = (process2, record, values, context) => {
-    return getRecPriv(record).valsPush(values, context, action === "update");
-  };
-  var $set = (record, values, context) => {
-    const process2 = new Process("set", context);
-    set("set", record, values, context);
-  };
-  var $update = (record, values, context) => set("update", record, values, context);
-  var addOrSet = (action2, db, values, context, isUpdate = false) => {
-    const process2 = new Process("addOrSet", context);
-    return addOrSetRec(db, values, context, isUpdate);
-  };
-  var $addOrSet = (db, values, context) => addOrSet("set", db, values, context);
-  var $addOrUpdate = (db, values, context) => addOrSet("update", db, values, context, true);
   var DB = class extends Chop {
     constructor(id, opt = {}) {
       const { init } = opt;
       super(id, {
         getId: (rec) => toId(rec.id),
         getGroup: (rec) => toId(rec._ent),
-        init: (_) => {
+        init: (process2) => {
           for (const _ent in metaData) {
             for (const id2 in metaData[_ent]) {
-              loadRec(this, { _ent, id: id2, ...metaData[_ent][id2] });
+              const _rec = new RecordPrivate(this, { _ent, id: id2, ...metaData[_ent][id2] });
+              syncIn(process2, _rec.current, true);
             }
             ;
           }
-          for (const [_2, rec] of _chopGetRecs(this, "_cols")) {
-            const _rec = getRecPriv(rec);
-            setCol(_rec);
+          for (const [_, rec] of _chopGetRecs(this, "_cols")) {
+            const _rec = recGetPriv(this, rec);
+            colSet(_rec);
           }
           const _recs = [];
           for (const [rec] of _chopGetAllRecs(this)) {
-            const _rec = getRecPriv(rec);
+            const _rec = recGetPriv(this, rec);
             if (_rec.state === "pending") {
-              _recs.push(_rec.colsPrepare());
+              _recs.push(_rec.init(process2));
             }
           }
           for (const _rec of _recs) {
-            _rec.colsFinish();
+            _rec.ready();
           }
         }
       });
-      this.on((event, res, context) => {
-        if (!res) {
+      this.before((process2) => {
+        const { action, record, isBatch } = process2;
+        if (isBatch) {
           return;
         }
-        const _rec = getRecPriv(res.current);
+        const _rec = recGetPriv(this, record);
         const { _ent } = _rec.values;
         if (_ent == "_ents") {
+          if (action === "remove") {
+            entRem(process2, _rec);
+          } else if (action === "add") {
+            entAdd(process2, _rec);
+          }
         } else if (_ent === "_cols") {
-          if (event === "add" || event === "update") {
-            setCol(_rec, context);
-          } else if (event === "remove") {
-            remCol(_rec, context);
+          if (action === "add" || action === "update") {
+            colSet(_rec);
+          } else if (action === "remove") {
+            colRem(_rec);
           }
         }
       });
       const _p = vault.get(this);
       _p.colsByEnt = /* @__PURE__ */ new Map();
-      _p.processes = [];
     }
     isRecord(any, throwError2 = false) {
-      return !!getRecPriv(any, throwError2);
+      return !!recGetPriv(any, throwError2);
     }
-    reset(context) {
-      return $reset(this, context);
+    add(values2, context) {
+      return processRun(this, context, arguments, recAdd);
     }
-    add(values, context) {
-      return $add(this, values, context);
+    addOrSet(values2, context) {
+      return processRun(this, context, arguments, recAddOrSet);
     }
-    addOrSet(values, context) {
-      return $addOrSet(this, values, context);
+    addOrUpdate(values2, context) {
+      return processRun(this, context, arguments, recAddOrUpdate);
     }
-    addOrUpdate(values, context) {
-      return $addOrUpdate(this, values, context);
+    set(record, values2, context) {
+      return processRun(this, context, arguments, recSet);
     }
-    set(record, values, context) {
-      return $set(record, values, context);
-    }
-    update(record, values, context) {
-      return $update(record, values, context);
+    update(record, values2, context) {
+      return processRun(this, context, arguments, recUpdate);
     }
     remove(record, context) {
-      return $remove(record, context);
+      return processRun(this, context, arguments, recRemove);
     }
   };
-  __publicField(DB, "reset", $reset);
-  __publicField(DB, "remove", $remove);
-  __publicField(DB, "add", $add);
-  __publicField(DB, "set", $set);
-  __publicField(DB, "update", $update);
-  __publicField(DB, "addOrSet", $addOrSet);
-  __publicField(DB, "addOrUpdate", $addOrUpdate);
 
   // demo/frontend/src/index.js
   var socket = lookup2(`localhost:${info.port + 1}`);
@@ -7122,14 +7044,14 @@
   var beam = window.beam = bifrost.createBeam("data");
   beam.get().then((records) => {
     const db = window.db = new DB("db", {
-      init: (load, ctx) => {
+      init: (load, ctx2) => {
         for (const rec of records) {
-          load(rec, ctx);
+          load(rec, ctx2);
         }
       }
     });
     console.log(db.reset("test"));
-    db.on((event, res, ctx) => {
+    db.after((process2) => {
       if (res) {
       }
     });

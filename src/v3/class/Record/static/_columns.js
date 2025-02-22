@@ -1,14 +1,14 @@
 import { isNull, reArray } from "../../../../components/uni/formats";
-import { getRecPriv } from "./_records";
+import { recGetPriv } from "./_records";
 import { metaData } from "../../../metaData/interface";
-import { _chopGetRecs } from "../../Chop/static/gets";
+import { _chopGetRecs } from "../../Chop/static/eventHandlers";
 import { cacheds, solid } from "@randajan/props";
-import { Critical, Major, Minor } from "../../Result/Fails";
 import { vault } from "../../../../components/uni/consts";
+import { throwMajor } from "../../../tools/traits/uni";
 
 const nregCol = (db, entId, _col, action)=>{
     const colsByEnt = vault.get(db)?.colsByEnt;
-    if (!colsByEnt) { throw Critical.fail("columns not found"); }
+    if (!colsByEnt) { throwMajor("columns not found"); }
     let cols = colsByEnt.get(entId);
 
     if (action) {
@@ -49,11 +49,11 @@ const createSetter = _col=>{
         if (formula) { to = output[name] = n(formula(current, before, stored)); }
         else {
             if (isReadonly && isReadonly(current, before, stored)) {
-                if (before) { throw Minor.fail(`is readonly`); }
+                if (before) { throwMino(`is readonly`); }
             } else {
                 to = output[name] = n(to);
                 if (validator && !validator(current, before, stored)) {
-                    throw Major.fail("is invalid");
+                    throwMajor("is invalid");
                 }
             }
 
@@ -63,7 +63,7 @@ const createSetter = _col=>{
         }
 
         if (fallback && isNull(to)) { to = output[name] = n(fallback(current, before, stored)); }
-        if (isRequired && isNull(to) && isRequired(current, before, stored)) { throw Major.fail("is required"); }
+        if (isRequired && isNull(to) && isRequired(current, before, stored)) { throwMajor("is required"); }
         
         return output[name];
     }
@@ -76,11 +76,9 @@ const createTraits = _col=>{
     });
 }
 
-export const setCol = _rec=>{
-    const { db, values } = _rec;
-    if (values._ent !== "_cols") { return; }
-
-    const ent = values.ent;
+export const colSet = (_rec)=>{
+    const { db, values:{ _ent, ent } } = _rec;
+    if (_ent !== "_cols") { return; }
 
     nregCol(db, ent, _rec, true);
 
@@ -88,12 +86,12 @@ export const setCol = _rec=>{
 
     const rows = _chopGetRecs(db, ent);
     if (rows) {
-        for (const [_, row] of rows) { getRecPriv(row).colAdd(_rec); }
+        for (const [_, row] of rows) { recGetPriv(db, row).colAdd(_rec); }
     }
 
 }
 
-export const remCol = (_rec, ctx)=>{
+export const colRem = (_rec)=>{
     const { db, values } = _rec;
     if (values._ent !== "_cols") { return; }
 
@@ -101,7 +99,7 @@ export const remCol = (_rec, ctx)=>{
 
     const rows = _chopGetRecs(db, values.ent);
     if (rows) {
-        for (const [_, row] of rows) { getRecPriv(row).colRem(values.name); }
+        for (const [_, row] of rows) { recGetPriv(db, row).colRem(values.name); }
     }
 
 }

@@ -1,84 +1,89 @@
-import { solid, solids, virtual, virtuals } from "@randajan/props";
+import { solids, virtuals } from "@randajan/props";
 import { vault } from "../../../components/uni/consts";
+import { toFail } from "./Fails";
 
 const _priv = new WeakMap();
 
-export const $end = (process)=>{
-    const _p = _priv.get(process);
-    _p.processes?.pop();
-    _p.isDone = true;
-    return process;
-}
+class Process {
 
-export class Process {
-
-    static failEnd(fail, action, context, chop, _rec) {
-        const process = new Process(action, context, chop, _rec);
-        return $end(process.fail(fail));
-    }
-
-    static sandbox(action, chop, context, args, exe) {
-        return (new Process(action, context, chop)).sandbox(exe, args);
-    }
-
-    constructor(action, context, chop, _rec) {
-        const db = chop ? chop.db : undefined;
-        const processes = db ? vault.get(db).processes : undefined;
-
-        const depth = (processes?.push(this)-1) || 0;
-        const parent = !depth ? undefined : processes[depth-1];
-
-        if (parent) { _priv.get(parent).childs.push(this); }
+    constructor(db, chop, context, parent) {
 
         const _p = {
             isOk:true,
             isDone:false,
-            fails:[],
-            childs:[],
-            processes
+            childs:!parent ? [] : undefined
         }
 
         solids(this, {
             db,
             chop,
-            parent
+            parent,
         }, false);
 
         solids(this, {
-            depth,
-            action,
             context
         });
 
         virtuals(this, {
             isOk:_=>_p.isOk,
             isDone:_=>_p.isDone,
-            fails:_=>[..._p.fails],
-            childs:_=>[..._p.childs],
-            record:_=>_rec?.current
+            fails:_=>!_p.fails ? undefined : [..._p.fails],
+            childs:_=>!_p.childs.length ? undefined : [..._p.childs],
         });
 
         _priv.set(this, _p);
 
     }
 
-    fail(fail, nonMinorThrow=false) {
-        const _p = _priv.get(this);
+}
 
-        _p.fails.push(fail);
+export const processFail = (process, err, colName)=>{
+    const _p = _priv.get(process);
 
-        if (fail.severity !== "minor") {
-            if (nonMinorThrow) { throw fail; }
-            else { _p.isOk = false; } 
+    const fail = toFail(err, colName);
+
+    if (fail.severity !== "minor") {
+        if (colName) { throw fail; }
+        _p.isOk = false;
+        if (process.parent) { _priv.get(process.parent).isOk = false; }
+    }
+
+    if (!_p.fails) { _p.fails = [fail]; } else { _p.fails.push(fail); }
+
+}
+
+export const processRun = (chop, context, args, exe, rollback)=>{
+    const db = chop.db;
+    const _pdb = vault.get(db);
+    const parent = _pdb.process
+
+    const process = new Process(db, chop, context, parent);
+    if (!parent) { _pdb.process = process; }
+    else { _priv.get(parent).push(process); }
+
+    const _p = _priv.get(process);
+    _p.args = args;
+    _p.rollback = rollback;
+    
+    try { exe(process, ...args); }
+    catch(err) { processFail(process, err); }
+    
+    delete _pdb.process;
+    _p.isDone = true;
+    
+    if (parent) { return process; }
+
+    if (!_p.isOk) { rollback(process, ...args); }
+
+    for (const child of _p.childs) {
+        if (!_p.isOk) {
+            const _pc = _priv.get(child);
+            _pc.rollback(..._pc.args);
         }
-
-        return this;
+        _priv.delete(child); //cleanup
     }
 
-    sandbox(exe, args) {
-        try { exe(this, ...args); }
-        catch(err) { this.fail(err); }
-        return $end(this);
-    }
+    _priv.delete(process);
 
+    return process;
 }

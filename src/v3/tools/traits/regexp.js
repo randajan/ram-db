@@ -1,13 +1,13 @@
 
 import parseRegExp from "regex-parser";
-import { Major } from "../../class/Result/Fails";
+import { Major } from "../../class/Process/Fails";
 
 
 export const toRegExp = any=>{
     if (any instanceof RegExp) { return any; }
     
-    if (typeof any != "string") { throw Major.fail("not a regexp"); }
+    if (typeof any != "string") { throwMajor("not a regexp"); }
 
     try { return parseRegExp(any);}
-    catch(err) { throw Major.fail("unparseable"); }
+    catch(err) { throwMajor("unparseable"); }
 }

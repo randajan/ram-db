@@ -2,24 +2,26 @@ import info from "@randajan/simple-lib/info";
 import { vault } from "../../../components/uni/consts";
 
 import { toFce, toStr } from "../../../components/uni/formats";
-import { sync, onEvent } from "./static/eventHandlers";
-import { _chopGetAllRecs, _chopGetRec, _chopGetRecs } from "./static/gets";
+import { onEvent, syncIn } from "./static/eventHandlers";
+import { _chopGetAllRecs, _chopGetRec, _chopGetRecs } from "./static/eventHandlers";
 import { solids, virtual, virtuals } from "@randajan/props";
-import { Major } from "../Result/Fails";
-import { $reset } from "../Process/static/reset";
+import { chopReset, chopResetRollback } from "./static/reset";
 import { Bundle } from "../Bundle/Bundle";
+import { throwMajor } from "../../tools/traits/uni";
+import { processRun } from "../Process/Process";
 
 export class Chop {
 
     constructor(id, opt={}) {
         id = toStr(id);
-        if (!id) { throw Major.fail("missing id"); }
+        if (!id) { throwMajor("missing id"); }
 
         const { parent, init } = opt;
 
         const _p = {
             state:"pending",
-            handlers:[],
+            befores:[],
+            afters:[],
             childs:new Set(),
             init:toFce(init),
             bundle:new Bundle(opt),
@@ -45,17 +47,10 @@ export class Chop {
 
     }
 
-    //TODO
-    msg(text, details={}) {
-        let msg = this.id;
-        for (let i in details) { msg += ` ${i}[${details[i]}]`; }
-        if (text) { msg += " " + text; }
-        return msg.trim();
-    }
+    on(isBefore, callback) { return onEvent(this, isBefore, callback); }
 
-    on(callback, onlyOnce = false) {
-        return onEvent(this, callback, onlyOnce);
-    }
+    before(callback) { return onEvent(this, true, callback); }
+    after(callback) { return onEvent(this, false, callback); }
 
     get(groupId, recId, throwError = false) {
         return _chopGetRec(this, groupId, recId, throwError);
@@ -74,6 +69,8 @@ export class Chop {
     getSize(groupId, throwError=false) {
         return _chopGetRecs(this, groupId, throwError)?.size || 0;
     }
+    
+    reset(context) { return processRun(this, context, arguments, chopReset, chopResetRollback); }
 
     map(callback) {
         const result = [];
@@ -106,7 +103,7 @@ export class Chop {
 
         opt.parent = this;
         opt.filter = rec=>(bundle.isInGroup(id, rec) && filter(rec));
-        opt.init = _=>{ for (const [rec] of bundle.byRec) { sync(child, rec, true); } }
+        opt.init = process=>{ for (const [rec] of bundle.byRec) { syncIn(process, rec, true); } }
 
         const child = new Chop(id, opt);
 
