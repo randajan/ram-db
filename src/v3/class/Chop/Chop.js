@@ -2,13 +2,13 @@ import info from "@randajan/simple-lib/info";
 import { vault } from "../../../components/uni/consts";
 
 import { toFce, toStr } from "../../../components/uni/formats";
-import { onEvent, syncIn } from "./static/eventHandlers";
-import { _chopGetAllRecs, _chopGetRec, _chopGetRecs } from "./static/eventHandlers";
+import { _chopOnEvent } from "./static/eventHandlers";
 import { solids, virtual, virtuals } from "@randajan/props";
-import { chopReset, chopResetRollback } from "./static/reset";
+import { _chopReset } from "./static/reset";
 import { Bundle } from "../Bundle/Bundle";
 import { throwMajor } from "../../tools/traits/uni";
-import { processRun } from "../Process/Process";
+
+import { _chopGetAllRecs, _chopGetRec, _chopGetRecs, _chopSyncIn } from "./static/sync";
 
 export class Chop {
 
@@ -47,10 +47,10 @@ export class Chop {
 
     }
 
-    on(isBefore, callback) { return onEvent(this, isBefore, callback); }
+    on(isBefore, callback) { return _chopOnEvent(this, isBefore, callback); }
 
-    before(callback) { return onEvent(this, true, callback); }
-    after(callback) { return onEvent(this, false, callback); }
+    before(callback) { return _chopOnEvent(this, true, callback); }
+    after(callback) { return _chopOnEvent(this, false, callback); }
 
     get(groupId, recId, throwError = false) {
         return _chopGetRec(this, groupId, recId, throwError);
@@ -70,7 +70,7 @@ export class Chop {
         return _chopGetRecs(this, groupId, throwError)?.size || 0;
     }
     
-    reset(context) { return processRun(this, context, arguments, chopReset, chopResetRollback); }
+    reset(context) { return _chopReset(this, arguments, context); }
 
     map(callback) {
         const result = [];
@@ -103,7 +103,7 @@ export class Chop {
 
         opt.parent = this;
         opt.filter = rec=>(bundle.isInGroup(id, rec) && filter(rec));
-        opt.init = process=>{ for (const [rec] of bundle.byRec) { syncIn(process, rec, true); } }
+        opt.init = process=>{ for (const [rec] of bundle.byRec) { _chopSyncIn(process, rec); } }
 
         const child = new Chop(id, opt);
 

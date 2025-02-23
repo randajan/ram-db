@@ -5,8 +5,8 @@
   var __getOwnPropNames = Object.getOwnPropertyNames;
   var __getProtoOf = Object.getPrototypeOf;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
-  var __esm = (fn, res2) => function __init() {
-    return fn && (res2 = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res2;
+  var __esm = (fn, res) => function __init() {
+    return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
   };
   var __commonJS = (cb, mod) => function __require() {
     return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
@@ -3959,8 +3959,8 @@
   var _pass = ["all", "first", "last"];
   var fakePromise = () => {
     const prom = {};
-    prom.result = new Promise((res2, rej) => {
-      prom.resolve = res2;
+    prom.result = new Promise((res, rej) => {
+      prom.resolve = res;
       prom.reject = rej;
     });
     return prom;
@@ -4080,10 +4080,10 @@
     };
   };
   var emit = async (socket2, channel, body, onError) => {
-    return new Promise((res2, rej) => {
+    return new Promise((res, rej) => {
       socket2.emit(_bifrostEvent, { channel, body }, (ok, response) => {
         if (ok) {
-          return res2(response);
+          return res(response);
         }
         const err = unpackError(response);
         rej(err);
@@ -4120,9 +4120,9 @@
   var mapList = async (map, list, ...args) => {
     for (let i = list.length - 1; i >= 0; i--) {
       try {
-        const res2 = await list[i](...args);
-        if (map && typeof res2 === "function") {
-          map.push(res2);
+        const res = await list[i](...args);
+        if (map && typeof res === "function") {
+          map.push(res);
         }
       } catch (err) {
         console.warn(err);
@@ -4991,24 +4991,24 @@
     if (a === b) {
       return changeList ? [] : true;
     }
-    const res2 = [];
+    const res = [];
     const flat = deflate(a);
     each(b, ({ val, path, stop }) => {
       if (flat[path] !== val) {
-        res2.push(path);
+        res.push(path);
       }
       delete flat[path];
-      if (!diffList && res2.length) {
+      if (!diffList && res.length) {
         stop();
       }
     }, true);
     for (let path in flat) {
-      if (!diffList && res2.length) {
+      if (!diffList && res.length) {
         break;
       }
-      res2.push(path);
+      res.push(path);
     }
-    return diffList ? res2 : !res2.length;
+    return diffList ? res : !res.length;
   };
   var copy = (any, deep = false, copyUnmapable = false) => {
     return each(any, (ctx2) => {
@@ -5055,11 +5055,11 @@
     if (!base_default.isMapable(any)) {
       return void 0;
     }
-    const res2 = [];
+    const res = [];
     each(any, ({ val }) => {
-      res2.push(base_default.isRunnable(val) ? val(...args) : void 0);
+      res.push(base_default.isRunnable(val) ? val(...args) : void 0);
     }, true);
-    return res2;
+    return res;
   };
   var enumFactory = (enums, { before, after, def } = {}) => (raw, ...args) => {
     const input = before ? before(raw, ...args) : raw;
@@ -5849,21 +5849,21 @@
   var toStr = (any, def) => isNull(any) ? def : String(any);
   var toArr = (any) => any instanceof Array ? any : [any];
   var reArray = (val, trait) => {
-    const res2 = [];
+    const res = [];
     if (isNull(val)) {
-      return res2;
+      return res;
     }
     if (!Array.isArray(val)) {
-      res2.push(trait(val));
-      return res2;
+      res.push(trait(val));
+      return res;
     }
     for (const v of val) {
       const r = trait(v);
       if (!isNull(r)) {
-        res2.push(r);
+        res.push(r);
       }
     }
-    return res2;
+    return res;
   };
   var uni_exports = {};
   __export3(uni_exports, {
@@ -5871,12 +5871,18 @@
     join: () => join,
     throwMajor: () => throwMajor2,
     throwMinor: () => throwMinor,
-    toId: () => toId
+    toId: () => toId2
   });
   var Fail = class extends Error {
     constructor(severity, reason, details) {
       super(reason);
       solids(this, { severity, reason, details });
+    }
+    setCol(column) {
+      if (!this.column) {
+        solid3(this, "column", column);
+      }
+      return this;
     }
   };
   var Minor = class extends Fail {
@@ -5912,7 +5918,7 @@
     }
     return Critical.fail("Unknown error", err);
   };
-  var toFail = (err, colName) => solid3(_toFail(err), "column", colName);
+  var toFail = (err, colName) => _toFail(err).setCol(colName);
   var strings_exports = {};
   __export3(strings_exports, {
     toString: () => toString3
@@ -5945,7 +5951,7 @@
     }
     return str;
   };
-  var toId = (ref) => typeof ref !== "string" ? ref?.id : ref;
+  var toId2 = (ref) => typeof ref !== "string" ? ref?.id : ref;
   var isEmpty = (any) => {
     if (any == null) {
       return true;
@@ -5991,43 +5997,7 @@
   var throwMinor = (reason, details) => {
     throw Minor.fail(reason, details);
   };
-  var _chopGetAllRecs = (chop) => vault.get(chop).bundle.byRec;
-  var _chopGetRecs = (chop, groupId) => vault.get(chop).bundle.byGroup.getAll(groupId);
-  var _chopGetRec = (chop, groupId, recId) => vault.get(chop).bundle.byGroup.get(groupId, recId);
-  var propagate = (chop, process2, rec, inc, befs, afts) => {
-    const { bundle, childs, befores, afters } = vault.get(chop);
-    const isChange = bundle.sync(rec, inc);
-    if (isChange) {
-      for (const child of childs) {
-        propagate(child, process2, rec, inc, hands);
-      }
-      if (befs && befores.length) {
-        befs.push(befores);
-      }
-      if (afts && afters.length) {
-        afts.push(afters);
-      }
-    }
-    return isChange;
-  };
-  var _sync = (inc, process2, rec, isBatch = false) => {
-    solid3(process2, "isBatch", isBatch);
-    if (isBatch) {
-      return propagate(process2.chop, process2, rec, inc);
-    }
-    const befs = [], afts = [];
-    solid3(process2, "record", rec);
-    propagate(process2.chop, process2, rec, inc, befs, afts);
-    for (const b of befs) {
-      runEvent(process2, b);
-    }
-    for (const a of afts) {
-      runEvent(process2, a, false);
-    }
-  };
-  var syncIn = (process2, rec, isBatch = false) => _sync(true, process2, rec, isBatch);
-  var syncOut = (process2, rec, isBatch = false) => _sync(false, process2, rec, isBatch);
-  var runEvent = (process2, handlers, throwErrors = true) => {
+  var _chopRunEvent = (process2, handlers, throwErrors = true) => {
     for (let i = handlers.length - 1; i >= 0; i--) {
       if (!handlers[i]) {
         return;
@@ -6042,7 +6012,7 @@
       }
     }
   };
-  var onEvent = (chop, isBefore, callback) => {
+  var _chopOnEvent = (chop, isBefore, callback) => {
     if (!isFce(callback)) {
       throwMajor2(`on(...) require function`);
     }
@@ -6057,7 +6027,88 @@
       return callback;
     };
   };
-  var chopReset = (process2) => {
+  var _priv = /* @__PURE__ */ new WeakMap();
+  var Process = class {
+    constructor(db, chop, context, rollback6, parent, isBatch = false) {
+      const _p = {
+        isOk: true,
+        isDone: false,
+        childs: !parent ? [] : void 0,
+        rollback: rollback6
+      };
+      solids(this, {
+        db,
+        chop,
+        parent
+      }, false);
+      solids(this, {
+        context,
+        isBatch
+      });
+      virtuals(this, {
+        isOk: (_) => _p.isOk,
+        isDone: (_) => _p.isDone,
+        fails: (_) => !_p.fails ? void 0 : [..._p.fails],
+        childs: (_) => !_p.childs.length ? void 0 : [..._p.childs]
+      });
+      _priv.set(this, _p);
+    }
+  };
+  var _processFail = (process2, err, colName) => {
+    const _p = _priv.get(process2);
+    const fail = toFail(err, colName);
+    if (fail.severity !== "minor") {
+      if (colName) {
+        throw fail;
+      }
+      _p.isOk = false;
+      if (process2.parent) {
+        _priv.get(process2.parent).isOk = false;
+      }
+    }
+    if (!_p.fails) {
+      _p.fails = [fail];
+    } else {
+      _p.fails.push(fail);
+    }
+  };
+  var _processFactory = (exe, rollback6, isBatch = false) => {
+    return (chop, args, context) => {
+      const db = chop.db;
+      const _pdb = vault.get(db);
+      const parent = _pdb.process;
+      const process2 = new Process(db, chop, context, rollback6, parent, isBatch);
+      if (!parent) {
+        _pdb.process = process2;
+      } else {
+        _priv.get(parent).childs.push(process2);
+      }
+      const _p = _priv.get(process2);
+      try {
+        exe(process2, ...args);
+      } catch (err) {
+        _processFail(process2, err);
+      }
+      delete _pdb.process;
+      _p.isDone = true;
+      if (parent) {
+        return process2;
+      }
+      for (let i = _p.childs.length - 1; i >= 0; i--) {
+        const child = _p.childs[i];
+        if (!_p.isOk) {
+          _priv.get(child).rollback(child);
+        }
+        _priv.delete(child);
+      }
+      if (!_p.isOk) {
+        rollback6(process2);
+      }
+      _priv.delete(process2);
+      return process2;
+    };
+  };
+  var roll = (process2) => {
     solid3(process2, "action", "reset");
     const _p = vault.get(process2.chop);
     if (!_p) {
@@ -6073,10 +6124,10 @@
         child.reset(process2.context);
       }
     }
-    runEvent(process2, befores);
-    runEvent(process2, afters, false);
+    _chopRunEvent(process2, befores);
+    _chopRunEvent(process2, afters, false);
   };
-  var chopResetRollback = (process2) => {
+  var rollback = (process2) => {
     const _p = vault.get(process2.chop);
     if (!_p) {
       return;
@@ -6084,6 +6135,7 @@
     _p.bundle.clear();
     _p.state = "pending";
   };
+  var _chopReset = _processFactory(roll, rollback, true);
   var booleans_exports = {};
   __export3(booleans_exports, {
     toBoolean: () => toBoolean
@@ -6211,92 +6263,44 @@
       }
       return true;
     }
-    syncIn(rec) {
-      this.sync(rec, true);
-    }
-    syncOut(rec) {
-      this.sync(rec, false);
-    }
   };
-  var _priv = /* @__PURE__ */ new WeakMap();
-  var Process = class {
-    constructor(db, chop, context, parent) {
-      const _p = {
-        isOk: true,
-        isDone: false,
-        childs: !parent ? [] : void 0
-      };
-      solids(this, {
-        db,
-        chop,
-        parent
-      }, false);
-      solids(this, {
-        context
-      });
-      virtuals(this, {
-        isOk: (_) => _p.isOk,
-        isDone: (_) => _p.isDone,
-        fails: (_) => !_p.fails ? void 0 : [..._p.fails],
-        childs: (_) => !_p.childs.length ? void 0 : [..._p.childs]
-      });
-      _priv.set(this, _p);
-    }
-  };
-  var processFail = (process2, err, colName) => {
-    const _p = _priv.get(process2);
-    const fail = toFail(err, colName);
-    if (fail.severity !== "minor") {
-      if (colName) {
-        throw fail;
+  var _chopGetAllRecs = (chop) => vault.get(chop).bundle.byRec;
+  var _chopGetRecs = (chop, groupId) => vault.get(chop).bundle.byGroup.getAll(groupId);
+  var _chopGetRec = (chop, groupId, recId) => vault.get(chop).bundle.byGroup.get(groupId, recId);
+  var propagate = (chop, process2, rec, inc, befs, afts) => {
+    const { bundle, childs, befores, afters } = vault.get(chop);
+    const isChange = bundle.sync(rec, inc);
+    if (isChange) {
+      for (const child of childs) {
+        propagate(child, process2, rec, inc, hands);
       }
-      _p.isOk = false;
-      if (process2.parent) {
-        _priv.get(process2.parent).isOk = false;
+      if (befs && befores.length) {
+        befs.push(befores);
+      }
+      if (afts && afters.length) {
+        afts.push(afters);
       }
     }
-    if (!_p.fails) {
-      _p.fails = [fail];
-    } else {
-      _p.fails.push(fail);
+    return isChange;
+  };
+  var sync = (inc, process2, rec) => {
+    if (process2.isBatch) {
+      return propagate(process2.chop, process2, rec, inc);
+    }
+    const befs = [], afts = [];
+    if (process2.record !== rec) {
+      solid3(process2, "record", rec);
+    }
+    propagate(process2.chop, process2, rec, inc, befs, afts);
+    for (const b of befs) {
+      _chopRunEvent(process2, b);
+    }
+    for (const a of afts) {
+      _chopRunEvent(process2, a, false);
     }
   };
-  var processRun = (chop, context, args, exe, rollback) => {
-    const db = chop.db;
-    const _pdb = vault.get(db);
-    const parent = _pdb.process;
-    const process2 = new Process(db, chop, context, parent);
-    if (!parent) {
-      _pdb.process = process2;
-    } else {
-      _priv.get(parent).push(process2);
-    }
-    const _p = _priv.get(process2);
-    _p.args = args;
-    _p.rollback = rollback;
-    try {
-      exe(process2, ...args);
-    } catch (err) {
-      processFail(process2, err);
-    }
-    delete _pdb.process;
-    _p.isDone = true;
-    if (parent) {
-      return process2;
-    }
-    if (!_p.isOk) {
-      rollback(process2, ...args);
-    }
-    for (const child of _p.childs) {
-      if (!_p.isOk) {
-        const _pc = _priv.get(child);
-        _pc.rollback(..._pc.args);
-      }
-      _priv.delete(child);
-    }
-    _priv.delete(process2);
-    return process2;
-  };
+  var _chopSyncIn = (process2, rec) => sync(true, process2, rec);
+  var _chopSyncOut = (process2, rec) => sync(false, process2, rec);
   var Chop = class {
     constructor(id, opt = {}) {
       id = toStr(id);
@@ -6329,13 +6333,13 @@
       vault.set(this, _p);
     }
     on(isBefore, callback) {
-      return onEvent(this, isBefore, callback);
+      return _chopOnEvent(this, isBefore, callback);
     }
     before(callback) {
-      return onEvent(this, true, callback);
+      return _chopOnEvent(this, true, callback);
     }
     after(callback) {
-      return onEvent(this, false, callback);
+      return _chopOnEvent(this, false, callback);
     }
     get(groupId, recId, throwError2 = false) {
       return _chopGetRec(this, groupId, recId, throwError2);
@@ -6352,7 +6356,7 @@
       return _chopGetRecs(this, groupId, throwError2)?.size || 0;
     }
     reset(context) {
-      return processRun(this, context, arguments, chopReset, chopResetRollback);
+      return _chopReset(this, arguments, context);
     }
     map(callback) {
       const result = [];
@@ -6366,11 +6370,11 @@
       return result;
     }
     export(rec) {
-      const res2 = {};
+      const res = {};
       for (const i in rec) {
         const v = rec[i];
       }
-      return res2;
+      return res;
     }
     exportAll() {
       return this.map(this.export);
@@ -6382,7 +6386,7 @@
       opt.filter = (rec) => bundle.isInGroup(id, rec) && filter2(rec);
       opt.init = (process2) => {
         for (const [rec] of bundle.byRec) {
-          syncIn(process2, rec, true);
+          _chopSyncIn(process2, rec);
         }
       };
       const child = new Chop(id, opt);
@@ -6429,8 +6433,8 @@
     if (!match || !match[0]) {
       return NaN;
     }
-    const res2 = Number(match[0].replaceAll(" ", "").replace(",", "."));
-    return res2;
+    const res = Number(match[0].replaceAll(" ", "").replace(",", "."));
+    return res;
   };
   var toNumber = (any, opt = {}) => {
     const t = typeof any;
@@ -6523,7 +6527,7 @@
       "function": { meta: "numb", setter: (v, c) => toFunction(v, c), getter, saver: (v) => toString3(v) },
       "regexp": { meta: "numb", setter: (v, c) => toRegExp(v, c), getter },
       "object": { meta: "numb", setter: (v, c) => toObject(v, c), getter, saver: (v) => toString3(v) },
-      "ref": { meta: "numb", setter: (v, c) => toId(v, c), getter },
+      "ref": { meta: "numb", setter: (v, c) => toId2(v, c), getter },
       "nref": { meta: "numb", setter, getter }
     },
     "_cols": {
@@ -6582,6 +6586,19 @@
       "_cols-noCache": { meta: "numb", ent: "_cols", name: "noCache", type: "boolean" },
       "_cols-omitChange": { meta: "numb", ent: "_cols", name: "omitChange", type: "boolean" }
     }
+  };
+  var _records = /* @__PURE__ */ new WeakMap();
+  var recReg = (_rec) => _records.set(_rec.current, _rec);
+  var recUnreg = (_rec) => _records.delete(_rec.current);
+  var _recGetPriv2 = (db, any, throwError2 = true) => {
+    const _p = _records.get(any);
+    if (_p && _p.db === db) {
+      return _p;
+    }
+    if (throwError2) {
+      throwMajor2("is not record");
+    }
+    ;
   };
   var nregCol = (db, entId, _col, action) => {
     const colsByEnt = vault.get(db)?.colsByEnt;
@@ -6661,20 +6678,7 @@
     const rows = _chopGetRecs(db, ent);
     if (rows) {
       for (const [_, row] of rows) {
-        recGetPriv(db, row).colAdd(_rec);
-      }
-    }
-  };
-  var colRem = (_rec) => {
-    const { db, values: values2 } = _rec;
-    if (values2._ent !== "_cols") {
-      return;
-    }
-    nregCol(db, values2.ent, _rec, false);
-    const rows = _chopGetRecs(db, values2.ent);
-    if (rows) {
-      for (const [_, row] of rows) {
-        recGetPriv(db, row).colRem(values2.name);
+        _recGetPriv2(db, row).colAdd(_rec);
       }
     }
   };
@@ -6697,11 +6701,11 @@
     }
     _prepare() {
       const { _rec, process: process2 } = this;
-      const { db, values: values2, state } = _rec;
-      if (!values2._ent) {
+      const { db, values, state } = _rec;
+      if (!values._ent) {
         throw Major.fail("is required").setCol("_ent");
       }
-      const _cols = getColsPriv(db, values2._ent);
+      const _cols = getColsPriv(db, values._ent);
       if (!_cols) {
         throw Major.fail("invalid").setCol("_ent");
       }
@@ -6709,7 +6713,7 @@
         try {
           this._prepareCol(_col);
         } catch (err) {
-          processFail(err, _col.values.name);
+          _processFail(err, _col.values.name);
         }
       }
       if (state === "ready") {
@@ -6718,11 +6722,11 @@
     }
     _prepareCol(_col) {
       const { _rec, force, input, output, pendings } = this;
-      const { meta: metaRec, values: values2, state } = _rec;
+      const { meta: metaRec, values, state } = _rec;
       const { meta: metaCol, values: { name, formula, resetIf, noCache } } = _col;
       const isReal = input.hasOwnProperty(name);
       const isMeta = metaRec && metaCol && (metaCol === "numb" || metaRec !== "soft");
-      output[name] = values2[name];
+      output[name] = values[name];
       if (isReal && state === "ready") {
         if (isMeta) {
           throwMinor("is meta");
@@ -6746,7 +6750,7 @@
         return;
       }
       if (resetIf) {
-        input[name] = values2[name];
+        input[name] = values[name];
         pendings.add(_col);
         return;
       }
@@ -6768,7 +6772,7 @@
         try {
           setter2(current, output, input[name], state === "ready" ? before : void 0);
         } catch (err) {
-          processFail(err, name);
+          _processFail(err, name);
         }
         if (output[name] !== _rec.values[name]) {
           changes.add(name);
@@ -6786,8 +6790,8 @@
     }
   };
   var Record = class {
-    constructor(values2) {
-      Object.assign(this, values2);
+    constructor(values) {
+      Object.assign(this, values);
     }
     toString() {
       return this.id;
@@ -6797,12 +6801,12 @@
     }
   };
   var RecordPrivate = class {
-    constructor(db, values2) {
+    constructor(db, values) {
       this.state = "pending";
-      const v = this.values = Object.assign({}, values2);
-      v._ent = toId(v._ent);
+      const v = this.values = Object.assign({}, values);
+      v._ent = toId2(v._ent);
       if (v._ent === "_cols") {
-        v.ent = toId(v.ent);
+        v.ent = toId2(v.ent);
       }
       this.meta = isMetaEnt(v._ent) ? v.meta : void 0;
       solids(this, {
@@ -6821,7 +6825,7 @@
         enumerable: true,
         configurable: true,
         set: (_) => {
-          throw Major.fail("For update use db.update(...) interface").setCol(name);
+          throwMajor2("For update use db.update(...) interface");
         }
       };
       if (isVirtual) {
@@ -6845,11 +6849,11 @@
       delete before[name];
     }
     colsInit() {
-      const { db, state, values: values2 } = this;
+      const { db, state, values } = this;
       if (state !== "pending") {
         throwMajor2("record is not pending");
       }
-      const cols = getColsPriv(db, values2._ent);
+      const cols = getColsPriv(db, values._ent);
       if (cols) {
         for (const _col of cols) {
           this.colAdd(_col);
@@ -6858,11 +6862,11 @@
       return this;
     }
     init(process2) {
-      const { state, values: values2 } = this;
+      const { state, values } = this;
       if (state !== "pending") {
         throwMajor2("record is not pending");
       }
-      Turn.attach(process2, this, values2, true);
+      Turn.attach(process2, this, values, true);
       this.state = "init";
       return this;
     }
@@ -6876,112 +6880,109 @@
       this.state = "ready";
       return this;
     }
-    update(process2, values2, force = false) {
+    update(process2, values, force = false) {
       if (this.state !== "ready") {
         throwMajor2("record is not ready");
       }
-      this.values = Turn.attach(process2, this, values2, force).execute();
+      this.values = Turn.attach(process2, this, values, force).execute();
       if (this.turn.isChange) {
         colSet(this);
-        syncIn(process2, this.current);
+        _chopSyncIn(process2, this.current);
       }
       this.turn.detach();
     }
     remove(process2, force = false) {
-      const { db, meta, current } = this;
+      const { meta, current } = this;
       if (!force && meta) {
         throwMajor2("is meta");
       }
       this.state = "removed";
-      syncOut(db, current, process2);
+      _chopSyncOut(process2, current);
       recUnreg(this);
     }
   };
-  var _records = /* @__PURE__ */ new WeakMap();
-  var recReg = (_rec) => _records.set(_rec.current, _rec);
-  var recUnreg = (_rec) => _records.delete(_rec.current);
-  var recGetPriv = (db, any, throwError2 = true) => {
-    const _p = _records.get(any);
-    if (_p && _p.db === db) {
-      return _p;
-    }
-    if (throwError2) {
-      throwMajor2("is not record");
-    }
-    ;
-  };
-  var recAdd = (process2, values2) => {
+  var roll2 = (process2, values) => {
     solid3(process2, "action", "add");
-    const _rec = new RecordPrivate(process2.db, values2);
+    const _rec = new RecordPrivate(process2.db, values);
     _rec.colsInit().init(process2).ready();
-    syncIn(process2, _rec.current);
+    _chopSyncIn(process2, _rec.current);
   };
-  var recRemove = (process2, record) => {
-    solid3(process2, "action", "remove");
-    recGetPriv(process2.db, record).remove(process2, false);
+  var rollback2 = (process2) => {
+    const _rec = _recGetPriv2(process2.db, process2.record, false);
+    _rec?.remove(process2, true);
   };
-  var _recUpdate = (process2, record, force = false) => {
-    solid3(process2, "action", "update");
-    recGetPriv(process2.db, record).update(process2, values, force);
-  };
-  var recSet = (process2, record, values2) => _recUpdate(process2, record, values2, true);
-  var recUpdate = (process2, record, values2) => _recUpdate(process2, record, values2, false);
-  var _recAddOrUpdate = (process2, values2, force = false) => {
+  var _recAdd = _processFactory(roll2, rollback2);
+  var roll3 = (process2, values, force = false) => {
     const { db } = process2;
     process2.action = "addOrUpdate";
-    const _rec = new RecordPrivate(db, values2).colsInit().init(process2);
+    const _rec = new RecordPrivate(db, values).colsInit().init(process2);
     const { _ent, id } = _rec.current;
     const brother = _chopGetRec(db, toId(_ent), id);
     if (brother) {
       solid3(process2, "action", "update");
-      recGetPriv(db, brother).update(values2, ctx, force);
+      _recGetPriv(db, brother).update(values, ctx, force);
     } else {
       solid3(process2, "action", "add");
       _rec.ready();
-      syncIn(process2, _rec.current);
+      _chopSyncIn(process2, _rec.current);
     }
   };
-  var recAddOrSet = (process2, values2) => _recAddOrUpdate(process2, values2, true);
-  var recAddOrUpdate = (process2, values2) => _recAddOrUpdate(process2, values2, false);
-  var entAdd = (process2, _rec) => {
-    const { db, values: { _ent, id } } = _rec;
-    if (_ent !== "_ents") {
-      return;
-    }
-    db.add({ _ent: "_cols", ent: id, name: "_ent", type: "ref", ref: "_ents", meta: "numb", isReadonly: fceTrue, isRequired: fceTrue }, process2.context);
-    db.add({ _ent: "_cols", ent: id, name: "id", type: "string", meta: "soft", isReadonly: fceTrue, isRequired: fceTrue }, process2.context);
+  var rollUpdate = (process2, values) => roll3(process2, values, true);
+  var rollSet = (process2, values) => roll3(process2, values, false);
+  var rollback3 = (process2) => {
   };
-  var entRem = (_rec) => {
-    const { db, values: values2 } = _rec;
-    if (values2._ent !== "_ents") {
-      return;
-    }
-    for (const _col of getColsPriv(db, values2.id)) {
-      _col.remove(process.context, true);
-    }
-    ;
+  var _recAddOrUpdate = _processFactory(rollUpdate, rollback3);
+  var _recAddOrSet = _processFactory(rollSet, rollback3);
+  var roll4 = (process2, record, values, force) => {
+    solid3(process2, "action", "update");
+    _recGetPriv(process2.db, record).update(process2, values, force);
   };
+  var rollSet2 = (process2, record, values) => roll4(process2, record, values, true);
+  var rollUpdate2 = (process2, record, values) => roll4(process2, record, values, false);
+  var rollback4 = (process2, values) => {
+  };
+  var _recSet = _processFactory(rollSet2, rollback4);
+  var _recUpdate = _processFactory(rollUpdate2, rollback4);
+  var roll5 = (process2, record, force = false) => {
+    solid3(process2, "action", "remove");
+    _chopGetRec(process2.db, record).remove(process2, force);
+  };
+  var rollRemoveForce = (process2, record) => roll5(process2, record, true);
+  var rollRemove = (process2, record) => roll5(process2, record, false);
+  var rollback5 = (process2, values) => {
+  };
+  var _recRemove = _processFactory(rollRemove, rollback5);
+  var _recRemoveForce = _processFactory(rollRemoveForce, rollback5);
   var DB = class extends Chop {
     constructor(id, opt = {}) {
-      const { init } = opt;
+      const { load, save } = opt;
       super(id, {
-        getId: (rec) => toId(rec.id),
-        getGroup: (rec) => toId(rec._ent),
+        getId: (rec) => toId2(rec.id),
+        getGroup: (rec) => toId2(rec._ent),
         init: (process2) => {
-          for (const _ent in metaData) {
-            for (const id2 in metaData[_ent]) {
-              const _rec = new RecordPrivate(this, { _ent, id: id2, ...metaData[_ent][id2] });
-              syncIn(process2, _rec.current, true);
+          const loadRecs = (_ent, recsRaw) => {
+            for (const id2 in recsRaw) {
+              const _rec = new RecordPrivate(this, { _ent, id: id2, ...recsRaw[id2] });
+              _chopSyncIn(process2, _rec.current);
             }
             ;
+          };
+          loadRecs("_ents", load("_ents") || metaData._ents);
+          loadRecs("_types", load("_types") || metaData._types);
+          loadRecs("_cols", load("_cols") || metaData._cols);
+          for (const [_ent] of _chopGetRecs(this, "_ents")) {
+            if (_ent.startsWith("_")) {
+              continue;
+            }
+            loadRecs(_ent, load(_ent));
           }
           for (const [_, rec] of _chopGetRecs(this, "_cols")) {
-            const _rec = recGetPriv(this, rec);
+            const _rec = _recGetPriv2(this, rec);
             colSet(_rec);
           }
           const _recs = [];
           for (const [rec] of _chopGetAllRecs(this)) {
-            const _rec = recGetPriv(this, rec);
+            const _rec = _recGetPriv2(this, rec);
             if (_rec.state === "pending") {
               _recs.push(_rec.init(process2));
             }
@@ -6991,50 +6992,29 @@
           }
         }
       });
-      this.before((process2) => {
-        const { action, record, isBatch } = process2;
-        if (isBatch) {
-          return;
-        }
-        const _rec = recGetPriv(this, record);
-        const { _ent } = _rec.values;
-        if (_ent == "_ents") {
-          if (action === "remove") {
-            entRem(process2, _rec);
-          } else if (action === "add") {
-            entAdd(process2, _rec);
-          }
-        } else if (_ent === "_cols") {
-          if (action === "add" || action === "update") {
-            colSet(_rec);
-          } else if (action === "remove") {
-            colRem(_rec);
-          }
-        }
-      });
       const _p = vault.get(this);
       _p.colsByEnt = /* @__PURE__ */ new Map();
     }
     isRecord(any, throwError2 = false) {
-      return !!recGetPriv(any, throwError2);
+      return !!_recGetPriv2(any, throwError2);
     }
-    add(values2, context) {
-      return processRun(this, context, arguments, recAdd);
+    add(values, context) {
+      return _recAdd(this, arguments, context);
     }
-    addOrSet(values2, context) {
-      return processRun(this, context, arguments, recAddOrSet);
+    addOrSet(values, context) {
+      return _recAddOrSet(this, arguments, context);
     }
-    addOrUpdate(values2, context) {
-      return processRun(this, context, arguments, recAddOrUpdate);
+    addOrUpdate(values, context) {
+      return _recAddOrUpdate(this, arguments, context);
     }
-    set(record, values2, context) {
-      return processRun(this, context, arguments, recSet);
+    set(record, values, context) {
+      return _recSet(this, arguments, context);
     }
-    update(record, values2, context) {
-      return processRun(this, context, arguments, recUpdate);
+    update(record, values, context) {
+      return _recUpdate(this, arguments, context);
     }
     remove(record, context) {
-      return processRun(this, context, arguments, recRemove);
+      return _recRemove(this, arguments, context);
     }
   };
 
@@ -7042,19 +7022,17 @@
   var socket = lookup2(`localhost:${info.port + 1}`);
   var bifrost = new ClientRouter(socket);
   var beam = window.beam = bifrost.createBeam("data");
-  beam.get().then((records) => {
+  beam.get().then((data) => {
     const db = window.db = new DB("db", {
-      init: (load, ctx2) => {
-        for (const rec of records) {
-          load(rec, ctx2);
-        }
+      load: (entName) => {
+        return data[entName];
+      },
+      save: (entName, recId, rec) => {
+        console.log(entName, recId, rec);
+        return true;
       }
     });
     console.log(db.reset("test"));
-    db.after((process2) => {
-      if (res) {
-      }
-    });
   });
 })();
 //# sourceMappingURL=index.js.map

@@ -1,4 +1,3 @@
-import { Major } from "../../class/Process/Fails";
 import { throwMajor } from "./uni";
 
 

@@ -7,6 +7,11 @@ class Fail extends Error {
         solids(this, { severity, reason, details });
     }
 
+    setCol(column) {
+        if (!this.column) { solid(this, "column", column); }
+        return this;
+    }
+
 }
 
 
@@ -43,4 +48,4 @@ const _toFail = (err)=>{
     return Critical.fail("Unknown error", err);
 }
 
-export const toFail = (err, colName)=>solid(_toFail(err), "column", colName);
+export const toFail = (err, colName)=>_toFail(err).setCol(colName);

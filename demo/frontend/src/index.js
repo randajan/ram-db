@@ -10,21 +10,18 @@ export const bifrost = new BifrostRouter(socket);
 
 const beam = window.beam = bifrost.createBeam("data");
 
-beam.get().then(records=>{
-    const db =  window.db = new DB("db", {
-        init:(load, ctx)=>{
-            for (const rec of records) { load(rec, ctx); }
+beam.get().then(data=>{
+    const db = window.db = new DB("db", {
+        load:(entName)=>{
+            return data[entName];
+        },
+        save:(entName, recId, rec)=>{
+            console.log(entName, recId, rec);
+            return true;
         }
     });
 
     console.log(db.reset("test"));
-    
-    db.after((process)=>{
-        if (res) {
-            //console.log(event);
-            //beam.set(db.exportAll());
-        }
-    });
 });
 
 

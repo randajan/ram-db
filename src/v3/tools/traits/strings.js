@@ -1,4 +1,3 @@
-import { Major } from "../../class/Process/Fails";
 
 import { fnToStr } from "@randajan/function-parser";
 import { throwMajor } from "./uni";

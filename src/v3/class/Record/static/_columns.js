@@ -1,7 +1,7 @@
 import { isNull, reArray } from "../../../../components/uni/formats";
-import { recGetPriv } from "./_records";
+import { _recGetPriv } from "./_records";
 import { metaData } from "../../../metaData/interface";
-import { _chopGetRecs } from "../../Chop/static/eventHandlers";
+import { _chopGetRecs } from "../../Chop/static/sync";
 import { cacheds, solid } from "@randajan/props";
 import { vault } from "../../../../components/uni/consts";
 import { throwMajor } from "../../../tools/traits/uni";
@@ -86,7 +86,7 @@ export const colSet = (_rec)=>{
 
     const rows = _chopGetRecs(db, ent);
     if (rows) {
-        for (const [_, row] of rows) { recGetPriv(db, row).colAdd(_rec); }
+        for (const [_, row] of rows) { _recGetPriv(db, row).colAdd(_rec); }
     }
 
 }
@@ -99,7 +99,7 @@ export const colRem = (_rec)=>{
 
     const rows = _chopGetRecs(db, values.ent);
     if (rows) {
-        for (const [_, row] of rows) { recGetPriv(db, row).colRem(values.name); }
+        for (const [_, row] of rows) { _recGetPriv(db, row).colRem(values.name); }
     }
 
 }

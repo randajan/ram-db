@@ -103,8 +103,4 @@ export class Bundle {
         return true;
     }
 
-    syncIn(rec) { this.sync(rec, true); }
-
-    syncOut(rec) { this.sync(rec, false); }
-
 }

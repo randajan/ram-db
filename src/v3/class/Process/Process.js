@@ -6,12 +6,13 @@ const _priv = new WeakMap();
 
 class Process {
 
-    constructor(db, chop, context, parent) {
+    constructor(db, chop, context, rollback, parent, isBatch=false) {
 
         const _p = {
             isOk:true,
             isDone:false,
-            childs:!parent ? [] : undefined
+            childs:!parent ? [] : undefined,
+            rollback
         }
 
         solids(this, {
@@ -21,7 +22,8 @@ class Process {
         }, false);
 
         solids(this, {
-            context
+            context,
+            isBatch
         });
 
         virtuals(this, {
@@ -37,7 +39,7 @@ class Process {
 
 }
 
-export const processFail = (process, err, colName)=>{
+export const _processFail = (process, err, colName)=>{
     const _p = _priv.get(process);
 
     const fail = toFail(err, colName);
@@ -52,38 +54,36 @@ export const processFail = (process, err, colName)=>{
 
 }
 
-export const processRun = (chop, context, args, exe, rollback)=>{
-    const db = chop.db;
-    const _pdb = vault.get(db);
-    const parent = _pdb.process
-
-    const process = new Process(db, chop, context, parent);
-    if (!parent) { _pdb.process = process; }
-    else { _priv.get(parent).push(process); }
-
-    const _p = _priv.get(process);
-    _p.args = args;
-    _p.rollback = rollback;
+export const _processFactory = (exe, rollback, isBatch=false)=>{
+    return (chop, args, context)=>{
+        const db = chop.db;
+        const _pdb = vault.get(db);
+        const parent = _pdb.process;
     
-    try { exe(process, ...args); }
-    catch(err) { processFail(process, err); }
+        const process = new Process(db, chop, context, rollback, parent, isBatch);
+        if (!parent) { _pdb.process = process; }
+        else { _priv.get(parent).childs.push(process); }
     
-    delete _pdb.process;
-    _p.isDone = true;
+        const _p = _priv.get(process);
+        
+        try { exe(process, ...args); }
+        catch(err) { _processFail(process, err); }
+        
+        delete _pdb.process;
+        _p.isDone = true;
+        
+        if (parent) { return process; }
     
-    if (parent) { return process; }
-
-    if (!_p.isOk) { rollback(process, ...args); }
-
-    for (const child of _p.childs) {
-        if (!_p.isOk) {
-            const _pc = _priv.get(child);
-            _pc.rollback(..._pc.args);
+        for (let i=_p.childs.length-1; i>=0; i--) {
+            const child = _p.childs[i];
+            if (!_p.isOk) { _priv.get(child).rollback(child); }
+            _priv.delete(child); //cleanup
         }
-        _priv.delete(child); //cleanup
+
+        if (!_p.isOk) { rollback(process); }
+    
+        _priv.delete(process);
+    
+        return process;
     }
-
-    _priv.delete(process);
-
-    return process;
 }

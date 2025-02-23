@@ -2,7 +2,7 @@ import { solids } from "@randajan/props";
 import { getColsPriv } from "../Record/static/_columns";
 import { Major } from "../Process/Fails";
 import { throwMajor, throwMinor } from "../../tools/traits/uni";
-import { processFail } from "../Process/Process";
+import { _processFail } from "../Process/Process";
 
 
 export class Turn {
@@ -40,7 +40,7 @@ export class Turn {
 
         for (const _col of _cols) {
             try { this._prepareCol(_col); } catch(err) {
-                processFail(err, _col.values.name);
+                _processFail(err, _col.values.name);
             }
         }
 
@@ -94,7 +94,7 @@ export class Turn {
             try {
                 setter(current, output, input[name], state === "ready" ? before : undefined);
             } catch(err) {
-                processFail(err, name);
+                _processFail(err, name);
             }
             
             //detect changes

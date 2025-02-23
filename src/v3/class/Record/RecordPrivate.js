@@ -5,8 +5,7 @@ import { getColsPriv, colSet } from "./static/_columns";
 import { recReg, recUnreg } from "./static/_records";
 import { Record } from "./Record";
 import { throwMajor, toId } from "../../tools/traits/uni";
-import { syncIn, syncOut } from "../Chop/static/eventHandlers";
-import { Major } from "../Process/Fails";
+import { _chopSyncIn, _chopSyncOut } from "../Chop/static/sync";
 
 export class RecordPrivate {
 
@@ -38,7 +37,7 @@ export class RecordPrivate {
     
         const prop = {
             enumerable:true, configurable:true,
-            set:_=>{ throw Major.fail("For update use db.update(...) interface").setCol(name); }
+            set:_=>{ throwMajor("For update use db.update(...) interface"); }
         };
 
         if (isVirtual) { prop.get = _=>t.getter(t.setter(current, this.values, this.values[name], this.state === "ready" ? before : undefined), this.state === "ready"); }
@@ -90,19 +89,19 @@ export class RecordPrivate {
         
         if (this.turn.isChange) {
             colSet(this);
-            syncIn(process, this.current);
+            _chopSyncIn(process, this.current);
         }
 
         this.turn.detach();
     }
 
     remove(process, force=false) {
-        const { db, meta, current } = this;
+        const { meta, current } = this;
 
         if (!force && meta) { throwMajor("is meta"); }
         
         this.state = "removed";
-        syncOut(db, current, process);
+        _chopSyncOut(process, current);
         recUnreg(this);
 
     }

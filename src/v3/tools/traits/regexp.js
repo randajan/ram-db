@@ -1,6 +1,5 @@
 
 import parseRegExp from "regex-parser";
-import { Major } from "../../class/Process/Fails";
 
 
 export const toRegExp = any=>{
