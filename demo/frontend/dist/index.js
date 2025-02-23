@@ -5997,27 +5997,12 @@
   var throwMinor = (reason, details) => {
     throw Minor.fail(reason, details);
   };
-  var _chopRunEvent = (process2, handlers, throwErrors = true) => {
-    for (let i = handlers.length - 1; i >= 0; i--) {
-      if (!handlers[i]) {
-        return;
-      }
-      try {
-        handlers[i](process2);
-      } catch (err) {
-        if (throwErrors) {
-          throw err;
-        }
-        console.warn(err);
-      }
-    }
-  };
-  var _chopOnEvent = (chop, isBefore, callback) => {
+  var _chopOnEvent = (chop, isFit, callback) => {
     if (!isFce(callback)) {
-      throwMajor2(`on(...) require function`);
+      throwMajor2(`${isFit ? "fit" : "effect"}(...) require function`);
     }
-    const { befores, afters } = vault.get(chop);
-    const handlers = isBefore ? befores : afters;
+    const { fits, effects } = vault.get(chop);
+    const handlers = isFit ? fits : effects;
     handlers.unshift(callback);
     return (_) => {
       const x2 = handlers.indexOf(callback);
@@ -6026,6 +6011,28 @@
       }
       return callback;
     };
+  };
+  var _chopRunFits2 = (process2, fits) => {
+    let i = fits.length - 1;
+    const next = () => {
+      const fit = fits[i--];
+      if (fit) {
+        fit(process2, next);
+      }
+    };
+    next();
+  };
+  var _chopRunEffects = (process2, effects) => {
+    for (let i = effects.length - 1; i >= 0; i--) {
+      if (!effects[i]) {
+        return;
+      }
+      try {
+        effects[i](process2);
+      } catch (err) {
+        console.warn(err);
+      }
+    }
   };
   var _priv = /* @__PURE__ */ new WeakMap();
   var Process = class {
@@ -6111,21 +6118,18 @@
   var roll = (process2) => {
     solid3(process2, "action", "reset");
     const _p = vault.get(process2.chop);
-    if (!_p) {
-      throwMajor2("not a chop");
-    }
-    const { bundle, init, befores, afters, childs } = _p;
+    const { bundle, init, fits, effects, childs } = _p;
     bundle.clear();
     _p.state = "init";
     init(process2);
     _p.state = "ready";
+    _chopRunFits(process2, fits);
     if (childs.size) {
       for (const child of childs) {
         child.reset(process2.context);
       }
     }
-    _chopRunEvent(process2, befores);
-    _chopRunEvent(process2, afters, false);
+    _chopRunEffects(process2, effects);
   };
   var rollback = (process2) => {
     const _p = vault.get(process2.chop);
@@ -6267,8 +6271,8 @@
   var _chopGetAllRecs = (chop) => vault.get(chop).bundle.byRec;
   var _chopGetRecs = (chop, groupId) => vault.get(chop).bundle.byGroup.getAll(groupId);
   var _chopGetRec = (chop, groupId, recId) => vault.get(chop).bundle.byGroup.get(groupId, recId);
-  var propagate = (chop, process2, rec, inc, befs, afts) => {
-    const { bundle, childs, befores, afters } = vault.get(chop);
+  var propagate = (chop, process2, rec, inc, befs, afts2) => {
+    const { bundle, childs, fits, effects } = vault.get(chop);
     const isChange = bundle.sync(rec, inc);
     if (isChange) {
       for (const child of childs) {
@@ -6277,8 +6281,8 @@
       if (befs && befores.length) {
         befs.push(befores);
       }
-      if (afts && afters.length) {
-        afts.push(afters);
+      if (afts2 && afters.length) {
+        afts2.push(afters);
       }
     }
     return isChange;
@@ -6287,16 +6291,16 @@
     if (process2.isBatch) {
       return propagate(process2.chop, process2, rec, inc);
     }
-    const befs = [], afts = [];
+    const befs = [], wws = [];
     if (process2.record !== rec) {
       solid3(process2, "record", rec);
     }
     propagate(process2.chop, process2, rec, inc, befs, afts);
     for (const b of befs) {
-      _chopRunEvent(process2, b);
+      _chopRunFits2(process2, b);
     }
-    for (const a of afts) {
-      _chopRunEvent(process2, a, false);
+    for (const a of wws) {
+      _chopRunEffects(process2, a);
     }
   };
   var _chopSyncIn = (process2, rec) => sync(true, process2, rec);
@@ -6310,8 +6314,8 @@
       const { parent, init } = opt;
       const _p = {
         state: "pending",
-        befores: [],
-        afters: [],
+        fits: [],
+        effects: [],
         childs: /* @__PURE__ */ new Set(),
         init: toFce(init),
         bundle: new Bundle(opt)
@@ -6332,13 +6336,10 @@
       }
       vault.set(this, _p);
     }
-    on(isBefore, callback) {
-      return _chopOnEvent(this, isBefore, callback);
-    }
-    before(callback) {
+    fit(callback) {
       return _chopOnEvent(this, true, callback);
     }
-    after(callback) {
+    effect(callback) {
       return _chopOnEvent(this, false, callback);
     }
     get(groupId, recId, throwError2 = false) {

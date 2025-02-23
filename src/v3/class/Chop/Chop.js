@@ -20,8 +20,8 @@ export class Chop {
 
         const _p = {
             state:"pending",
-            befores:[],
-            afters:[],
+            fits:[],
+            effects:[],
             childs:new Set(),
             init:toFce(init),
             bundle:new Bundle(opt),
@@ -47,10 +47,8 @@ export class Chop {
 
     }
 
-    on(isBefore, callback) { return _chopOnEvent(this, isBefore, callback); }
-
-    before(callback) { return _chopOnEvent(this, true, callback); }
-    after(callback) { return _chopOnEvent(this, false, callback); }
+    fit(callback) { return _chopOnEvent(this, true, callback); }
+    effect(callback) { return _chopOnEvent(this, false, callback); }
 
     get(groupId, recId, throwError = false) {
         return _chopGetRec(this, groupId, recId, throwError);

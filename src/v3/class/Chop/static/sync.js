@@ -1,13 +1,15 @@
 import { solid } from "@randajan/props";
 import { vault } from "../../../../components/uni/consts";
-import { _chopRunEvent } from "./eventHandlers";
+import { _chopRunEffects, _chopRunFits } from "./eventHandlers";
 
 export const _chopGetAllRecs = chop=>vault.get(chop).bundle.byRec;
 export const _chopGetRecs = (chop, groupId)=>vault.get(chop).bundle.byGroup.getAll(groupId);
 export const _chopGetRec = (chop, groupId, recId)=>vault.get(chop).bundle.byGroup.get(groupId, recId);
 
+
+//TODO: effects should be called after everything is done
 const propagate = (chop, process, rec, inc, befs, afts)=>{
-    const { bundle, childs, befores, afters } = vault.get(chop);
+    const { bundle, childs, fits, effects } = vault.get(chop);
     const isChange = bundle.sync(rec, inc);
 
     if (isChange) {
@@ -23,12 +25,12 @@ const sync = (inc, process, rec)=>{
 
     if (process.isBatch) { return propagate(process.chop, process, rec, inc); }
 
-    const befs = [], afts = [];
+    const befs = [], wws = [];
 
     if (process.record !== rec) { solid(process, "record", rec); }
     propagate(process.chop, process, rec, inc, befs, afts);
-    for (const b of befs) { _chopRunEvent(process, b); }
-    for (const a of afts) { _chopRunEvent(process, a, false); }
+    for (const b of befs) { _chopRunFits(process, b); }
+    for (const a of wws) { _chopRunEffects(process, a); }
 }
 
 export const _chopSyncIn = (process, rec)=>sync(true, process, rec);

@@ -2,22 +2,11 @@ import { vault } from "../../../../components/uni/consts";
 import { isFce } from "../../../../components/uni/formats";
 import { throwMajor } from "../../../tools/traits/uni";
 
-export const _chopRunEvent = (process, handlers, throwErrors=true)=>{
-    for (let i = handlers.length - 1; i >= 0; i--) {
-        if (!handlers[i]) { return; }
-        try { handlers[i](process); }
-        catch(err) {
-            if (throwErrors) { throw err; }
-            console.warn(err); //TODO better non important errors handler
-        }
-    }
-}
-
-
-export const _chopOnEvent = (chop, isBefore, callback)=>{
-    if (!isFce(callback)) { throwMajor(`on(...) require function`); }
-    const { befores, afters } = vault.get(chop);
-    const handlers = isBefore ? befores : afters;
+export const _chopOnEvent = (chop, isFit, callback)=>{
+    
+    if (!isFce(callback)) { throwMajor(`${isFit ? "fit" : "effect"}(...) require function`); }
+    const { fits, effects } = vault.get(chop);
+    const handlers = isFit ? fits : effects;
 
     handlers.unshift(callback);
 
@@ -25,5 +14,22 @@ export const _chopOnEvent = (chop, isBefore, callback)=>{
         const x = handlers.indexOf(callback);
         if (x >= 0) { handlers.splice(x, 1); }
         return callback;
+    }
+}
+
+export const _chopRunFits = (process, fits)=>{
+    let i = fits.length-1;
+    const next = ()=>{
+        const fit = fits[i--];
+        if (fit) { fit(process, next); }
+    }
+    next();
+}
+
+export const _chopRunEffects = (process, effects)=>{
+    for (let i = effects.length - 1; i >= 0; i--) {
+        if (!effects[i]) { return; }
+        try { effects[i](process); }
+        catch(err) { console.warn(err); } //TODO better non important errors handler
     }
 }
