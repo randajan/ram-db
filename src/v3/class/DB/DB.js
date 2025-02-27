@@ -8,7 +8,7 @@ import { colRem, colSet } from "../Record/static/_columns";
 import { toId } from "../../tools/traits/uni";
 import { RecordPrivate } from "../Record/RecordPrivate";
 
-import { entAdd, entRem } from "../Record/static/_ents";
+import { _entAdd, _entRem } from "../Record/static/_ents";
 import { _chopGetAllRecs, _chopGetRecs, _chopSyncIn } from "../Chop/static/sync";
 
 import { _recAdd } from "../Record/static/add";
@@ -32,7 +32,7 @@ export class DB extends Chop {
                 const loadRecs = (_ent, recsRaw)=>{
                     for (const id in recsRaw) {
                         const _rec = new RecordPrivate(this, {_ent, id, ...recsRaw[id]});
-                        _chopSyncIn(process, _rec.current);
+                        _chopSyncIn(process, _rec.current, true);
                     };
                 }
 
@@ -66,23 +66,26 @@ export class DB extends Chop {
             }
         });
 
-        // this.before(process=>{
-        //     const { action, record, isBatch } = process;
-        //     if (isBatch) { return; }
+        this.fit((process, next)=>{
+            const { action, record, isBatch } = process;
+            const isChange = next();
+            if (isBatch || !isChange) { return; }
 
-        //     const _rec = _recGetPriv(this, record);
-        //     const { _ent } = _rec.values;
+            const _rec = _recGetPriv(this, record);
 
-        //     if (_ent == "_ents") {
-        //         if (action === "remove") { entRem(process, _rec); }
-        //         else if (action === "add") { entAdd(process, _rec); }
-        //     }
-        //     else if (_ent === "_cols") {
-        //         if (action === "add" || action === "update") { colSet(_rec); }
-        //         else if (action === "remove") { colRem(_rec); }
-        //     }
+            if (action === "add") {
+                _entAdd(process, _rec);
+                //colSet(_rec);
+            }
+            else if (action === "update") {
+                //colSet(_rec);
+            }
+            else if (action === "remove") {
+                _entRem(process, _rec);
+                //colRem(_rec);
+            }
 
-        // });
+        });
 
         // this.after(process=>{
         //     console.log(process);

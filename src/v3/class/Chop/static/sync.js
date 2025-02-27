@@ -6,32 +6,23 @@ export const _chopGetAllRecs = chop=>vault.get(chop).bundle.byRec;
 export const _chopGetRecs = (chop, groupId)=>vault.get(chop).bundle.byGroup.getAll(groupId);
 export const _chopGetRec = (chop, groupId, recId)=>vault.get(chop).bundle.byGroup.get(groupId, recId);
 
+const propagate = (inc, chop, process, rec, force=false)=>{
+    const { bundle, childs, fits } = vault.get(chop);
 
-//TODO: effects should be called after everything is done
-const propagate = (chop, process, rec, inc, befs, afts)=>{
-    const { bundle, childs, fits, effects } = vault.get(chop);
-    const isChange = bundle.sync(rec, inc);
+    const isChange = force ? bundle.sync(inc, rec) : _chopRunFits(process, fits, _=>bundle.sync(inc, rec));
 
-    if (isChange) {
-        for (const child of childs) { propagate(child, process, rec, inc, hands); }
-        if (befs && befores.length) { befs.push(befores); }
-        if (afts && afters.length) { afts.push(afters); }
-    }
+    for (const child of childs) { propagate(inc, child, process, rec, force); }
 
     return isChange;
 }
 
-const sync = (inc, process, rec)=>{
+const sync = (inc, process, rec, force=false)=>{
+    const { isBatch, chop, record } = process;
 
-    if (process.isBatch) { return propagate(process.chop, process, rec, inc); }
+    if (!isBatch && record !== rec) { solid(process, "record", rec); }
 
-    const befs = [], wws = [];
-
-    if (process.record !== rec) { solid(process, "record", rec); }
-    propagate(process.chop, process, rec, inc, befs, afts);
-    for (const b of befs) { _chopRunFits(process, b); }
-    for (const a of wws) { _chopRunEffects(process, a); }
+    return propagate(inc, chop, process, rec, force);
 }
 
-export const _chopSyncIn = (process, rec)=>sync(true, process, rec);
-export const _chopSyncOut = (process, rec)=>sync(false, process, rec);
+export const _chopSyncIn = (process, rec, force=false)=>sync(true, process, rec, force);
+export const _chopSyncOut = (process, rec, force=false)=>sync(false, process, rec, force);

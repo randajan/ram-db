@@ -101,7 +101,7 @@ export class RecordPrivate {
         if (!force && meta) { throwMajor("is meta"); }
         
         this.state = "removed";
-        _chopSyncOut(process, current);
+        _chopSyncOut(process, current, force);
         recUnreg(this);
 
     }

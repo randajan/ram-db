@@ -17,13 +17,15 @@ export const _chopOnEvent = (chop, isFit, callback)=>{
     }
 }
 
-export const _chopRunFits = (process, fits)=>{
-    let i = fits.length-1;
+export const _chopRunFits = (process, fits, zenit)=>{
+    let i = fits.length-1, res;
     const next = ()=>{
         const fit = fits[i--];
         if (fit) { fit(process, next); }
+        else if (zenit) { res = zenit(); }
+        return res;
     }
-    next();
+    return next();
 }
 
 export const _chopRunEffects = (process, effects)=>{

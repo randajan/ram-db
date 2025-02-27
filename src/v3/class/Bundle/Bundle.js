@@ -84,7 +84,7 @@ export class Bundle {
         this.byGroup.clear();
     }
 
-    sync(rec, inc=true) {
+    sync(inc, rec) {
         const { byRec, getId, getGroup, filter, isMultiGroup } = this;
 
         inc = (inc && filter(rec));

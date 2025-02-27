@@ -73,14 +73,14 @@ export const _processFactory = (exe, rollback, isBatch=false)=>{
         _p.isDone = true;
         
         if (parent) { return process; }
-    
+
         for (let i=_p.childs.length-1; i>=0; i--) {
             const child = _p.childs[i];
             if (!_p.isOk) { _priv.get(child).rollback(child); }
             _priv.delete(child); //cleanup
         }
 
-        if (!_p.isOk) { rollback(process); }
+        if (!_p.isOk) { _p.rollback(process); }
     
         _priv.delete(process);
     

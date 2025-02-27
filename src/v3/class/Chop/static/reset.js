@@ -1,5 +1,5 @@
 import { vault } from "../../../../components/uni/consts";
-import { _chopRunEffects } from "./eventHandlers";
+import { _chopRunEffects, _chopRunFits } from "./eventHandlers";
 import { solid } from "@randajan/props";
 import { _processFactory } from "../../Process/Process";
 
@@ -16,8 +16,7 @@ const roll = (process)=>{
 
     _p.state = "ready";
 
-    _chopRunFits(process, fits);
-    if (childs.size) { for (const child of childs) { child.reset(process.context); } }
+    _chopRunFits(process, fits, !childs.size ? null : _=>{ for (const child of childs) { child.reset(process.context); } });
     
     _chopRunEffects(process, effects);
     

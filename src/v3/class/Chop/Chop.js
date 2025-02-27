@@ -101,7 +101,7 @@ export class Chop {
 
         opt.parent = this;
         opt.filter = rec=>(bundle.isInGroup(id, rec) && filter(rec));
-        opt.init = process=>{ for (const [rec] of bundle.byRec) { _chopSyncIn(process, rec); } }
+        opt.init = process=>{ for (const [rec] of bundle.byRec) { _chopSyncIn(process, rec, true); } }
 
         const child = new Chop(id, opt);
 

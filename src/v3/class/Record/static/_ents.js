@@ -1,7 +1,8 @@
 import { fceTrue } from "../../../../components/uni/consts";
 import { getColsPriv } from "./_columns";
+import { _recRemoveForce } from "./remove";
 
-export const entAdd = (process, _rec)=>{
+export const _entAdd = (process, _rec)=>{
     const { db, values:{ _ent, id } } = _rec;
     if (_ent !== "_ents") { return; }
 
@@ -10,9 +11,9 @@ export const entAdd = (process, _rec)=>{
 }
 
 
-export const entRem = (_rec)=>{
-    const { db, values } = _rec;
-    if (values._ent !== "_ents") { return; }
+export const _entRem = (process, _rec)=>{
+    const { db, values:{ _ent, id } } = _rec;
+    if (_ent !== "_ents") { return; }
 
-    for (const _col of getColsPriv(db, values.id)) { _col.remove(process.context, true); };
+    for (const _col of getColsPriv(db, id)) { _recRemoveForce(db, [_rec.current], process.context); };
 }
