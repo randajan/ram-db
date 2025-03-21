@@ -1,10 +1,10 @@
 import { solid, solids } from "@randajan/props";
 import { isMetaEnt } from "../../metaData/interface";
 import { Turn } from "../Turn/Turn";
-import { getColsPriv, colSet } from "./static/_columns";
+import { getColsPriv, _colSet } from "./static/_columns";
 import { recReg, recUnreg } from "./static/_records";
 import { Record } from "./Record";
-import { throwMajor, toId } from "../../tools/traits/uni";
+import { fail, toId } from "../../tools/traits/uni";
 import { _chopSyncIn, _chopSyncOut } from "../Chop/static/sync";
 
 export class RecordPrivate {
@@ -37,7 +37,7 @@ export class RecordPrivate {
     
         const prop = {
             enumerable:true, configurable:true,
-            set:_=>{ throwMajor("For update use db.update(...) interface"); }
+            set:_=>{ fail("For update use db.update(...) interface"); }
         };
 
         if (isVirtual) { prop.get = _=>t.getter(t.setter(current, this.values, this.values[name], this.state === "ready" ? before : undefined), this.state === "ready"); }
@@ -59,7 +59,7 @@ export class RecordPrivate {
 
     colsInit() {
         const { db, state, values } = this;
-        if (state !== "pending") { throwMajor("record is not pending"); }
+        if (state !== "pending") { fail("record is not pending"); }
         const cols = getColsPriv(db, values._ent);
         if (cols) { for (const _col of cols) { this.colAdd(_col); } }
         return this;
@@ -67,7 +67,7 @@ export class RecordPrivate {
 
     init(process) {
         const { state, values } = this;
-        if (state !== "pending") { throwMajor("record is not pending"); }
+        if (state !== "pending") { fail("record is not pending"); }
         Turn.attach(process, this, values, true);
         this.state = "init";
         return this;
@@ -75,7 +75,7 @@ export class RecordPrivate {
 
     ready() {
         const { state, turn } = this;
-        if (state !== "init") { throwMajor("record is not init"); }
+        if (state !== "init") { fail("record is not init"); }
         this.values = turn.execute();
         this.turn.detach();
         this.state = "ready";
@@ -83,12 +83,12 @@ export class RecordPrivate {
     }
 
     update(process, values, force=false) {
-        if (this.state !== "ready") { throwMajor("record is not ready"); }
+        if (this.state !== "ready") { fail("record is not ready"); }
 
         this.values = Turn.attach(process, this, values, force).execute();
         
         if (this.turn.isChange) {
-            colSet(this);
+            _colSet(this);
             _chopSyncIn(process, this.current);
         }
 
@@ -98,7 +98,7 @@ export class RecordPrivate {
     remove(process, force=false) {
         const { meta, current } = this;
 
-        if (!force && meta) { throwMajor("is meta"); }
+        if (!force && meta) { fail("is meta"); }
         
         this.state = "removed";
         _chopSyncOut(process, current, force);

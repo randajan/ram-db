@@ -31,10 +31,10 @@ export const join = (separator, ...vals)=>{
     return s;
 }
 
-export const throwMajor = (reason, details)=>{
-    throw Major.fail(reason, details);
+export const fail = (message, details)=>{
+    throw Major.fail(message, details);
 }
 
-export const throwMinor = (reason, details)=>{
-    throw Minor.fail(reason, details);
+export const warn = (message, details)=>{
+    throw Minor.fail(message, details);
 }

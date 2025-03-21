@@ -1,4 +1,4 @@
-import { throwMajor } from "../../../tools/traits/uni";
+import { fail } from "../../../tools/traits/uni";
 import { _chopGetRec, _chopSyncIn } from "../../Chop/static/sync";
 
 
@@ -10,5 +10,5 @@ export const recUnreg = _rec=>_records.delete(_rec.current);
 export const _recGetPriv = (db, any, throwError=true)=>{
     const _p = _records.get(any);
     if (_p && _p.db === db) { return _p; }
-    if (throwError) { throwMajor("is not record"); };
+    if (throwError) { fail("is not record"); };
 }

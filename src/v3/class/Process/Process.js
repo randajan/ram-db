@@ -4,6 +4,8 @@ import { toFail } from "./Fails";
 
 const _priv = new WeakMap();
 
+/*TODO BETTER ERROR HANDLING*/
+
 class Process {
 
     constructor(db, chop, context, rollback, parent, isBatch=false) {
@@ -30,7 +32,7 @@ class Process {
             isOk:_=>_p.isOk,
             isDone:_=>_p.isDone,
             fails:_=>!_p.fails ? undefined : [..._p.fails],
-            childs:_=>!_p.childs.length ? undefined : [..._p.childs],
+            childs:_=>!_p.childs ? undefined : [..._p.childs],
         });
 
         _priv.set(this, _p);
@@ -56,6 +58,7 @@ export const _processFail = (process, err, colName)=>{
 
 export const _processFactory = (exe, rollback, isBatch=false)=>{
     return (chop, args, context)=>{
+
         const db = chop.db;
         const _pdb = vault.get(db);
         const parent = _pdb.process;
@@ -69,10 +72,11 @@ export const _processFactory = (exe, rollback, isBatch=false)=>{
         try { exe(process, ...args); }
         catch(err) { _processFail(process, err); }
         
-        delete _pdb.process;
         _p.isDone = true;
         
         if (parent) { return process; }
+
+        delete _pdb.process;
 
         for (let i=_p.childs.length-1; i>=0; i--) {
             const child = _p.childs[i];

@@ -4,11 +4,11 @@ import { metaData } from "../../../metaData/interface";
 import { _chopGetRecs } from "../../Chop/static/sync";
 import { cacheds, solid } from "@randajan/props";
 import { vault } from "../../../../components/uni/consts";
-import { throwMajor } from "../../../tools/traits/uni";
+import { fail, warn } from "../../../tools/traits/uni";
 
 const nregCol = (db, entId, _col, action)=>{
     const colsByEnt = vault.get(db)?.colsByEnt;
-    if (!colsByEnt) { throwMajor("columns not found"); }
+    if (!colsByEnt) { fail("columns not found"); }
     let cols = colsByEnt.get(entId);
 
     if (action) {
@@ -49,11 +49,11 @@ const createSetter = _col=>{
         if (formula) { to = output[name] = n(formula(current, before, stored)); }
         else {
             if (isReadonly && isReadonly(current, before, stored)) {
-                if (before) { throwMino(`is readonly`); }
+                if (before) { warn(`is readonly`); }
             } else {
                 to = output[name] = n(to);
                 if (validator && !validator(current, before, stored)) {
-                    throwMajor("is invalid");
+                    fail("is invalid");
                 }
             }
 
@@ -63,7 +63,7 @@ const createSetter = _col=>{
         }
 
         if (fallback && isNull(to)) { to = output[name] = n(fallback(current, before, stored)); }
-        if (isRequired && isNull(to) && isRequired(current, before, stored)) { throwMajor("is required"); }
+        if (isRequired && isNull(to) && isRequired(current, before, stored)) { fail("is required"); }
         
         return output[name];
     }
@@ -76,7 +76,7 @@ const createTraits = _col=>{
     });
 }
 
-export const colSet = (_rec)=>{
+export const _colSet = (_rec)=>{
     const { db, values:{ _ent, ent } } = _rec;
     if (_ent !== "_cols") { return; }
 
@@ -91,7 +91,7 @@ export const colSet = (_rec)=>{
 
 }
 
-export const colRem = (_rec)=>{
+export const _colRem = (_rec)=>{
     const { db, values } = _rec;
     if (values._ent !== "_cols") { return; }
 

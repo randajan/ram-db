@@ -1,7 +1,7 @@
 import { solids } from "@randajan/props";
 import { getColsPriv } from "../Record/static/_columns";
 import { Major } from "../Process/Fails";
-import { throwMajor, throwMinor } from "../../tools/traits/uni";
+import { fail, warn } from "../../tools/traits/uni";
 import { _processFail } from "../Process/Process";
 
 
@@ -40,11 +40,11 @@ export class Turn {
 
         for (const _col of _cols) {
             try { this._prepareCol(_col); } catch(err) {
-                _processFail(err, _col.values.name);
+                _processFail(process, err, _col.values.name);
             }
         }
 
-        if (state === "ready") { throwMajor("blank"); }
+        if (state === "ready") { fail("blank"); }
 
     }
 
@@ -60,8 +60,8 @@ export class Turn {
 
         //fail quick
         if (isReal && state === "ready") {
-            if (isMeta) { throwMinor("is meta"); }
-            if (formula) { throwMinor(`has formula`); }
+            if (isMeta) { warn("is meta"); }
+            if (formula) { warn(`has formula`); }
         }
 
         if (formula && noCache) { return; }
@@ -94,7 +94,7 @@ export class Turn {
             try {
                 setter(current, output, input[name], state === "ready" ? before : undefined);
             } catch(err) {
-                _processFail(err, name);
+                _processFail(process, err, name);
             }
             
             //detect changes

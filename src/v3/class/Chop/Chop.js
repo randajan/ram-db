@@ -1,30 +1,42 @@
-import info from "@randajan/simple-lib/info";
 import { vault } from "../../../components/uni/consts";
 
-import { toFce, toStr } from "../../../components/uni/formats";
-import { _chopOnEvent } from "./static/eventHandlers";
-import { solids, virtual, virtuals } from "@randajan/props";
+import { isFce, toFce, toStr, wrapFce } from "../../../components/uni/formats";
+import { solids, virtuals } from "@randajan/props";
 import { _chopReset } from "./static/reset";
-import { Bundle } from "../Bundle/Bundle";
-import { throwMajor } from "../../tools/traits/uni";
+import { fail } from "../../tools/traits/uni";
 
 import { _chopGetAllRecs, _chopGetRec, _chopGetRecs, _chopSyncIn } from "./static/sync";
+import { toBoolean } from "../../tools/traits/booleans";
+import { SuperMap } from "../SuperMap/SuperMap";
+import { Effects } from "../Effects/Effects";
+import { Fits } from "../Effects/Fits";
+
 
 export class Chop {
 
     constructor(id, opt={}) {
         id = toStr(id);
-        if (!id) { throwMajor("missing id"); }
+        if (!id) { fail("missing id"); }
 
         const { parent, init } = opt;
 
+        const isMultiGroup = toBoolean(opt.isMultiGroup);
+        const filter = toFce(opt.filter, true);
+        const getId = isFce(opt.getId) ? opt.getId : (r=>r.id);
+        const getGroup = !isMultiGroup ? toFce(opt.getGroup) : wrapFce(toArr, toFce(opt.getGroup, [undefined]));
+
         const _p = {
+            getId,
+            getGroup,
+            isMultiGroup,
             state:"pending",
-            fits:[],
-            effects:[],
+            fits:new Fits(),
+            effects:new Effects(),
             childs:new Set(),
             init:toFce(init),
-            bundle:new Bundle(opt),
+            byRec:new Map(),
+            byGroup:new SuperMap(),
+            filter,
         }
 
         solids(this, {
@@ -35,20 +47,23 @@ export class Chop {
 
         virtuals(this, {
             state:_=>_p.state,
-            size:_=>_p.bundle.byRec.size,
+            size:_=>_p.byRec.size,
             childs:_=>[..._p.childs],
-            isMultiGroup:_=>_p.bundle.isMultiGroup,
-            
+            isMultiGroup:_=>_p.isMultiGroup,
         });
-
-        if (!info.isBuild) { virtual(this, "bundle", _=>_p.bundle); }
 
         vault.set(this, _p);
 
     }
 
-    fit(callback) { return _chopOnEvent(this, true, callback); }
-    effect(callback) { return _chopOnEvent(this, false, callback); }
+    fit(callback) { return vault.get(this).fits.add(callback); }
+    effect(callback) { return vault.get(this).effects.add(callback); }
+
+    isIn(groupId, rec) {
+        const { getGroup, isMultiGroup } = vault.get(this);
+        const group = getGroup(rec);
+        return isMultiGroup ? group.includes(groupId) : (group === groupId);
+    }
 
     get(groupId, recId, throwError = false) {
         return _chopGetRec(this, groupId, recId, throwError);
@@ -95,13 +110,13 @@ export class Chop {
     }
 
     chop(id, opt={}, context) {
-        const { state, bundle, childs } = vault.get(this);
+        const { state, byRec, childs } = vault.get(this);
 
         const filter = toFce(opt.filter, true);
 
         opt.parent = this;
-        opt.filter = rec=>(bundle.isInGroup(id, rec) && filter(rec));
-        opt.init = process=>{ for (const [rec] of bundle.byRec) { _chopSyncIn(process, rec, true); } }
+        opt.filter = rec=>(this.isIn(id, rec) && filter(rec));
+        opt.init = process=>{ for (const [rec] of byRec) { _chopSyncIn(process, rec, true); } }
 
         const child = new Chop(id, opt);
 

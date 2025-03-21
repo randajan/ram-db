@@ -15,5 +15,5 @@ export const _entRem = (process, _rec)=>{
     const { db, values:{ _ent, id } } = _rec;
     if (_ent !== "_ents") { return; }
 
-    for (const _col of getColsPriv(db, id)) { _recRemoveForce(db, [_rec.current], process.context); };
+    for (const _col of getColsPriv(db, id)) { _recRemoveForce(db, [_col.current], process.context); };
 }

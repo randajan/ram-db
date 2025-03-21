@@ -1,12 +1,12 @@
-import { throwMajor } from "./uni";
+import { fail } from "./uni";
 
 
 
 export const toObject = obj=>{
     const t = typeof obj;
     if (t === "object") { return obj; }
-    if (t !== "string") { throwMajor("unparseable"); }
+    if (t !== "string") { fail("unparseable"); }
     try { return JSON.parse(obj); }
-    catch(e) { throwMajor("unparseable"); }
+    catch(e) { fail("unparseable"); }
     
 }

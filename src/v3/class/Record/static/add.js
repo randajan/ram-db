@@ -1,7 +1,7 @@
 import { _processFactory } from "../../Process/Process";
 import { RecordPrivate } from "../RecordPrivate";
 import { solid } from "@randajan/props";
-import { _chopGetRec, _chopSyncIn } from "../../Chop/static/sync";
+import { _chopSyncIn } from "../../Chop/static/sync";
 import { _recGetPriv } from "./_records";
 
 const roll = (process, values)=>{

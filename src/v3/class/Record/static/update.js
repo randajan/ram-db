@@ -16,5 +16,5 @@ const rollback = (process, values)=>{
 }
 
 
-export const _recSet = _processFactory(rollSet, rollback);
-export const _recUpdate = _processFactory(rollUpdate, rollback);
+export const _recSet = _processFactory(true, rollSet, rollback);
+export const _recUpdate = _processFactory(true, rollUpdate, rollback);

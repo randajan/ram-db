@@ -4,7 +4,7 @@ import { Chop } from "../Chop/Chop";
 import { metaData } from "../../metaData/interface";
 import { _recGetPriv } from "../Record/static/_records";
 import { vault } from "../../../components/uni/consts";
-import { colRem, colSet } from "../Record/static/_columns";
+import { _colRem, _colSet } from "../Record/static/_columns";
 import { toId } from "../../tools/traits/uni";
 import { RecordPrivate } from "../Record/RecordPrivate";
 
@@ -49,7 +49,7 @@ export class DB extends Chop {
                 //set columns definitions
                 for (const [_, rec] of _chopGetRecs(this, "_cols")) {
                     const _rec = _recGetPriv(this, rec);
-                    colSet(_rec);
+                    _colSet(_rec);
                 }
 
                 //prepare columns for rows
@@ -62,7 +62,6 @@ export class DB extends Chop {
                 //set columns for rows
                 for (const _rec of _recs) { _rec.ready(); }
 
-                //return _recs;
             }
         });
 
@@ -75,14 +74,14 @@ export class DB extends Chop {
 
             if (action === "add") {
                 _entAdd(process, _rec);
-                //colSet(_rec);
+                _colSet(_rec);
             }
             else if (action === "update") {
-                //colSet(_rec);
+                _colSet(_rec);
             }
             else if (action === "remove") {
                 _entRem(process, _rec);
-                //colRem(_rec);
+                _colRem(_rec);
             }
 
         });
