@@ -6,12 +6,12 @@ import { cacheds, solid } from "@randajan/props";
 import { vault } from "../../../../components/uni/consts";
 import { fail, warn } from "../../../tools/traits/uni";
 
-const nregCol = (db, entId, _col, action)=>{
+const nregCol = (inc, db, entId, _col)=>{
     const colsByEnt = vault.get(db)?.colsByEnt;
     if (!colsByEnt) { fail("columns not found"); }
     let cols = colsByEnt.get(entId);
 
-    if (action) {
+    if (inc) {
         if (cols) { cols.add(_col); }
         else { colsByEnt.set(entId, new Set([_col]));  }
     } else if (cols) {
@@ -80,7 +80,7 @@ export const _colSet = (_rec)=>{
     const { db, values:{ _ent, ent } } = _rec;
     if (_ent !== "_cols") { return; }
 
-    nregCol(db, ent, _rec, true);
+    nregCol(true, db, ent, _rec);
 
     solid(_rec, "traits", createTraits(_rec), true, true);
 
@@ -95,7 +95,7 @@ export const _colRem = (_rec)=>{
     const { db, values } = _rec;
     if (values._ent !== "_cols") { return; }
 
-    nregCol(db, values.ent, _rec, false);
+    nregCol(false, db, values.ent, _rec);
 
     const rows = _chopGetRecs(db, values.ent);
     if (rows) {

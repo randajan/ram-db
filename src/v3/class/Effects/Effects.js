@@ -6,6 +6,7 @@ import { fail } from "../../tools/traits/uni";
 export class Effects extends Array {
 
     constructor(onError) {
+        super();
         solid(this, "onError", isFce(onError) ? onError : console.warn);
     }
 

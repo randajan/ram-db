@@ -27,12 +27,13 @@ export class DB extends Chop {
         super(id, {
             getId:rec=>toId(rec.id),
             getGroup:rec=>toId(rec._ent),
-            init:process=>{
+            init:(_, process)=>{
 
                 const loadRecs = (_ent, recsRaw)=>{
                     for (const id in recsRaw) {
                         const _rec = new RecordPrivate(this, {_ent, id, ...recsRaw[id]});
-                        _chopSyncIn(process, _rec.current, true);
+                        _chopSyncIn(this, process, _rec.current, true);
+                        
                     };
                 }
 
@@ -65,30 +66,29 @@ export class DB extends Chop {
             }
         });
 
-        this.fit((process, next)=>{
-            const { action, record, isBatch } = process;
-            const isChange = next();
-            if (isBatch || !isChange) { return; }
+        this.fit((next, event, process)=>{
+            const { record, isBatch } = process;
+            next();
+
+            if (isBatch) { return; }
 
             const _rec = _recGetPriv(this, record);
 
-            if (action === "add") {
+            if (event === "add") {
                 _entAdd(process, _rec);
                 _colSet(_rec);
             }
-            else if (action === "update") {
+            else if (event === "update") {
                 _colSet(_rec);
             }
-            else if (action === "remove") {
+            else if (event === "remove") {
                 _entRem(process, _rec);
                 _colRem(_rec);
             }
 
         });
 
-        // this.after(process=>{
-        //     console.log(process);
-        // });
+        this.effect(console.log);
 
         const _p = vault.get(this);
 

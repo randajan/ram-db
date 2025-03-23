@@ -1,18 +1,15 @@
 import { vault } from "../../../../components/uni/consts";
-import { solid } from "@randajan/props";
-import { _processFactory } from "../../Process/Process";
+import { _processWrapper } from "../../Process/Process";
 
-const roll = (process)=>{
-    solid(process, "action", "reset");
-
-    const _p = vault.get(process.chop);
+const roll = (chop, process)=>{
+    const _p = vault.get(chop);
     const { byRec, byGroup, init, fits, effects, childs } = _p;
     
     byRec.clear();
     byGroup.clear();
     
     _p.state = "init";
-    init(process);
+    init(chop, process);
 
     _p.state = "ready";
 
@@ -23,13 +20,12 @@ const roll = (process)=>{
 }
 
 //TODO this can possible result in situation where parents are pending and childs are ready
-const rollback = (process)=>{
-    const _p = vault.get(process.chop);
-    if (!_p) { return; }
+const rollback = (chop, process)=>{
+    const _p = vault.get(chop);
 
     _p.byRec.clear();
     _p.byGroup.clear();
     _p.state = "pending";
 }
 
-export const _chopReset = _processFactory(roll, rollback, true);
+export const _chopReset = _processWrapper(roll, rollback, true);

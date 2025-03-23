@@ -82,14 +82,15 @@ export class RecordPrivate {
         return this;
     }
 
-    update(process, values, force=false) {
+    //TODO update must be refactored
+    update(process, values, isSet=false) {
         if (this.state !== "ready") { fail("record is not ready"); }
 
-        this.values = Turn.attach(process, this, values, force).execute();
+        this.values = Turn.attach(process, this, values, isSet).execute();
         
         if (this.turn.isChange) {
             _colSet(this);
-            _chopSyncIn(process, this.current);
+            _chopSyncIn(this.db, process, this.current); //TODO calling effects
         }
 
         this.turn.detach();
@@ -101,7 +102,7 @@ export class RecordPrivate {
         if (!force && meta) { fail("is meta"); }
         
         this.state = "removed";
-        _chopSyncOut(process, current, force);
+        _chopSyncOut(this.db, process, current, force);
         recUnreg(this);
 
     }

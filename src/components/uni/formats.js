@@ -5,11 +5,14 @@ export const toRefId = ref=>(typeof ref !== "string") ? ref?.id : ref;
 export const isNull = v=>(v == null || (typeof v === "number" && isNaN(v)));
 
 export const isFce = fce=>typeof fce === "function";
+export const isArr = Array.isArray;
+export const isSet = any=>any instanceof Set;
 export const toFce = (fce, defReturn)=>isFce(fce) ? fce : ()=>defReturn;
 export const wrapFce = (wrap, what)=>(...args)=>wrap(what(...args));
 
 export const toStr = (any, def)=>isNull(any) ? def : String(any);
 export const toArr = (any)=>any instanceof Array ? any : [any];
+export const toSet = (any)=>isSet(any) ? any : new Set(any);
 
 export const toNum = (val, min, max, dec)=>{
     val = Number(val);

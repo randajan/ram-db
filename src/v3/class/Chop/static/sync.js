@@ -1,15 +1,17 @@
 import { solid } from "@randajan/props";
 import { vault } from "../../../../components/uni/consts";
 
-import { toArr } from "../../../../components/uni/formats";
+import { toSet } from "../../../../components/uni/formats";
 import { fail } from "../../../tools/traits/uni";
 
 export const _chopGetAllRecs = chop=>vault.get(chop).byRec;
 export const _chopGetRecs = (chop, groupId)=>vault.get(chop).byGroup.getAll(groupId);
 export const _chopGetRec = (chop, groupId, recId)=>vault.get(chop).byGroup.get(groupId, recId);
 
-const syncSingleGroup = (byRec, byGroup, id, rec, from, to)=>{
-    if (from == to) { return; } //no change
+const pushSingleGroup = (_chop, rec, id, from, to)=>{
+    const { byRec, byGroup } = _chop;
+
+    if (from === to) { return; } //no change
 
     if (to == null) { byRec.delete(rec); } //remove
     else {
@@ -23,29 +25,28 @@ const syncSingleGroup = (byRec, byGroup, id, rec, from, to)=>{
     byGroup.delete(from, id);
 }
 
-const syncMultiGroup = (byRec, byGroup, id, rec, from, to)=>{
-    let hasNew, toGroups;
+const pushMultiGroup = (_chop, rec, id, from, to)=>{
+    const { byRec, byGroup } = _chop;
+
+    if (from === to) { return; }
 
     if (to == null) { byRec.delete(rec); } //remove
     else {
-        to = toArr(to);
-        toGroups = new Set();
+        let isChange;
+        to = toSet(to);
 
         for (const groupId of to) {
-            if (toGroups.has(groupId)) { continue; } //duplicate control
-            toGroups.add(groupId);
             if (from?.has(groupId)) { from.delete(groupId); continue; } //already correct
-            
-            hasNew = true;
+            isChange = true;
+
             const current = byGroup.get(groupId, id);
             if (current && current !== rec) { fail(`Duplicate index '${id}' at '${groupId}'`); }
 
             byGroup.set(groupId, id, rec); //add new
-            byRec.set(rec, toGroups);
-        }    
+        }
+        if (!isChange) { return; }
+        byRec.set(rec, to);
     } 
-
-    if (!hasNew && from?.size === toGroups?.size) { return; } //no change
 
     if (from != null) {
         for (const groupId of from) {
@@ -54,47 +55,39 @@ const syncMultiGroup = (byRec, byGroup, id, rec, from, to)=>{
     }
 }
 
-
-//TODO ADD EFECTS and FITS
-const bundleSync = (chop, inc, rec)=>{
-    const { byRec, byGroup, getId, getGroup, filter, fits, effects, isMultiGroup } = vault.get(chop);
+const pushRecursive = (inc, chop, process, rec, silent)=>{
+    const _chop = vault.get(chop);
+    const { byRec, childs, getId, getGroup, filter, fits, effects, isMultiGroup } = _chop;
 
     inc = (inc && filter(rec));
     const has = byRec.has(rec);
 
-    if (!inc && !has) { return false; } //nothing gona change
+    if (!inc && !has) { return; } //nothing gona change
 
     const id = getId(rec);
+    const from = byRec.get(rec);
     const to = inc ? getGroup(rec) : null; //removed by filter
 
-    const from = byRec.get(rec);
+    const event = !has ? "add" : !inc ? "remove" : "update";
+    const push = isMultiGroup ? pushMultiGroup : pushSingleGroup;
 
-    if (isMultiGroup) { syncMultiGroup(byRec, byGroup, id, rec, from, to); }
-    else if (to != from) { syncSingleGroup(byRec, byGroup, id, rec, from, to); }
+    //fits
+    if (silent) { push(_chop, rec, id, from, to); }
+    else { fits.run(_=>push(_chop, rec, id, from, to), event, process); }
 
-    return true;
+    for (const child of childs) { pushRecursive(inc, child, process, rec, silent); }
+
+    if (!silent) { process.effect(_=>effects.run(event, process)); }
+
 }
 
-//TODO MERGE WITH bundleSync
-const propagate = (inc, chop, process, rec, skipFits=false)=>{
-    const { childs, fits, effects } = vault.get(chop);
-
-    const isChange = skipFits ? bundleSync(chop, inc, rec) : _chopRunFits(process, fits, _=>bundleSync(chop, inc, rec));
-
-    for (const child of childs) { propagate(inc, child, process, rec, skipFits); }
-
-    //if (isChange) { _chopRunEffects(inc, ) }
-
-    return isChange;
-}
-
-const sync = (inc, process, rec, skipFits=false)=>{
-    const { isBatch, chop, record } = process;
+const pushInit = (inc, chop, process, rec, silent=false)=>{
+    const { isBatch, record } = process;
 
     if (!isBatch && record !== rec) { solid(process, "record", rec); }
 
-    return propagate(inc, chop, process, rec, skipFits);
+    pushRecursive(inc, chop, process, rec, silent);
 }
 
-export const _chopSyncIn = (process, rec, skipFits=false)=>sync(true, process, rec, skipFits);
-export const _chopSyncOut = (process, rec, skipFits=false)=>sync(false, process, rec, skipFits);
+export const _chopSyncIn = (chop, process, rec, silent=false)=>pushInit(true, chop, process, rec, silent);
+export const _chopSyncOut = (chop, process, rec, silent=false)=>pushInit(false, chop, process, rec, silent);

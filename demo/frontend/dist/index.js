@@ -4240,7 +4240,7 @@
         get,
         actions
       };
-      const propagate2 = (state, args) => {
+      const propagate = (state, args) => {
         mapList(void 0, _p.watchers, state, ...args);
       };
       const set = async (state, args) => {
@@ -4256,7 +4256,7 @@
           }
           local = await onError(error, ...args);
         }
-        propagate2(stateExtract(localStateProp, local), args);
+        propagate(stateExtract(localStateProp, local), args);
         return local;
       };
       const setRx = async (state, ...args) => {
@@ -4276,7 +4276,7 @@
         const local = await set(stateExtract(remoteStateProp, remote), args);
         return stateAttach(remoteStateProp, remote, stateExtract(localStateProp, local));
       };
-      const pull = !pullRaw ? async (args) => propagate2(await get(...args), args) : async (args) => set(await pullRaw(...args), args);
+      const pull = !pullRaw ? async (args) => propagate(await get(...args), args) : async (args) => set(await pullRaw(...args), args);
       const processWithStatus = async (status, pending) => {
         let state;
         _p.status = status;
@@ -5823,10 +5823,12 @@
   var import_regex_parser = __toESM(require_lib(), 1);
   var isNull = (v) => v == null || typeof v === "number" && isNaN(v);
   var isFce = (fce) => typeof fce === "function";
+  var isArr = Array.isArray;
+  var isSet = (any) => any instanceof Set;
   var toFce = (fce, defReturn) => isFce(fce) ? fce : () => defReturn;
   var wrapFce = (wrap, what) => (...args) => wrap(what(...args));
   var toStr = (any, def) => isNull(any) ? def : String(any);
-  var toArr2 = (any) => any instanceof Array ? any : [any];
+  var toSet = (any) => isSet(any) ? any : new Set(any);
   var reArray = (val, trait) => {
     const res = [];
     if (isNull(val)) {
@@ -5893,107 +5895,6 @@
     return Critical.fail("Unknown error", err.stack);
   };
   var toFail = (err, colName) => _toFail(err).setCol(colName);
-  var _priv = /* @__PURE__ */ new WeakMap();
-  var Process = class {
-    constructor(db, chop, context, rollback6, parent, isBatch = false) {
-      const _p = {
-        isOk: true,
-        isDone: false,
-        childs: !parent ? [] : void 0,
-        rollback: rollback6
-      };
-      solids(this, {
-        db,
-        chop,
-        parent
-      }, false);
-      solids(this, {
-        context,
-        isBatch
-      });
-      virtuals(this, {
-        isOk: (_) => _p.isOk,
-        isDone: (_) => _p.isDone,
-        fails: (_) => !_p.fails ? void 0 : [..._p.fails],
-        childs: (_) => !_p.childs ? void 0 : [..._p.childs]
-      });
-      _priv.set(this, _p);
-    }
-  };
-  var _processFail = (process, err, colName) => {
-    const _p = _priv.get(process);
-    const fail3 = toFail(err, colName);
-    if (fail3.severity !== "minor") {
-      if (colName) {
-        throw fail3;
-      }
-      _p.isOk = false;
-      if (process.parent) {
-        _priv.get(process.parent).isOk = false;
-      }
-    }
-    if (!_p.fails) {
-      _p.fails = [fail3];
-    } else {
-      _p.fails.push(fail3);
-    }
-  };
-  var _processFactory = (exe, rollback6, isBatch = false) => {
-    return (chop, args, context) => {
-      const db = chop.db;
-      const _pdb = vault.get(db);
-      const parent = _pdb.process;
-      const process = new Process(db, chop, context, rollback6, parent, isBatch);
-      if (!parent) {
-        _pdb.process = process;
-      } else {
-        _priv.get(parent).childs.push(process);
-      }
-      const _p = _priv.get(process);
-      try {
-        exe(process, ...args);
-      } catch (err) {
-        _processFail(process, err);
-      }
-      _p.isDone = true;
-      if (parent) {
-        return process;
-      }
-      delete _pdb.process;
-      for (let i = _p.childs.length - 1; i >= 0; i--) {
-        const child = _p.childs[i];
-        if (!_p.isOk) {
-          _priv.get(child).rollback(child);
-        }
-        _priv.delete(child);
-      }
-      if (!_p.isOk) {
-        _p.rollback(process);
-      }
-      _priv.delete(process);
-      return process;
-    };
-  };
-  var roll = (process) => {
-    solid3(process, "action", "reset");
-    const _p = vault.get(process.chop);
-    const { byRec, byGroup, init, fits, effects, childs } = _p;
-    byRec.clear();
-    byGroup.clear();
-    _p.state = "init";
-    init(process);
-    _p.state = "ready";
-  };
-  var rollback = (process) => {
-    const _p = vault.get(process.chop);
-    if (!_p) {
-      return;
-    }
-    _p.byRec.clear();
-    _p.byGroup.clear();
-    _p.state = "pending";
-  };
-  var _chopReset = _processFactory(roll, rollback, true);
   var uni_exports = {};
   __export3(uni_exports, {
     fail: () => fail2,
@@ -6080,11 +5981,147 @@
   var warn = (message, details) => {
     throw Minor.fail(message, details);
   };
+  var Effects = class extends Array {
+    constructor(onError) {
+      super();
+      solid3(this, "onError", isFce(onError) ? onError : console.warn);
+    }
+    remove(callback) {
+      const x2 = this.indexOf(callback);
+      if (x2 >= 0) {
+        this.splice(x2, 1);
+      }
+      return callback;
+    }
+    add(callback) {
+      if (!isFce(callback)) {
+        fail2(`callback must be a function`);
+      }
+      this.unshift(callback);
+      return (_) => this.remove(callback);
+    }
+    run(...args) {
+      for (let i = this.length - 1; i >= 0; i--) {
+        if (!this[i]) {
+          return;
+        }
+        try {
+          this[i](...args);
+        } catch (err) {
+          this.onError(err);
+        }
+      }
+    }
+  };
+  var _priv = /* @__PURE__ */ new WeakMap();
+  var Process = class {
+    constructor(chopOrigin, context, rollback6, parent, isBatch = false) {
+      const _p = {
+        isOk: true,
+        isDone: false,
+        chopOrigin,
+        effects: !parent ? new Effects() : void 0,
+        childs: !parent ? [] : void 0,
+        rollback: rollback6
+      };
+      solids(this, {
+        parent,
+        effect: parent?.effect || ((cb) => _p.effects.add(cb))
+      }, false);
+      solids(this, {
+        context,
+        isBatch
+      });
+      virtuals(this, {
+        isOk: (_) => _p.isOk,
+        isDone: (_) => _p.isDone,
+        fails: (_) => !_p.fails ? void 0 : [..._p.fails],
+        childs: (_) => !_p.childs ? void 0 : [..._p.childs]
+      });
+      _priv.set(this, _p);
+    }
+  };
+  var _processFail = (process2, err, colName) => {
+    const _p = _priv.get(process2);
+    const fail3 = toFail(err, colName);
+    if (fail3.severity === "minor") {
+      console.warn(fail3);
+    } else {
+      console.error(fail3);
+      if (colName) {
+        throw fail3;
+      }
+      _p.isOk = false;
+      if (process2.parent) {
+        _priv.get(process2.parent).isOk = false;
+      }
+    }
+    if (!_p.fails) {
+      _p.fails = [fail3];
+    } else {
+      _p.fails.push(fail3);
+    }
+  };
+  var _processWrapper = (roll6, rollback6, isBatch = false) => {
+    return (chopOrigin, args, context) => {
+      const _pdb = vault.get(chopOrigin.db);
+      const parent = _pdb.process;
+      const process2 = new Process(chopOrigin, context, rollback6, parent, isBatch);
+      if (!parent) {
+        _pdb.process = process2;
+      } else {
+        _priv.get(parent).childs.push(process2);
+      }
+      const _p = _priv.get(process2);
+      try {
+        roll6(chopOrigin, process2, ...args);
+      } catch (err) {
+        _processFail(process2, err);
+      }
+      _p.isDone = true;
+      if (parent) {
+        return process2;
+      }
+      delete _pdb.process;
+      for (let i = _p.childs.length - 1; i >= 0; i--) {
+        const child = _p.childs[i];
+        if (!_p.isOk) {
+          const _pc = _priv.get(child);
+          _pc.rollback(_pc.chopOrigin, child);
+        }
+        _priv.delete(child);
+      }
+      if (_p.isOk) {
+        _p.effects.run();
+      } else {
+        _p.rollback(chopOrigin, process2);
+      }
+      _priv.delete(process2);
+      return process2;
+    };
+  };
+  var roll = (chop, process2) => {
+    const _p = vault.get(chop);
+    const { byRec, byGroup, init, fits, effects, childs } = _p;
+    byRec.clear();
+    byGroup.clear();
+    _p.state = "init";
+    init(chop, process2);
+    _p.state = "ready";
+  };
+  var rollback = (chop, process2) => {
+    const _p = vault.get(chop);
+    _p.byRec.clear();
+    _p.byGroup.clear();
+    _p.state = "pending";
+  };
+  var _chopReset = _processWrapper(roll, rollback, true);
   var _chopGetAllRecs = (chop) => vault.get(chop).byRec;
   var _chopGetRecs = (chop, groupId) => vault.get(chop).byGroup.getAll(groupId);
   var _chopGetRec = (chop, groupId, recId) => vault.get(chop).byGroup.get(groupId, recId);
-  var syncSingleGroup = (byRec, byGroup, id, rec, from, to3) => {
-    if (from == to3) {
+  var pushSingleGroup = (_chop, rec, id, from, to3) => {
+    const { byRec, byGroup } = _chop;
+    if (from === to3) {
       return;
     }
     if (to3 == null) {
@@ -6099,33 +6136,32 @@
     }
     byGroup.delete(from, id);
   };
-  var syncMultiGroup = (byRec, byGroup, id, rec, from, to3) => {
-    let hasNew, toGroups;
+  var pushMultiGroup = (_chop, rec, id, from, to3) => {
+    const { byRec, byGroup } = _chop;
+    if (from === to3) {
+      return;
+    }
     if (to3 == null) {
       byRec.delete(rec);
     } else {
-      to3 = toArr2(to3);
-      toGroups = /* @__PURE__ */ new Set();
+      let isChange;
+      to3 = toSet(to3);
       for (const groupId of to3) {
-        if (toGroups.has(groupId)) {
-          continue;
-        }
-        toGroups.add(groupId);
         if (from?.has(groupId)) {
           from.delete(groupId);
           continue;
         }
-        hasNew = true;
+        isChange = true;
         const current = byGroup.get(groupId, id);
         if (current && current !== rec) {
           fail2(`Duplicate index '${id}' at '${groupId}'`);
         }
         byGroup.set(groupId, id, rec);
-        byRec.set(rec, toGroups);
       }
-    }
-    if (!hasNew && from?.size === toGroups?.size) {
-      return;
+      if (!isChange) {
+        return;
+      }
+      byRec.set(rec, to3);
     }
     if (from != null) {
       for (const groupId of from) {
@@ -6133,40 +6169,40 @@
       }
     }
   };
-  var bundleSync = (chop, inc, rec) => {
-    const { byRec, byGroup, getId, getGroup, filter: filter2, fits, effects, isMultiGroup } = vault.get(chop);
+  var pushRecursive = (inc, chop, process2, rec, silent) => {
+    const _chop = vault.get(chop);
+    const { byRec, childs, getId, getGroup, filter: filter2, fits, effects, isMultiGroup } = _chop;
     inc = inc && filter2(rec);
     const has = byRec.has(rec);
     if (!inc && !has) {
-      return false;
+      return;
     }
     const id = getId(rec);
-    const to3 = inc ? getGroup(rec) : null;
     const from = byRec.get(rec);
-    if (isMultiGroup) {
-      syncMultiGroup(byRec, byGroup, id, rec, from, to3);
-    } else if (to3 != from) {
-      syncSingleGroup(byRec, byGroup, id, rec, from, to3);
+    const to3 = inc ? getGroup(rec) : null;
+    const event = !has ? "add" : !inc ? "remove" : "update";
+    const push = isMultiGroup ? pushMultiGroup : pushSingleGroup;
+    if (silent) {
+      push(_chop, rec, id, from, to3);
+    } else {
+      fits.run((_) => push(_chop, rec, id, from, to3), event, process2);
     }
-    return true;
-  };
-  var propagate = (inc, chop, process, rec, skipFits = false) => {
-    const { childs, fits, effects } = vault.get(chop);
-    const isChange = skipFits ? bundleSync(chop, inc, rec) : _chopRunFits(process, fits, (_) => bundleSync(chop, inc, rec));
     for (const child of childs) {
-      propagate(inc, child, process, rec, skipFits);
+      pushRecursive(inc, child, process2, rec, silent);
     }
-    return isChange;
+    if (!silent) {
+      process2.effect((_) => effects.run(event, process2));
+    }
   };
-  var sync = (inc, process, rec, skipFits = false) => {
-    const { isBatch, chop, record } = process;
+  var pushInit = (inc, chop, process2, rec, silent = false) => {
+    const { isBatch, record } = process2;
     if (!isBatch && record !== rec) {
-      solid3(process, "record", rec);
+      solid3(process2, "record", rec);
     }
-    return propagate(inc, chop, process, rec, skipFits);
+    pushRecursive(inc, chop, process2, rec, silent);
   };
-  var _chopSyncIn = (process, rec, skipFits = false) => sync(true, process, rec, skipFits);
-  var _chopSyncOut = (process, rec, skipFits = false) => sync(false, process, rec, skipFits);
+  var _chopSyncIn = (chop, process2, rec, silent = false) => pushInit(true, chop, process2, rec, silent);
+  var _chopSyncOut = (chop, process2, rec, silent = false) => pushInit(false, chop, process2, rec, silent);
   var booleans_exports = {};
   __export3(booleans_exports, {
     toBoolean: () => toBoolean
@@ -6202,46 +6238,15 @@
       }
     }
   };
-  var Effects = class extends Array {
-    constructor(onError) {
-      solid3(this, "onError", isFce(onError) ? onError : console.warn);
-    }
-    remove(callback) {
-      const x2 = this.indexOf(callback);
-      if (x2 >= 0) {
-        this.splice(x2, 1);
-      }
-      return callback;
-    }
-    add(callback) {
-      if (!isFce(callback)) {
-        fail2(`callback must be a function`);
-      }
-      this.unshift(callback);
-      return (_) => this.remove(callback);
-    }
-    run(...args) {
-      for (let i = this.length - 1; i >= 0; i--) {
-        if (!this[i]) {
-          return;
-        }
-        try {
-          this[i](...args);
-        } catch (err) {
-          this.onError(err);
-        }
-      }
-    }
-  };
   var Fits = class extends Effects {
-    run(process, zenit) {
+    run(zenit, ...args) {
       let i = this.length - 1, res;
       const next = () => {
         const fit = this[i--];
         if (fit) {
-          fit(process, next);
+          fit(next, ...args);
         } else if (zenit) {
-          res = zenit(process);
+          res = zenit();
         }
         return res;
       };
@@ -6339,16 +6344,13 @@
       const filter2 = toFce(opt.filter, true);
       opt.parent = this;
       opt.filter = (rec) => this.isIn(id, rec) && filter2(rec);
-      opt.init = (process) => {
+      opt.init = (chop, process2) => {
         for (const [rec] of byRec) {
-          _chopSyncIn(process, rec, true);
+          _chopSyncIn(chop, process2, rec, true);
         }
       };
       const child = new Chop(id, opt);
       childs.add(child);
-      if (state !== "init") {
-        $reset(child, context);
-      }
       return child;
     }
   };
@@ -6555,13 +6557,13 @@
     }
     ;
   };
-  var nregCol = (db, entId, _col, action) => {
+  var nregCol = (inc, db, entId, _col) => {
     const colsByEnt = vault.get(db)?.colsByEnt;
     if (!colsByEnt) {
       fail2("columns not found");
     }
     let cols = colsByEnt.get(entId);
-    if (action) {
+    if (inc) {
       if (cols) {
         cols.add(_col);
       } else {
@@ -6628,7 +6630,7 @@
     if (_ent !== "_cols") {
       return;
     }
-    nregCol(db, ent, _rec, true);
+    nregCol(true, db, ent, _rec);
     solid3(_rec, "traits", createTraits(_rec), true, true);
     const rows = _chopGetRecs(db, ent);
     if (rows) {
@@ -6642,7 +6644,7 @@
     if (values._ent !== "_cols") {
       return;
     }
-    nregCol(db, values.ent, _rec, false);
+    nregCol(false, db, values.ent, _rec);
     const rows = _chopGetRecs(db, values.ent);
     if (rows) {
       for (const [_, row] of rows) {
@@ -6651,11 +6653,11 @@
     }
   };
   var Turn = class {
-    static attach(process, _rec, input, force = false) {
-      return _rec.turn = new Turn(process, _rec, input, force);
+    static attach(process2, _rec, input, force = false) {
+      return _rec.turn = new Turn(process2, _rec, input, force);
     }
-    constructor(process, _rec, input, force = false) {
-      this.process = process;
+    constructor(process2, _rec, input, force = false) {
+      this.process = process2;
       this._rec = _rec;
       this.isChange = _rec.state === "pending";
       solids(this, {
@@ -6668,7 +6670,7 @@
       this._prepare();
     }
     _prepare() {
-      const { _rec, process } = this;
+      const { _rec, process: process2 } = this;
       const { db, values, state } = _rec;
       if (!values._ent) {
         throw Major.fail("is required").setCol("_ent");
@@ -6681,7 +6683,7 @@
         try {
           this._prepareCol(_col);
         } catch (err) {
-          _processFail(process, err, _col.values.name);
+          _processFail(process2, err, _col.values.name);
         }
       }
       if (state === "ready") {
@@ -6724,14 +6726,14 @@
       }
     }
     execute() {
-      const { process, _rec, pendings, isChange } = this;
+      const { process: process2, _rec, pendings, isChange } = this;
       for (const _col of pendings) {
         this.pull(_col);
       }
-      return process.isOk && isChange ? this.output : _rec.values;
+      return process2.isOk && isChange ? this.output : _rec.values;
     }
     pull(_col) {
-      const { process, _rec, pendings, output, input, changes } = this;
+      const { process: process2, _rec, pendings, output, input, changes } = this;
       const { state, current, before } = _rec;
       const { name, omitChange } = _col.values;
       if (pendings.has(_col)) {
@@ -6740,7 +6742,7 @@
         try {
           setter2(current, output, input[name], state === "ready" ? before : void 0);
         } catch (err) {
-          _processFail(process, err, name);
+          _processFail(process2, err, name);
         }
         if (output[name] !== _rec.values[name]) {
           changes.add(name);
@@ -6829,12 +6831,12 @@
       }
       return this;
     }
-    init(process) {
+    init(process2) {
       const { state, values } = this;
       if (state !== "pending") {
         fail2("record is not pending");
       }
-      Turn.attach(process, this, values, true);
+      Turn.attach(process2, this, values, true);
       this.state = "init";
       return this;
     }
@@ -6848,112 +6850,110 @@
       this.state = "ready";
       return this;
     }
-    update(process, values, force = false) {
+    //TODO update must be refactored
+    update(process2, values, isSet2 = false) {
       if (this.state !== "ready") {
         fail2("record is not ready");
       }
-      this.values = Turn.attach(process, this, values, force).execute();
+      this.values = Turn.attach(process2, this, values, isSet2).execute();
       if (this.turn.isChange) {
         _colSet(this);
-        _chopSyncIn(process, this.current);
+        _chopSyncIn(this.db, process2, this.current);
       }
       this.turn.detach();
     }
-    remove(process, force = false) {
+    remove(process2, force = false) {
       const { meta, current } = this;
       if (!force && meta) {
         fail2("is meta");
       }
       this.state = "removed";
-      _chopSyncOut(process, current, force);
+      _chopSyncOut(this.db, process2, current, force);
       recUnreg(this);
     }
   };
-  var roll2 = (process, record, force = false) => {
-    solid3(process, "action", "remove");
-    _recGetPriv2(process.db, record).remove(process, force);
+  var roll2 = (chop, record, force = false) => {
+    const { db } = chop;
+    _recGetPriv2(db, record).remove(process, force);
   };
-  var rollRemoveForce = (process, record) => roll2(process, record, true);
-  var rollRemove = (process, record) => roll2(process, record, false);
-  var rollback2 = (process) => {
-    if (!process.record) {
+  var rollRemoveForce = (chop, process2, record) => roll2(chop, process2, record, true);
+  var rollRemove = (chop, process2, record) => roll2(chop, process2, record, false);
+  var rollback2 = (chop, process2) => {
+    if (!process2.record) {
       return;
     }
-    _chopSyncIn(process, process.record, true);
+    _chopSyncIn(chop, process2, process2.record, true);
   };
-  var _recRemove = _processFactory(rollRemove, rollback2);
-  var _recRemoveForce = _processFactory(rollRemoveForce, rollback2);
-  var _entAdd = (process, _rec) => {
+  var _recRemove = _processWrapper(rollRemove, rollback2);
+  var _recRemoveForce = _processWrapper(rollRemoveForce, rollback2);
+  var _entAdd = (process2, _rec) => {
     const { db, values: { _ent, id } } = _rec;
     if (_ent !== "_ents") {
       return;
     }
-    db.add({ _ent: "_cols", ent: id, name: "_ent", type: "ref", ref: "_ents", meta: "numb", isReadonly: fceTrue, isRequired: fceTrue }, process.context);
-    db.add({ _ent: "_cols", ent: id, name: "id", type: "string", meta: "soft", isReadonly: fceTrue, isRequired: fceTrue }, process.context);
+    db.add({ _ent: "_cols", ent: id, name: "_ent", type: "ref", ref: "_ents", meta: "numb", isReadonly: fceTrue, isRequired: fceTrue }, process2.context);
+    db.add({ _ent: "_cols", ent: id, name: "id", type: "string", meta: "soft", isReadonly: fceTrue, isRequired: fceTrue }, process2.context);
   };
-  var _entRem = (process, _rec) => {
+  var _entRem = (process2, _rec) => {
     const { db, values: { _ent, id } } = _rec;
     if (_ent !== "_ents") {
       return;
     }
     for (const _col of getColsPriv(db, id)) {
-      _recRemoveForce(db, [_col.current], process.context);
+      _recRemoveForce(db, [_col.current], process2.context);
     }
     ;
   };
-  var roll3 = (process, values) => {
-    solid3(process, "action", "add");
-    const _rec = new RecordPrivate(process.db, values);
-    _rec.colsInit().init(process).ready();
-    _chopSyncIn(process, _rec.current);
+  var roll3 = (chop, process2, values) => {
+    const { db } = chop;
+    const _rec = new RecordPrivate(db, values);
+    _rec.colsInit().init(process2).ready();
+    _chopSyncIn(db, process2, _rec.current);
   };
-  var rollback3 = (process) => {
-    const _rec = _recGetPriv2(process.db, process.record, false);
-    _rec?.remove(process, true);
+  var rollback3 = (chop, process2) => {
+    const _rec = _recGetPriv2(chop.db, process2.record, false);
+    _rec?.remove(process2, true);
   };
-  var _recAdd = _processFactory(roll3, rollback3);
-  var roll4 = (process, values, force = false) => {
-    const { db } = process;
-    process.action = "addOrUpdate";
-    const _rec = new RecordPrivate(db, values).colsInit().init(process);
+  var _recAdd = _processWrapper(roll3, rollback3);
+  var roll4 = (isSet2, chop, process2, values) => {
+    const { db } = chop;
+    const _rec = new RecordPrivate(db, values).colsInit().init(process2);
     const { _ent, id } = _rec.current;
     const brother = _chopGetRec(db, toId(_ent), id);
     if (brother) {
-      solid3(process, "action", "update");
-      _recGetPriv(db, brother).update(values, ctx, force);
+      _recGetPriv(db, brother).update(values, ctx, isSet2);
     } else {
-      solid3(process, "action", "add");
       _rec.ready();
-      _chopSyncIn(process, _rec.current);
+      _chopSyncIn(db, process2, _rec.current);
     }
   };
-  var rollUpdate = (process, values) => roll4(process, values, true);
-  var rollSet = (process, values) => roll4(process, values, false);
-  var rollback4 = (process) => {
+  var rollUpdate = (...a) => roll4(false, ...a);
+  var rollSet = (...a) => roll4(true, ...a);
+  var rollback4 = (chop, process2) => {
   };
-  var _recAddOrUpdate = _processFactory(rollUpdate, rollback4);
-  var _recAddOrSet = _processFactory(rollSet, rollback4);
-  var roll5 = (process, record, values, force) => {
-    solid3(process, "action", "update");
-    _recGetPriv(process.db, record).update(process, values, force);
+  var _recAddOrUpdate = _processWrapper(rollUpdate, rollback4);
+  var _recAddOrSet = _processWrapper(rollSet, rollback4);
+  var roll5 = (isSet2, chop, process2, record, values) => {
+    const { db } = chop;
+    _recGetPriv2(db, record).update(process2, values, isSet2);
   };
-  var rollSet2 = (process, record, values) => roll5(process, record, values, true);
-  var rollUpdate2 = (process, record, values) => roll5(process, record, values, false);
-  var rollback5 = (process, values) => {
+  var rollUpdate2 = (...a) => roll5(false, ...a);
+  var rollSet2 = (...a) => roll5(true, ...a);
+  var rollback5 = (chop, process2, values) => {
   };
-  var _recSet = _processFactory(true, rollSet2, rollback5);
-  var _recUpdate = _processFactory(true, rollUpdate2, rollback5);
+  var _recSet = _processWrapper(rollSet2, rollback5);
+  var _recUpdate = _processWrapper(rollUpdate2, rollback5);
   var DB = class extends Chop {
     constructor(id, opt = {}) {
       const { load, save } = opt;
       super(id, {
         getId: (rec) => toId2(rec.id),
         getGroup: (rec) => toId2(rec._ent),
-        init: (process) => {
+        init: (_, process2) => {
           const loadRecs = (_ent, recsRaw) => {
             for (const id2 in recsRaw) {
               const _rec = new RecordPrivate(this, { _ent, id: id2, ...recsRaw[id2] });
-              _chopSyncIn(process, _rec.current, true);
+              _chopSyncIn(this, process2, _rec.current, true);
             }
             ;
           };
@@ -6966,7 +6966,7 @@
             }
             loadRecs(_ent, load(_ent));
           }
-          for (const [_, rec] of _chopGetRecs(this, "_cols")) {
+          for (const [_2, rec] of _chopGetRecs(this, "_cols")) {
             const _rec = _recGetPriv2(this, rec);
             _colSet(_rec);
           }
@@ -6974,7 +6974,7 @@
           for (const [rec] of _chopGetAllRecs(this)) {
             const _rec = _recGetPriv2(this, rec);
             if (_rec.state === "pending") {
-              _recs.push(_rec.init(process));
+              _recs.push(_rec.init(process2));
             }
           }
           for (const _rec of _recs) {
@@ -6982,23 +6982,24 @@
           }
         }
       });
-      this.fit((process, next) => {
-        const { action, record, isBatch } = process;
-        const isChange = next();
-        if (isBatch || !isChange) {
+      this.fit((next, event, process2) => {
+        const { record, isBatch } = process2;
+        next();
+        if (isBatch) {
           return;
         }
         const _rec = _recGetPriv2(this, record);
-        if (action === "add") {
-          _entAdd(process, _rec);
+        if (event === "add") {
+          _entAdd(process2, _rec);
           _colSet(_rec);
-        } else if (action === "update") {
+        } else if (event === "update") {
           _colSet(_rec);
-        } else if (action === "remove") {
-          _entRem(process, _rec);
+        } else if (event === "remove") {
+          _entRem(process2, _rec);
           _colRem(_rec);
         }
       });
+      this.effect(console.log);
       const _p = vault.get(this);
       _p.colsByEnt = /* @__PURE__ */ new Map();
     }
@@ -7038,6 +7039,10 @@
         console.log(entName, recId, rec);
         return true;
       }
+    });
+    db.fit((next, event, process2) => {
+      console.log("FIT", event, process2);
+      return next();
     });
     console.log(db.reset("test"));
   });

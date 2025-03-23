@@ -1,22 +1,21 @@
-import { _processFactory } from "../../Process/Process";
+import { _processWrapper } from "../../Process/Process";
 import { RecordPrivate } from "../RecordPrivate";
-import { solid } from "@randajan/props";
 import { _chopSyncIn } from "../../Chop/static/sync";
 import { _recGetPriv } from "./_records";
 
-const roll = (process, values)=>{
-    solid(process, "action", "add");
+const roll = (chop, process, values)=>{
+    const { db } = chop;
 
-    const _rec = new RecordPrivate(process.db, values);
+    const _rec = new RecordPrivate(db, values);
 
     _rec.colsInit().init(process).ready();
-    _chopSyncIn(process, _rec.current);
+    _chopSyncIn(db, process, _rec.current);
 }
 
-const rollback = (process)=>{
-    const _rec = _recGetPriv(process.db, process.record, false);
+const rollback = (chop, process)=>{
+    const _rec = _recGetPriv(chop.db, process.record, false);
     _rec?.remove(process, true);
 }
 
 
-export const _recAdd = _processFactory(roll, rollback);
+export const _recAdd = _processWrapper(roll, rollback);

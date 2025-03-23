@@ -1,23 +1,22 @@
-import { _processFactory } from "../../Process/Process";
-import { solid } from "@randajan/props";
+import { _processWrapper } from "../../Process/Process";
 import { _chopSyncIn } from "../../Chop/static/sync";
 import { _recGetPriv } from "./_records";
 
 
 
-const roll = (process, record, force=false)=>{
-    solid(process, "action", "remove");
-    _recGetPriv(process.db, record).remove(process, force);
+const roll = (chop, record, force=false)=>{
+    const { db } = chop;
+    _recGetPriv(db, record).remove(process, force);
 }
 
-const rollRemoveForce = (process, record)=>roll(process, record, true);
-const rollRemove = (process, record)=>roll(process, record, false);
+const rollRemoveForce = (chop, process, record)=>roll(chop, process, record, true);
+const rollRemove = (chop, process, record)=>roll(chop, process, record, false);
 
-const rollback = (process)=>{
+const rollback = (chop, process)=>{
     if (!process.record) { return; }
-    _chopSyncIn(process, process.record, true);
+    _chopSyncIn(chop, process, process.record, true);
 }
 
 
-export const _recRemove = _processFactory(rollRemove, rollback);
-export const _recRemoveForce = _processFactory(rollRemoveForce, rollback);
+export const _recRemove = _processWrapper(rollRemove, rollback);
+export const _recRemoveForce = _processWrapper(rollRemoveForce, rollback);

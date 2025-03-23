@@ -116,13 +116,14 @@ export class Chop {
 
         opt.parent = this;
         opt.filter = rec=>(this.isIn(id, rec) && filter(rec));
-        opt.init = process=>{ for (const [rec] of byRec) { _chopSyncIn(process, rec, true); } }
+        opt.init = (chop, process)=>{ for (const [rec] of byRec) { _chopSyncIn(chop, process, rec, true); } }
 
         const child = new Chop(id, opt);
 
         childs.add(child);
 
-        if (state !== "init") { $reset(child, context); }
+        //TODO
+        //if (state !== "init") { $reset(child, context); }
 
         return child;
 

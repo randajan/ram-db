@@ -21,10 +21,11 @@ beam.get().then(data=>{
         }
     });
 
-    // db.fit((process, next)=>{
-    //     if (!process.isBatch) { throw "FUCK"; }
-    //     console.log("FIT", process);
-    // })
+    db.fit((next, event, process)=>{
+        //if (!process.isBatch) { throw "FUCK"; }
+        console.log("FIT", event, process);
+        return next();
+    })
 
     console.log(db.reset("test"));
 });

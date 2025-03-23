@@ -1,13 +1,10 @@
-import { _processFactory } from "../../Process/Process";
+import { _processWrapper } from "../../Process/Process";
 import { RecordPrivate } from "../RecordPrivate";
-import { solid } from "@randajan/props";
 import { _chopGetRec, _chopSyncIn } from "../../Chop/static/sync";
 
 
-const roll = (process, values, force=false)=>{
-    const { db } = process;
-
-    process.action = "addOrUpdate";
+const roll = (isSet, chop, process, values)=>{
+    const { db } = chop;
     
     const _rec = new RecordPrivate(db, values).colsInit().init(process);
     const { _ent, id } = _rec.current;
@@ -15,22 +12,21 @@ const roll = (process, values, force=false)=>{
     const brother = _chopGetRec(db, toId(_ent), id);
 
     if (brother) {
-        solid(process, "action", "update");
-        _recGetPriv(db, brother).update(values, ctx, force);
+        _recGetPriv(db, brother).update(values, ctx, isSet);
     } else {
-        solid(process, "action", "add");
         _rec.ready();
-        _chopSyncIn(process, _rec.current);
+        _chopSyncIn(db, process, _rec.current);
     }
 }
 
-const rollUpdate = (process, values)=>roll(process, values, true);
-const rollSet = (process, values)=>roll(process, values, false);
+const rollUpdate = (...a)=>roll(false, ...a);
+const rollSet = (...a)=>roll(true, ...a);
 
-const rollback = (process)=>{
+//TODO ROLLBACK
+const rollback = (chop, process)=>{
 
 }
 
 
-export const _recAddOrUpdate = _processFactory(rollUpdate, rollback);
-export const _recAddOrSet = _processFactory(rollSet, rollback);
+export const _recAddOrUpdate = _processWrapper(rollUpdate, rollback);
+export const _recAddOrSet = _processWrapper(rollSet, rollback);

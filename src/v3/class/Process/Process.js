@@ -1,6 +1,7 @@
 import { solids, virtuals } from "@randajan/props";
 import { vault } from "../../../components/uni/consts";
 import { toFail } from "./Fails";
+import { Effects } from "../Effects/Effects";
 
 const _priv = new WeakMap();
 
@@ -8,19 +9,20 @@ const _priv = new WeakMap();
 
 class Process {
 
-    constructor(db, chop, context, rollback, parent, isBatch=false) {
+    constructor(chopOrigin, context, rollback, parent, isBatch=false) {
 
         const _p = {
             isOk:true,
             isDone:false,
+            chopOrigin,
+            effects:!parent ? new Effects() : undefined,
             childs:!parent ? [] : undefined,
             rollback
         }
 
         solids(this, {
-            db,
-            chop,
             parent,
+            effect:parent?.effect || (cb=>_p.effects.add(cb)),
         }, false);
 
         solids(this, {
@@ -46,7 +48,9 @@ export const _processFail = (process, err, colName)=>{
 
     const fail = toFail(err, colName);
 
-    if (fail.severity !== "minor") {
+    if (fail.severity === "minor") { console.warn(fail); }
+    else {
+        console.error(fail);
         if (colName) { throw fail; }
         _p.isOk = false;
         if (process.parent) { _priv.get(process.parent).isOk = false; }
@@ -56,37 +60,42 @@ export const _processFail = (process, err, colName)=>{
 
 }
 
-export const _processFactory = (exe, rollback, isBatch=false)=>{
-    return (chop, args, context)=>{
+export const _processWrapper = (roll, rollback, isBatch=false)=>{
+    return (chopOrigin, args, context)=>{
 
-        const db = chop.db;
-        const _pdb = vault.get(db);
+        const _pdb = vault.get(chopOrigin.db);
         const parent = _pdb.process;
     
-        const process = new Process(db, chop, context, rollback, parent, isBatch);
+        const process = new Process(chopOrigin, context, rollback, parent, isBatch);
         if (!parent) { _pdb.process = process; }
         else { _priv.get(parent).childs.push(process); }
     
         const _p = _priv.get(process);
         
-        try { exe(process, ...args); }
+        try { roll(chopOrigin, process, ...args); }
         catch(err) { _processFail(process, err); }
         
         _p.isDone = true;
         
         if (parent) { return process; }
 
+        //end of the process / cleanUp
+
         delete _pdb.process;
 
         for (let i=_p.childs.length-1; i>=0; i--) {
             const child = _p.childs[i];
-            if (!_p.isOk) { _priv.get(child).rollback(child); }
+            if (!_p.isOk) {
+                const _pc = _priv.get(child);
+                _pc.rollback(_pc.chopOrigin, child);
+            }
             _priv.delete(child); //cleanup
         }
 
-        if (!_p.isOk) { _p.rollback(process); }
+        if (_p.isOk) { _p.effects.run(); }
+        else { _p.rollback(chopOrigin, process); }
     
-        _priv.delete(process);
+        _priv.delete(process); //cleanup
     
         return process;
     }

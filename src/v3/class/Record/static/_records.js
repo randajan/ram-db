@@ -1,5 +1,5 @@
 import { fail } from "../../../tools/traits/uni";
-import { _chopGetRec, _chopSyncIn } from "../../Chop/static/sync";
+import { _chopGetRec } from "../../Chop/static/sync";
 
 
 const _records = new WeakMap();
