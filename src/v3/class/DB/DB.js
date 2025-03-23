@@ -2,7 +2,7 @@
 import { Chop } from "../Chop/Chop";
 
 import { metaData } from "../../metaData/interface";
-import { _recGetPriv } from "../Record/static/_records";
+import { _recGetPriv } from "../Record/Record";
 import { vault } from "../../../components/uni/consts";
 import { _colRem, _colSet } from "../Record/static/_columns";
 import { toId } from "../../tools/traits/uni";
@@ -15,6 +15,7 @@ import { _recAdd } from "../Record/static/add";
 import { _recAddOrSet, _recAddOrUpdate } from "../Record/static/addOr";
 import { _recSet, _recUpdate } from "../Record/static/update";
 import { _recRemove } from "../Record/static/remove";
+import { SuperMap } from "../SuperMap/SuperMap";
 
 
 
@@ -53,6 +54,8 @@ export class DB extends Chop {
                     _colSet(_rec);
                 }
 
+                
+
                 //prepare columns for rows
                 const _recs = [];
                 for (const [rec] of _chopGetAllRecs(this)) {
@@ -88,11 +91,17 @@ export class DB extends Chop {
 
         });
 
-        this.effect(console.log);
+        this.effect((event, process)=>{
+            const { record, isBatch } = process;
+            if (isBatch) { return; }
+
+            console.log("save", event, record._ent.id, record.id);
+            
+        });
 
         const _p = vault.get(this);
 
-        _p.colsByEnt = new Map();
+        _p.colsByEnt = new SuperMap();
     }
 
     isRecord(any, throwError=false) { return !!_recGetPriv(any, throwError); }

@@ -1,11 +1,13 @@
-import { solid, solids } from "@randajan/props";
+import { solids } from "@randajan/props";
 import { isMetaEnt } from "../../metaData/interface";
 import { Turn } from "../Turn/Turn";
-import { getColsPriv, _colSet } from "./static/_columns";
-import { recReg, recUnreg } from "./static/_records";
-import { Record } from "./Record";
+import { _colSet } from "./static/_columns";
+import { _recGetPriv, _recIs, recReg, recUnreg } from "./Record";
+import { createRecord } from "./Record";
 import { fail, toId } from "../../tools/traits/uni";
 import { _chopSyncIn, _chopSyncOut } from "../Chop/static/sync";
+import { vault } from "../../../components/uni/consts";
+
 
 export class RecordPrivate {
 
@@ -20,49 +22,13 @@ export class RecordPrivate {
         this.meta = isMetaEnt(v._ent) ? v.meta : undefined; //TODO
         
         solids(this, {
+            _db:vault.get(db),
             db,
-            current: new Record(v),
-            before: new Record()
+            current: createRecord(this, true),
+            before: createRecord(this, false)
         });
 
         recReg(this);
-    }
-
-    colAdd(_col) {
-        const { db, current, before, state } = this;
-
-        const { name, formula, noCache } = _col.current;
-        const t = _col.traits;
-        const isVirtual = (formula && noCache);
-    
-        const prop = {
-            enumerable:true, configurable:true,
-            set:_=>{ fail("For update use db.update(...) interface"); }
-        };
-
-        if (isVirtual) { prop.get = _=>t.getter(t.setter(current, this.values, this.values[name], this.state === "ready" ? before : undefined), this.state === "ready"); }
-        else { prop.get = _=>t.getter(this.turn ? this.turn.pull(_col) : this.values[name], this); }
-        Object.defineProperty(current, name, prop);
-
-        if (!isVirtual) { prop.get = _=>t.getter(this.values[name], this); }
-        Object.defineProperty(before, name, prop);
-
-        if (state === "ready") { t.setter(current, this.values, this.values[name]); }
-    }
-
-    colRem(name) {
-        const { current, before } = this;
-        delete this.values[name];
-        delete current[name];
-        delete before[name];
-    }
-
-    colsInit() {
-        const { db, state, values } = this;
-        if (state !== "pending") { fail("record is not pending"); }
-        const cols = getColsPriv(db, values._ent);
-        if (cols) { for (const _col of cols) { this.colAdd(_col); } }
-        return this;
     }
 
     init(process) {
@@ -90,7 +56,7 @@ export class RecordPrivate {
         
         if (this.turn.isChange) {
             _colSet(this);
-            _chopSyncIn(this.db, process, this.current); //TODO calling effects
+            _chopSyncIn(this.db, process, this.current);
         }
 
         this.turn.detach();
@@ -102,9 +68,48 @@ export class RecordPrivate {
         if (!force && meta) { fail("is meta"); }
         
         this.state = "removed";
-        _chopSyncOut(this.db, process, current, force);
+        _chopSyncOut(this.db, process, current);
         recUnreg(this);
+    }
+
+    export() {
+        const { db } = this;
+        const r = {};
+        for (const _col of this.getCols()) {
+            const { name, type:{ saver } } = _col.current;
+            let value = this.getCol(name, true);
+            if (value == null) { continue; }
+            r[name] = saver ? saver(value) : value;
+        }
+        return r;
+    }
+
+    getColsNames() { return this._db.colsByEnt.keys(this.values._ent); }
+    getCols() { return this._db.colsByEnt.values(this.values._ent); }
+
+    getCol(colName, isCurrent=true) {
+        const { _db, turn, current, values, state } = this;
+        const value = values[colName];
+
+        const _col = _db.colsByEnt.get(values._ent, colName);
+        if (!_col) { return value; }
+
+        const t = _col.traits;
+
+        if (!isCurrent) { return t.getter(value); }
+
+        const { isVirtual } = (_col === this) ? values : _col.current;
+    
+        if (!isVirtual) { return t.getter(turn ? turn.pull(_col) : value); }
+
+        return t.getter(t.setter(current, values, value, state === "ready" ? before : undefined)); 
 
     }
+
+    hasCol(colName) {
+        const { _db, values } = this;
+        return _db.colsByEnt.has(values._ent, colName);
+    }
+
 
 }

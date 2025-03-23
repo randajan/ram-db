@@ -95,20 +95,6 @@ export class Chop {
         return result;
     }
 
-    export(rec) {
-        const res = {};
-        for (const i in rec) {
-            const v = rec[i];
-            
-            //res[i] = Array.isArray(v) ? v.map(exportFn) : exportFn(v); TODO
-        }
-        return res;
-    }
-
-    exportAll() {
-        return this.map(this.export);
-    }
-
     chop(id, opt={}, context) {
         const { state, byRec, childs } = vault.get(this);
 

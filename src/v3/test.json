@@ -1,0 +1,294 @@
+[
+    {
+        "_ent": "_cols",
+        "id": "_ents-_ent",
+        "meta": "numb",
+        "ent": "_ents",
+        "name": "_ent",
+        "type": "ref",
+        "ref": "_ents",
+        "isReadonly": "_=>true",
+        "isRequired": "_=>true"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_ents-id",
+        "meta": "numb",
+        "ent": "_ents",
+        "name": "id",
+        "type": "string",
+        "isReadonly": "_=>true",
+        "isRequired": "_=>true"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_ents-meta",
+        "meta": "numb",
+        "ent": "_ents",
+        "name": "meta",
+        "type": "string",
+        "isReadonly": "_=>true"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_types-_ent",
+        "meta": "numb",
+        "ent": "_types",
+        "name": "_ent",
+        "type": "ref",
+        "ref": "_ents",
+        "isReadonly": "_=>true",
+        "isRequired": "_=>true"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_types-id",
+        "meta": "numb",
+        "ent": "_types",
+        "name": "id",
+        "type": "string",
+        "isReadonly": "_=>true",
+        "isRequired": "_=>true"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_types-meta",
+        "meta": "numb",
+        "ent": "_types",
+        "name": "meta",
+        "type": "string",
+        "isReadonly": "_=>true"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_types-setter",
+        "meta": "numb",
+        "ent": "_types",
+        "name": "setter",
+        "type": "function",
+        "isReadonly": "_=>true",
+        "fallback": "_=>(v) => v"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_types-getter",
+        "meta": "numb",
+        "ent": "_types",
+        "name": "getter",
+        "type": "function",
+        "isReadonly": "_=>true",
+        "fallback": "_=>(v) => v"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_types-saver",
+        "meta": "numb",
+        "ent": "_types",
+        "name": "saver",
+        "type": "function",
+        "isReadonly": "_=>true"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_types-loader",
+        "meta": "numb",
+        "ent": "_types",
+        "name": "loader",
+        "type": "function",
+        "isReadonly": "_=>true"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_cols-_ent",
+        "meta": "numb",
+        "ent": "_cols",
+        "name": "_ent",
+        "type": "ref",
+        "ref": "_ents",
+        "isReadonly": "_=>true",
+        "isRequired": "_=>true"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_cols-id",
+        "meta": "numb",
+        "ent": "_cols",
+        "name": "id",
+        "type": "string",
+        "isReadonly": "_=>true",
+        "isRequired": "_=>true",
+        "formula": "r=>join(\"-\", r.ent?.id, r.name)"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_cols-meta",
+        "meta": "numb",
+        "ent": "_cols",
+        "name": "meta",
+        "type": "string",
+        "isReadonly": "_=>true"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_cols-ent",
+        "meta": "numb",
+        "ent": "_cols",
+        "name": "ent",
+        "type": "ref",
+        "ref": "_ents",
+        "isReadonly": "_=>true",
+        "isRequired": "_=>true"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_cols-name",
+        "meta": "numb",
+        "ent": "_cols",
+        "name": "name",
+        "type": "string",
+        "isReadonly": "_=>true",
+        "isRequired": "_=>true"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_cols-type",
+        "meta": "numb",
+        "ent": "_cols",
+        "name": "type",
+        "type": "ref",
+        "ref": "_types",
+        "fallback": "_=>\"string\""
+    },
+    {
+        "_ent": "_cols",
+        "id": "_cols-ref",
+        "meta": "numb",
+        "ent": "_cols",
+        "name": "ref",
+        "type": "ref",
+        "ref": "_ents"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_cols-parent",
+        "meta": "numb",
+        "ent": "_cols",
+        "name": "parent",
+        "type": "ref",
+        "ref": "_cols"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_cols-store",
+        "meta": "numb",
+        "ent": "_cols",
+        "name": "store",
+        "type": "function"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_cols-isList",
+        "meta": "numb",
+        "ent": "_cols",
+        "name": "isList",
+        "type": "boolean"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_cols-isReadonly",
+        "meta": "numb",
+        "ent": "_cols",
+        "name": "isReadonly",
+        "type": "function"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_cols-isRequired",
+        "meta": "numb",
+        "ent": "_cols",
+        "name": "isRequired",
+        "type": "function"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_cols-resetIf",
+        "meta": "numb",
+        "ent": "_cols",
+        "name": "resetIf",
+        "type": "function"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_cols-init",
+        "meta": "hard",
+        "ent": "_cols",
+        "name": "init",
+        "type": "function"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_cols-fallback",
+        "meta": "hard",
+        "ent": "_cols",
+        "name": "fallback",
+        "type": "function"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_cols-validator",
+        "meta": "hard",
+        "ent": "_cols",
+        "name": "validator",
+        "type": "function"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_cols-decimal",
+        "meta": "hard",
+        "ent": "_cols",
+        "name": "decimal",
+        "type": "number",
+        "decimal": 0,
+        "min": 0
+    },
+    {
+        "_ent": "_cols",
+        "id": "_cols-min",
+        "meta": "hard",
+        "ent": "_cols",
+        "name": "min",
+        "type": "number"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_cols-max",
+        "meta": "hard",
+        "ent": "_cols",
+        "name": "max",
+        "type": "number"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_cols-formula",
+        "meta": "hard",
+        "ent": "_cols",
+        "name": "formula",
+        "type": "function"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_cols-isVirtual",
+        "meta": "numb",
+        "ent": "_cols",
+        "name": "isVirtual",
+        "type": "boolean"
+    },
+    {
+        "_ent": "_cols",
+        "id": "_cols-omitChange",
+        "meta": "numb",
+        "ent": "_cols",
+        "name": "omitChange",
+        "type": "boolean"
+    }
+]

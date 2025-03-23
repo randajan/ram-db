@@ -33,7 +33,7 @@ export const metaData = {
         "function":{ meta:"numb", setter:(v, c)=>toFunction(v, c), getter, saver:v=>toString(v) },
         "regexp":{ meta:"numb", setter:(v, c)=>toRegExp(v, c), getter },
         "object":{ meta:"numb", setter:(v, c)=>toObject(v, c), getter, saver:v=>toString(v) },
-        "ref":{ meta:"numb", setter:(v, c)=>toId(v, c), getter },
+        "ref":{ meta:"numb", setter:(v, c)=>toId(v, c), getter, saver:v=>toId(v) },
         "nref":{ meta:"numb", setter, getter },
     },
     "_cols":{
@@ -87,7 +87,7 @@ export const metaData = {
         "_cols-min":{ meta:"hard", ent:"_cols", name:"min", type:"number" }, //decimal should be defined as a function
         "_cols-max":{ meta:"hard", ent:"_cols", name:"max", type:"number" }, //decimal:_=>r.decimal //decimal should be defined as a function
         "_cols-formula":{ meta:"hard", ent:"_cols", name:"formula", type:"function" },
-        "_cols-noCache":{ meta:"numb", ent:"_cols", name:"noCache", type:"boolean" },
+        "_cols-isVirtual":{ meta:"numb", ent:"_cols", name:"isVirtual", type:"boolean" },
         "_cols-omitChange":{ meta:"numb", ent:"_cols", name:"omitChange", type:"boolean" }
     }
 }

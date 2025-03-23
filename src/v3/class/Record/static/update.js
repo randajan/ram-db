@@ -1,5 +1,5 @@
 import { _processWrapper } from "../../Process/Process";
-import { _recGetPriv } from "./_records";
+import { _recGetPriv } from "../Record";
 
 const roll = (isSet, chop, process, record, values)=>{
     const { db } = chop;

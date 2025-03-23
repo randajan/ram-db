@@ -1,5 +1,4 @@
 import { solids } from "@randajan/props";
-import { getColsPriv } from "../Record/static/_columns";
 import { Major } from "../Process/Fails";
 import { fail, warn } from "../../tools/traits/uni";
 import { _processFail } from "../Process/Process";
@@ -31,11 +30,11 @@ export class Turn {
 
     _prepare() {
         const { _rec, process } = this;
-        const { db, values, state } = _rec;
+        const { values, state } = _rec;
 
         if (!values._ent) { throw Major.fail("is required").setCol("_ent"); }
 
-        const _cols = getColsPriv(db, values._ent);
+        const _cols = _rec.getCols();
         if (!_cols) { throw Major.fail("invalid").setCol("_ent"); }
 
         for (const _col of _cols) {
@@ -51,7 +50,7 @@ export class Turn {
     _prepareCol(_col) {
         const { _rec, force, input, output, pendings } = this;
         const { meta:metaRec, values, state } = _rec;
-        const { meta:metaCol, values:{ name, formula, resetIf, noCache } } = _col;
+        const { meta:metaCol, values:{ name, formula, resetIf, isVirtual } } = _col;
 
         const isReal = input.hasOwnProperty(name);
         const isMeta = (metaRec && metaCol && (metaCol === "numb" || metaRec !== "soft"));
@@ -64,7 +63,7 @@ export class Turn {
             if (formula) { warn(`has formula`); }
         }
 
-        if (formula && noCache) { return; }
+        if (isVirtual) { return; }
         if (formula) { pendings.add(_col); return; }
         if (isMeta && state === "pending") { return; } //meta records should never pending
         

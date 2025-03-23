@@ -3,13 +3,11 @@
 
 export class SuperMap extends Map {
 
-    getAll(groupId) {
-        return super.get(groupId);
-    }
+    keys(groupId) { return super.get(groupId)?.keys(); }
+    values(groupId) { return super.get(groupId)?.values(); }
 
-    get(groupId, keyId) {
-        return super.get(groupId)?.get(keyId);
-    }
+    getAll(groupId) { return super.get(groupId); }
+    get(groupId, keyId) { return super.get(groupId)?.get(keyId); }
 
     has(groupId, keyId) {
         const sub = super.get(groupId);

@@ -1,14 +1,14 @@
 import { _processWrapper } from "../../Process/Process";
 import { RecordPrivate } from "../RecordPrivate";
 import { _chopSyncIn } from "../../Chop/static/sync";
-import { _recGetPriv } from "./_records";
+import { _recGetPriv } from "../Record";
 
 const roll = (chop, process, values)=>{
     const { db } = chop;
 
     const _rec = new RecordPrivate(db, values);
-
-    _rec.colsInit().init(process).ready();
+    _rec.init(process).ready();
+    
     _chopSyncIn(db, process, _rec.current);
 }
 

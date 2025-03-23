@@ -1,50 +1,45 @@
 import { isNull, reArray } from "../../../../components/uni/formats";
-import { _recGetPriv } from "./_records";
 import { metaData } from "../../../metaData/interface";
 import { _chopGetRecs } from "../../Chop/static/sync";
 import { cacheds, solid } from "@randajan/props";
 import { vault } from "../../../../components/uni/consts";
-import { fail, warn } from "../../../tools/traits/uni";
+import { fail, toId, warn } from "../../../tools/traits/uni";
 
-const nregCol = (inc, db, entId, _col)=>{
-    const colsByEnt = vault.get(db)?.colsByEnt;
-    if (!colsByEnt) { fail("columns not found"); }
-    let cols = colsByEnt.get(entId);
 
-    if (inc) {
-        if (cols) { cols.add(_col); }
-        else { colsByEnt.set(entId, new Set([_col]));  }
-    } else if (cols) {
-        if (cols.size > 1) {cols.delete(_col);  }
-        else { colsByEnt.delete(entId); }
-    }
-};
+const blackList = [
+    "constructor",           // Object konstruktor
+    "__proto__",             // přímý přístup k prototype chain
+    "hasOwnProperty",        // důležitá metoda pro práci s vlastnostmi
+    "isPrototypeOf",         // používá se v dědičnosti
+    "propertyIsEnumerable",  // zjišťuje, zda je vlastnost výčtová
+    "toLocaleString",        // převod pro lokalizaci
+    "toString",              // převod na řetězec
+    "valueOf",               // převod na primitivní hodnotu
+    "toJSON"                 // výstup při JSON.stringify()
+];
 
-export const getColsPriv = (db, entId)=>vault.get(db)?.colsByEnt?.get(entId);
-
-const createGetter = _col=>{
-    const { db, current:col, values:v } = _col;
-    
+const createGetter = _col => {
+    const { db, current: col, values: v } = _col;
     const { getter } = (metaData._types[v.type] || col.type);
 
-    const typize = v.type == "ref" ? from=>db.get(v.ref, from, false) : v=>getter(v, col);
-    const n = !v.isList ? typize : f=>reArray(f, typize);
+    const typize = v.type == "ref" ? from => db.get(v.ref, from, false) : v => getter(v, col);
+    const n = !v.isList ? typize : f => reArray(f, typize);
 
     return n;
 }
 
-const createSetter = _col=>{
-    const { db, current:col, values:v } = _col;
+const createSetter = _col => {
+    const { db, current: col, values: v } = _col;
 
-    const { name, ref, parent, formula, store, noCache, validator, isReadonly, resetIf, init, fallback, isRequired, isList } = col;
+    const { name, formula, store, validator, isReadonly, resetIf, init, fallback, isRequired, isList } = col;
     const { setter } = (metaData._types[v.type] || col.type);
 
-    const typize = t=>isNull(t) ? undefined : setter(t, col);
-    const n = !isList ? typize : t=>isNull(t) ? undefined : reArray(t, typize);
+    const typize = t => isNull(t) ? undefined : setter(t, col);
+    const n = !isList ? typize : t => isNull(t) ? undefined : reArray(t, typize);
 
     const stored = !store ? undefined : store(col, db);
 
-    return (current, output, to, before)=>{
+    return (current, output, to, before) => {
 
         if (formula) { to = output[name] = n(formula(current, before, stored)); }
         else {
@@ -57,50 +52,42 @@ const createSetter = _col=>{
                 }
             }
 
-            if ((!before && isNull(to)) || (resetIf && resetIf(current, before, stored))) { 
+            if ((!before && isNull(to)) || (resetIf && resetIf(current, before, stored))) {
                 to = output[name] = !init ? undefined : n(init(current, before, stored));
             }
         }
 
         if (fallback && isNull(to)) { to = output[name] = n(fallback(current, before, stored)); }
         if (isRequired && isNull(to) && isRequired(current, before, stored)) { fail("is required"); }
-        
+
         return output[name];
     }
 }
 
-const createTraits = _col=>{
+const createTraits = _col => {
     return cacheds({}, {}, {
-        getter:_=>createGetter(_col),
-        setter:_=>createSetter(_col)
+        getter: _ => createGetter(_col),
+        setter: _ => createSetter(_col)
     });
 }
 
-export const _colSet = (_rec)=>{
-    const { db, values:{ _ent, ent } } = _rec;
+export const _colSet = (_rec) => {
+    const { _db, values: { _ent, ent, name } } = _rec;
     if (_ent !== "_cols") { return; }
 
-    nregCol(true, db, ent, _rec);
+    if (blackList.includes(name)) {
+        fail(`blacklisted name ${name}`, blackList).setCol("name");
+    }
+
+    _db.colsByEnt.set(toId(ent), name, _rec);
 
     solid(_rec, "traits", createTraits(_rec), true, true);
-
-    const rows = _chopGetRecs(db, ent);
-    if (rows) {
-        for (const [_, row] of rows) { _recGetPriv(db, row).colAdd(_rec); }
-    }
-
 }
 
-export const _colRem = (_rec)=>{
-    const { db, values } = _rec;
+export const _colRem = (_rec) => {
+    const { _db, values } = _rec;
     if (values._ent !== "_cols") { return; }
 
-    nregCol(false, db, values.ent, _rec);
-
-    const rows = _chopGetRecs(db, values.ent);
-    if (rows) {
-        for (const [_, row] of rows) { _recGetPriv(db, row).colRem(values.name); }
-    }
-
+    _db.colsByEnt.delete(toId(ent), _rec.values.name);
 }
 

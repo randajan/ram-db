@@ -1,10 +1,10 @@
 import { _processWrapper } from "../../Process/Process";
 import { _chopSyncIn } from "../../Chop/static/sync";
-import { _recGetPriv } from "./_records";
+import { _recGetPriv } from "../Record";
 
 
 
-const roll = (chop, record, force=false)=>{
+const roll = (chop, process, record, force=false)=>{
     const { db } = chop;
     _recGetPriv(db, record).remove(process, force);
 }
