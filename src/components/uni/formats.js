@@ -34,14 +34,18 @@ export const toDate = (val, min, max)=>{
 }
 
 export const reArray = (val, trait)=>{
-    const res = [];
-    if (isNull(val)) { return res; }
-    if (!Array.isArray(val)) { res.push(trait(val)); return res; }
+    
+    if (isNull(val)) { return; }
+    if (!Array.isArray(val)) {
+        const r = trait(val);
+        return !isNull(r) ? [r] : undefined;
+    }
 
+    const res = [];
     for (const v of val) {
         const r = trait(v);
         if (!isNull(r)) { res.push(r); }
     }
 
-    return res;
+    if (res.length) { return res; }
 }

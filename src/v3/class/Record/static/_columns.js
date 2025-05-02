@@ -17,29 +17,40 @@ const blackList = [
     "toJSON"                 // výstup při JSON.stringify()
 ];
 
-const createGetter = _col => {
+const createStored = (traits, _col)=>{
+    const { db, current: col } = _col;
+
+    const { store } = col;
+    return store ? store(col, db) : null;
+}
+
+const createGetter = (traits, _col) => {
     const { db, current: col, values: v } = _col;
+
+    //const { fallback } = col;
     const { getter } = (metaData._types[v.type] || col.type);
 
     const typize = v.type == "ref" ? from => db.get(v.ref, from, false) : v => getter(v, col);
     const n = !v.isList ? typize : f => reArray(f, typize);
-
-    return n;
+    
+    return (from, current, before)=>{
+        from = n(from);
+        //if (fallback && isNull(from)) { from = n(fallback(current, before, traits.stored)); }
+        return from;
+    }
 }
 
-const createSetter = _col => {
-    const { db, current: col, values: v } = _col;
+const createSetter = (traits, _col) => {
+    const { current: col, values: v } = _col;
 
-    const { name, formula, store, validator, isReadonly, resetIf, init, fallback, isRequired, isList } = col;
+    const { name, formula, validator, isReadonly, resetIf, init, isRequired, isList } = col;
     const { setter } = (metaData._types[v.type] || col.type);
 
     const typize = t => isNull(t) ? undefined : setter(t, col);
     const n = !isList ? typize : t => isNull(t) ? undefined : reArray(t, typize);
 
-    const stored = !store ? undefined : store(col, db);
-
-    return (current, output, to, before) => {
-
+    return (to, current, before, output) => {
+        const stored = traits.stored;
         if (formula) { to = output[name] = n(formula(current, before, stored)); }
         else {
             if (isReadonly && isReadonly(current, before, stored)) {
@@ -56,7 +67,6 @@ const createSetter = _col => {
             }
         }
 
-        if (fallback && isNull(to)) { to = output[name] = n(fallback(current, before, stored)); }
         if (isRequired && isNull(to) && isRequired(current, before, stored)) { fail("required"); }
 
         return output[name];
@@ -64,9 +74,11 @@ const createSetter = _col => {
 }
 
 const createTraits = _col => {
-    return cacheds({}, {}, {
-        getter: _ => createGetter(_col),
-        setter: _ => createSetter(_col)
+    const traits = {};
+    return cacheds(traits, {}, {
+        stored:_=>createStored(traits, _col),
+        getter:_=>createGetter(traits, _col),
+        setter:_=>createSetter(traits, _col)
     });
 }
 

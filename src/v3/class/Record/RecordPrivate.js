@@ -2,7 +2,7 @@ import { solids } from "@randajan/props";
 import { isMetaEnt } from "../../metaData/methods";
 import { Turn } from "../Turn/Turn";
 import { _colSet } from "./static/_columns";
-import { _recGetPriv, _recIs, recReg, recUnreg } from "./Record";
+import { _recGetPriv, _recIs, recReg } from "./Record";
 import { createRecord } from "./Record";
 import { fail, toId } from "../../tools/traits/uni";
 import { _chopSyncIn, _chopSyncOut } from "../Chop/static/sync";
@@ -80,7 +80,7 @@ export class RecordPrivate {
     getCols() { return this._db.colsByEnt.values(this.values._ent); }
 
     getCol(colName, isCurrent=true) {
-        const { _db, turn, current, values, state } = this;
+        const { _db, turn, current, before, values, state } = this;
         const value = values[colName];
 
         const _col = _db.colsByEnt.get(values._ent, colName);
@@ -88,13 +88,13 @@ export class RecordPrivate {
 
         const t = _col.traits;
 
-        if (!isCurrent) { return t.getter(value); }
+        if (!isCurrent) { return t.getter(value, current, before); }
 
         const { isVirtual } = (_col === this) ? values : _col.current;
     
-        if (!isVirtual) { return t.getter(turn ? turn.pull(_col) : value); }
+        if (!isVirtual) { return t.getter(turn ? turn.pull(_col) : value, current, before); }
 
-        return t.getter(t.setter(current, values, value, state === "ready" ? before : undefined)); 
+        return t.getter(t.setter(value, current, state === "ready" ? before : undefined, values), current, before); 
 
     }
 

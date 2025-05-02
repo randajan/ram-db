@@ -36,7 +36,7 @@
   var define_slib_info_default;
   var init_define_slib_info = __esm({
     "<define:__slib_info>"() {
-      define_slib_info_default = { isServer: false, isBuild: false, name: "@randajan/ram-db", description: "Realtime database", version: "2.8.5", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "web", port: 3005, dir: { root: "C:\\dev\\lib\\ram-db", dist: "demo/frontend/dist" } };
+      define_slib_info_default = { isServer: false, isBuild: false, name: "@randajan/ram-db", description: "Realtime database", version: "2.8.7", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "web", port: 3005, dir: { root: "C:\\dev\\lib\\ram-db", dist: "demo/frontend/dist" } };
     }
   });
 
@@ -5061,8 +5061,8 @@
     }, true);
     return res;
   };
-  var enumFactory = (enums, { before: before2, after, def } = {}) => (raw, ...args) => {
-    const input = before2 ? before2(raw, ...args) : raw;
+  var enumFactory = (enums, { before, after, def } = {}) => (raw, ...args) => {
+    const input = before ? before(raw, ...args) : raw;
     const output = enums.includes(input) ? input : def;
     return after ? after(output, ...args) : output;
   };
@@ -5830,21 +5830,23 @@
   var toStr = (any, def) => isNull(any) ? def : String(any);
   var toSet = (any) => isSet(any) ? any : new Set(any);
   var reArray = (val, trait) => {
-    const res = [];
     if (isNull(val)) {
-      return res;
+      return;
     }
     if (!Array.isArray(val)) {
-      res.push(trait(val));
-      return res;
+      const r = trait(val);
+      return !isNull(r) ? [r] : void 0;
     }
+    const res = [];
     for (const v of val) {
       const r = trait(v);
       if (!isNull(r)) {
         res.push(r);
       }
     }
-    return res;
+    if (res.length) {
+      return res;
+    }
   };
   var uni_exports = {};
   __export3(uni_exports, {
@@ -6725,13 +6727,13 @@
     }
     pull(_col) {
       const { task, _rec, pendings, output, input, changes } = this;
-      const { state, current, before: before2 } = _rec;
+      const { state, current, before } = _rec;
       const { name, omitChange } = _col.values;
       if (pendings.has(_col)) {
         const { setter: setter2 } = _col.traits;
         pendings.delete(_col);
         try {
-          setter2(current, output, input[name], state === "ready" ? before2 : void 0);
+          setter2(input[name], current, state === "ready" ? before : void 0, output);
         } catch (err) {
           task.catchMinor(err, [["column", name]]);
         }
@@ -6773,51 +6775,58 @@
     "toJSON"
     // výstup při JSON.stringify()
   ];
-  var createGetter = (_col) => {
+  var createStored = (traits, _col) => {
+    const { db: db2, current: col } = _col;
+    const { store } = col;
+    return store ? store(col, db2) : null;
+  };
+  var createGetter = (traits, _col) => {
     const { db: db2, current: col, values: v } = _col;
     const { getter: getter2 } = metaData._types[v.type] || col.type;
     const typize = v.type == "ref" ? (from) => db2.get(v.ref, from, false) : (v2) => getter2(v2, col);
     const n = !v.isList ? typize : (f) => reArray(f, typize);
-    return n;
+    return (from, current, before) => {
+      from = n(from);
+      return from;
+    };
   };
-  var createSetter = (_col) => {
-    const { db: db2, current: col, values: v } = _col;
-    const { name, formula, store, validator, isReadonly: isReadonly2, resetIf, init, fallback, isRequired: isRequired2, isList } = col;
+  var createSetter = (traits, _col) => {
+    const { current: col, values: v } = _col;
+    const { name, formula, validator, isReadonly: isReadonly2, resetIf, init, isRequired: isRequired2, isList } = col;
     const { setter: setter2 } = metaData._types[v.type] || col.type;
     const typize = (t) => isNull(t) ? void 0 : setter2(t, col);
     const n = !isList ? typize : (t) => isNull(t) ? void 0 : reArray(t, typize);
-    const stored = !store ? void 0 : store(col, db2);
-    return (current, output, to3, before2) => {
+    return (to3, current, before, output) => {
+      const stored = traits.stored;
       if (formula) {
-        to3 = output[name] = n(formula(current, before2, stored));
+        to3 = output[name] = n(formula(current, before, stored));
       } else {
-        if (isReadonly2 && isReadonly2(current, before2, stored)) {
-          if (before2) {
-            warn(`readonly`, ["valueFrom", before2], ["valueTo", to3]);
+        if (isReadonly2 && isReadonly2(current, before, stored)) {
+          if (before) {
+            warn(`readonly`, ["valueFrom", before], ["valueTo", to3]);
           }
         } else {
           to3 = output[name] = n(to3);
-          if (validator && !validator(current, before2, stored)) {
+          if (validator && !validator(current, before, stored)) {
             fail2("invalid", ["valueTo", to3]);
           }
         }
-        if (!before2 && isNull(to3) || resetIf && resetIf(current, before2, stored)) {
-          to3 = output[name] = !init ? void 0 : n(init(current, before2, stored));
+        if (!before && isNull(to3) || resetIf && resetIf(current, before, stored)) {
+          to3 = output[name] = !init ? void 0 : n(init(current, before, stored));
         }
       }
-      if (fallback && isNull(to3)) {
-        to3 = output[name] = n(fallback(current, before2, stored));
-      }
-      if (isRequired2 && isNull(to3) && isRequired2(current, before2, stored)) {
+      if (isRequired2 && isNull(to3) && isRequired2(current, before, stored)) {
         fail2("required");
       }
       return output[name];
     };
   };
   var createTraits = (_col) => {
-    return cacheds({}, {}, {
-      getter: (_) => createGetter(_col),
-      setter: (_) => createSetter(_col)
+    const traits = {};
+    return cacheds(traits, {}, {
+      stored: (_) => createStored(traits, _col),
+      getter: (_) => createGetter(traits, _col),
+      setter: (_) => createSetter(traits, _col)
     });
   };
   var _colSet = (_rec) => {
@@ -6906,7 +6915,7 @@
       return this._db.colsByEnt.values(this.values._ent);
     }
     getCol(colName, isCurrent = true) {
-      const { _db, turn, current, values, state } = this;
+      const { _db, turn, current, before, values, state } = this;
       const value2 = values[colName];
       const _col = _db.colsByEnt.get(values._ent, colName);
       if (!_col) {
@@ -6914,13 +6923,13 @@
       }
       const t = _col.traits;
       if (!isCurrent) {
-        return t.getter(value2);
+        return t.getter(value2, current, before);
       }
       const { isVirtual } = _col === this ? values : _col.current;
       if (!isVirtual) {
-        return t.getter(turn ? turn.pull(_col) : value2);
+        return t.getter(turn ? turn.pull(_col) : value2, current, before);
       }
-      return t.getter(t.setter(current, values, value2, state === "ready" ? before : void 0));
+      return t.getter(t.setter(value2, current, state === "ready" ? before : void 0, values), current, before);
     }
     hasCol(colName) {
       const { _db, values } = this;

@@ -1,6 +1,5 @@
 import { solids } from "@randajan/props";
-import { Major } from "../Task/Fails";
-import { fail, warn } from "../../tools/traits/uni";
+import { warn } from "../../tools/traits/uni";
 
 
 export class Turn {
@@ -89,7 +88,7 @@ export class Turn {
             pendings.delete(_col);
 
             try {
-                setter(current, output, input[name], state === "ready" ? before : undefined);
+                setter(input[name], current, state === "ready" ? before : undefined, output);
             } catch(err) {
                 task.catchMinor(err, [["column", name]]); //record fail
             }
