@@ -9,14 +9,12 @@ import { toObject } from "../tools/traits/objects";
 import { toDate } from "../tools/traits/dates";
 import { join, toId } from "../tools/traits/uni";
 
-
-
 const getter = fcePass;
 const setter = fcePass;
 const isRequired = fceTrue;
 const isReadonly = fceTrue;
 
-export const isMetaEnt = v=>metaData.hasOwnProperty(v);
+export const metaEnts = [ "_ents", "_types", "_cols" ];
 
 export const metaData = {
     "_ents":{
@@ -88,6 +86,6 @@ export const metaData = {
         "_cols-max":{ meta:"hard", ent:"_cols", name:"max", type:"number" }, //decimal:_=>r.decimal //decimal should be defined as a function
         "_cols-formula":{ meta:"hard", ent:"_cols", name:"formula", type:"function" },
         "_cols-isVirtual":{ meta:"numb", ent:"_cols", name:"isVirtual", type:"boolean" },
-        "_cols-omitChange":{ meta:"numb", ent:"_cols", name:"omitChange", type:"boolean" }
+        "_cols-omitChange":{ meta:"numb", ent:"_cols", name:"omitChange", type:"boolean" },
     }
 }

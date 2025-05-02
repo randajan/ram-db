@@ -12,22 +12,25 @@ const beam = window.beam = bifrost.createBeam("data");
 
 beam.get().then(data=>{
     const db = window.db = new DB("db", {
-        load:(entName)=>{
-            return data[entName];
-        },
+        data,
         save:(entName, recId, rec)=>{
-            console.log(entName, recId, rec);
-            return true;
+            if (rec) {
+                const ent = data[entName] || (data[entName] = {}); 
+                ent[recId] = rec;
+            } else if (data[entName]) {
+                const ent = data[entName];
+                delete ent[recId];
+            }
+            console.log(data);
+            beam.set(data);
         }
     });
 
     db.fit((next, event, process)=>{
-        //if (!process.isBatch) { throw "FUCK"; }
         console.log("FIT", event, process);
         return next();
-    })
+    });
 
-    console.log(db.reset("test"));
 });
 
 

@@ -55,7 +55,7 @@ const pushMultiGroup = (_chop, rec, id, from, to)=>{
     }
 }
 
-const pushRecursive = (inc, chop, process, rec, silent)=>{
+const pushRecursive = (inc, chop, rec, task)=>{
     const _chop = vault.get(chop);
     const { byRec, childs, getId, getGroup, filter, fits, effects, isMultiGroup } = _chop;
 
@@ -72,22 +72,19 @@ const pushRecursive = (inc, chop, process, rec, silent)=>{
     const push = isMultiGroup ? pushMultiGroup : pushSingleGroup;
 
     //fits
-    if (silent) { push(_chop, rec, id, from, to); }
-    else { fits.run(_=>push(_chop, rec, id, from, to), event, process); }
+    if (!task) { push(_chop, rec, id, from, to); }
+    else { fits.run(_=>push(_chop, rec, id, from, to), event, task.echo); }
 
-    for (const child of childs) { pushRecursive(inc, child, process, rec, silent); }
+    for (const child of childs) { pushRecursive(inc, child, rec, task); }
 
-    if (!silent) { process.effect(_=>effects.run(event, process)); }
+    if (task) { task.effect(_=>effects.run(event, task.echo)); }
 
 }
 
-const pushInit = (inc, chop, process, rec, silent=false)=>{
-    const { isBatch, record } = process;
-
-    if (!isBatch && record !== rec) { solid(process, "record", rec); }
-
-    pushRecursive(inc, chop, process, rec, silent);
+const pushInit = (inc, chop, rec, task)=>{
+    if (task) { task.setRecord(rec); }
+    pushRecursive(inc, chop, rec, task);
 }
 
-export const _chopSyncIn = (chop, process, rec, silent=false)=>pushInit(true, chop, process, rec, silent);
-export const _chopSyncOut = (chop, process, rec, silent=false)=>pushInit(false, chop, process, rec, silent);
+export const _chopSyncIn = (chop, rec, task)=>pushInit(true, chop, rec, task);
+export const _chopSyncOut = (chop, rec, task)=>pushInit(false, chop, rec, task);

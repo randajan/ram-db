@@ -2,7 +2,6 @@ import { vault } from "../../../components/uni/consts";
 
 import { isFce, toFce, toStr, wrapFce } from "../../../components/uni/formats";
 import { solids, virtuals } from "@randajan/props";
-import { _chopReset } from "./static/reset";
 import { fail } from "../../tools/traits/uni";
 
 import { _chopGetAllRecs, _chopGetRec, _chopGetRecs, _chopSyncIn } from "./static/sync";
@@ -29,7 +28,6 @@ export class Chop {
             getId,
             getGroup,
             isMultiGroup,
-            state:"pending",
             fits:new Fits(),
             effects:new Effects(),
             childs:new Set(),
@@ -46,7 +44,6 @@ export class Chop {
         }, false);
 
         virtuals(this, {
-            state:_=>_p.state,
             size:_=>_p.byRec.size,
             childs:_=>[..._p.childs],
             isMultiGroup:_=>_p.isMultiGroup,
@@ -82,8 +79,6 @@ export class Chop {
     getSize(groupId, throwError=false) {
         return _chopGetRecs(this, groupId, throwError)?.size || 0;
     }
-    
-    reset(context) { return _chopReset(this, arguments, context); }
 
     map(callback) {
         const result = [];
@@ -95,21 +90,19 @@ export class Chop {
         return result;
     }
 
-    chop(id, opt={}, context) {
-        const { state, byRec, childs } = vault.get(this);
+    chop(id, opt={}) {
+        const { byRec, childs } = vault.get(this);
 
         const filter = toFce(opt.filter, true);
 
         opt.parent = this;
         opt.filter = rec=>(this.isIn(id, rec) && filter(rec));
-        opt.init = (chop, process)=>{ for (const [rec] of byRec) { _chopSyncIn(chop, process, rec, true); } }
-
+        
         const child = new Chop(id, opt);
 
-        childs.add(child);
+        for (const [rec] of byRec) { _chopSyncIn(child, rec); }
 
-        //TODO
-        //if (state !== "init") { $reset(child, context); }
+        childs.add(child);
 
         return child;
 

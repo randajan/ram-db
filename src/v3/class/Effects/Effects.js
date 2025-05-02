@@ -32,4 +32,8 @@ export class Effects extends Array {
         }
     }
 
+    clear() {
+        this.length = 0;
+    }
+
 }

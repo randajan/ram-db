@@ -1,4 +1,4 @@
-import { solid, solids } from "@randajan/props";
+import { solids } from "@randajan/props";
 import * as files from "./traits/*";
 
 export const tools = {};

@@ -1,9 +1,9 @@
-import { _processWrapper } from "../../Process/Process";
+import { taskWrap } from "../../Task/Task";
 import { _recGetPriv } from "../Record";
 
-const roll = (isSet, chop, process, record, values)=>{
-    const { db } = chop;
-    _recGetPriv(db, record).update(process, values, isSet);
+const roll = (isSet, task, record, values)=>{
+    const { db } = task;
+    _recGetPriv(db, record).update(task, values, isSet);
 }
 
 const rollUpdate = (...a)=>roll(false, ...a);
@@ -11,10 +11,10 @@ const rollSet = (...a)=>roll(true, ...a);
 
 
 //TODO ROLLBACK
-const rollback = (chop, process, values)=>{
+const rollback = (task, values)=>{
 
 }
 
 
-export const _recSet = _processWrapper(rollSet, rollback);
-export const _recUpdate = _processWrapper(rollUpdate, rollback);
+export const _recSet = taskWrap(rollSet, rollback);
+export const _recUpdate = taskWrap(rollUpdate, rollback);

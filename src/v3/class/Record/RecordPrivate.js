@@ -1,5 +1,5 @@
 import { solids } from "@randajan/props";
-import { isMetaEnt } from "../../metaData/interface";
+import { isMetaEnt } from "../../metaData/methods";
 import { Turn } from "../Turn/Turn";
 import { _colSet } from "./static/_columns";
 import { _recGetPriv, _recIs, recReg, recUnreg } from "./Record";
@@ -31,10 +31,10 @@ export class RecordPrivate {
         recReg(this);
     }
 
-    init(process) {
+    init(task) {
         const { state, values } = this;
         if (state !== "pending") { fail("record is not pending"); }
-        Turn.attach(process, this, values, true);
+        Turn.attach(task, this, values, true);
         this.state = "init";
         return this;
     }
@@ -49,31 +49,30 @@ export class RecordPrivate {
     }
 
     //TODO update must be refactored
-    update(process, values, isSet=false) {
+    update(task, values, isSet=false) {
         if (this.state !== "ready") { fail("record is not ready"); }
 
-        this.values = Turn.attach(process, this, values, isSet).execute();
+        this.values = Turn.attach(task, this, values, isSet).execute();
         
         if (this.turn.isChange) {
             _colSet(this);
-            _chopSyncIn(this.db, process, this.current);
+            _chopSyncIn(this.db, this.current, task);
         }
 
         this.turn.detach();
     }
 
-    remove(process, force=false) {
+    remove(task, force=false) {
         const { meta, current } = this;
 
         if (!force && meta) { fail("is meta"); }
         
         this.state = "removed";
-        _chopSyncOut(this.db, process, current);
+        _chopSyncOut(this.db, current, task);
         recUnreg(this);
     }
 
     export() {
-        const { db } = this;
         const r = {};
         for (const _col of this.getCols()) {
             const { name, type:{ saver } } = _col.current;

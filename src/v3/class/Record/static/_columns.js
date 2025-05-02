@@ -2,8 +2,8 @@ import { isNull, reArray } from "../../../../components/uni/formats";
 import { metaData } from "../../../metaData/interface";
 import { _chopGetRecs } from "../../Chop/static/sync";
 import { cacheds, solid } from "@randajan/props";
-import { vault } from "../../../../components/uni/consts";
 import { fail, toId, warn } from "../../../tools/traits/uni";
+import { Major } from "../../Task/Fails";
 
 
 const blackList = [
@@ -43,12 +43,13 @@ const createSetter = _col => {
 
         if (formula) { to = output[name] = n(formula(current, before, stored)); }
         else {
+            console.log(name, typeof isReadonly, typeof col.isReadonly);
             if (isReadonly && isReadonly(current, before, stored)) {
-                if (before) { warn(`is readonly`); }
+                if (before) { warn(`readonly`, ["valueFrom", before], ["valueTo", to]); }
             } else {
                 to = output[name] = n(to);
                 if (validator && !validator(current, before, stored)) {
-                    fail("is invalid");
+                    fail("invalid", ["valueTo", to]);
                 }
             }
 
@@ -58,7 +59,7 @@ const createSetter = _col => {
         }
 
         if (fallback && isNull(to)) { to = output[name] = n(fallback(current, before, stored)); }
-        if (isRequired && isNull(to) && isRequired(current, before, stored)) { fail("is required"); }
+        if (isRequired && isNull(to) && isRequired(current, before, stored)) { fail("required"); }
 
         return output[name];
     }
@@ -76,7 +77,7 @@ export const _colSet = (_rec) => {
     if (_ent !== "_cols") { return; }
 
     if (blackList.includes(name)) {
-        fail(`blacklisted name ${name}`, blackList).setCol("name");
+        throw fail(`blacklist`, ["column", "name"], ["valueTo", name]);
     }
 
     _db.colsByEnt.set(toId(ent), name, _rec);
@@ -85,9 +86,9 @@ export const _colSet = (_rec) => {
 }
 
 export const _colRem = (_rec) => {
-    const { _db, values } = _rec;
-    if (values._ent !== "_cols") { return; }
+    const { _db, values: { _ent, ent, name } } = _rec;
+    if (_ent !== "_cols") { return; }
 
-    _db.colsByEnt.delete(toId(ent), _rec.values.name);
+    _db.colsByEnt.delete(toId(ent), name);
 }
 

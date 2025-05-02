@@ -1,13 +1,13 @@
-import { _processWrapper } from "../../Process/Process";
+import { taskWrap } from "../../Task/Task";
 import { RecordPrivate } from "../RecordPrivate";
 import { _chopGetRec, _chopSyncIn } from "../../Chop/static/sync";
 import { _recGetPriv } from "../Record";
 
 
-const roll = (isSet, chop, process, values)=>{
-    const { db } = chop;
+const roll = (isSet, task, values)=>{
+    const { db } = task;
     
-    const _rec = new RecordPrivate(db, values).init(process);
+    const _rec = new RecordPrivate(db, values).init(task);
     const { _ent, id } = _rec.current;
 
     const brother = _chopGetRec(db, toId(_ent), id);
@@ -16,7 +16,7 @@ const roll = (isSet, chop, process, values)=>{
         _recGetPriv(db, brother).update(values, ctx, isSet);
     } else {
         _rec.ready();
-        _chopSyncIn(db, process, _rec.current);
+        _chopSyncIn(db, _rec.current, task);
     }
 }
 
@@ -24,10 +24,10 @@ const rollUpdate = (...a)=>roll(false, ...a);
 const rollSet = (...a)=>roll(true, ...a);
 
 //TODO ROLLBACK
-const rollback = (chop, process)=>{
+const rollback = (task)=>{
 
 }
 
 
-export const _recAddOrUpdate = _processWrapper(rollUpdate, rollback);
-export const _recAddOrSet = _processWrapper(rollSet, rollback);
+export const _recAddOrUpdate = taskWrap(rollUpdate, rollback);
+export const _recAddOrSet = taskWrap(rollSet, rollback);

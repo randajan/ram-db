@@ -1,21 +1,22 @@
-import { _processWrapper } from "../../Process/Process";
+import { taskWrap } from "../../Task/Task";
 import { RecordPrivate } from "../RecordPrivate";
 import { _chopSyncIn } from "../../Chop/static/sync";
 import { _recGetPriv } from "../Record";
 
-const roll = (chop, process, values)=>{
-    const { db } = chop;
+const roll = (task, values)=>{
+    const { db } = task
 
     const _rec = new RecordPrivate(db, values);
-    _rec.init(process).ready();
+    _rec.init(task).ready();
     
-    _chopSyncIn(db, process, _rec.current);
+    _chopSyncIn(db, _rec.current, task);
 }
 
-const rollback = (chop, process)=>{
-    const _rec = _recGetPriv(chop.db, process.record, false);
-    _rec?.remove(process, true);
+const rollback = (task)=>{
+    const { db, record } = task;
+    const _rec = _recGetPriv(db, record, false);
+    _rec?.remove(task, true);
 }
 
 
-export const _recAdd = _processWrapper(roll, rollback);
+export const _recAdd = taskWrap(roll, rollback);

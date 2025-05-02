@@ -1,5 +1,5 @@
 
-import { Major, Minor } from "../../class/Process/Fails";
+import { Major, Minor } from "../../class/Task/Fails";
 import { toString } from "./strings";
 
 export const toId = ref=>(typeof ref !== "string") ? ref?.id : ref;
@@ -31,10 +31,10 @@ export const join = (separator, ...vals)=>{
     return s;
 }
 
-export const fail = (message, details)=>{
-    throw Major.fail(message, details);
+export const fail = (message, ...metas)=>{
+    throw Major.fail(message).addMetas(metas);
 }
 
-export const warn = (message, details)=>{
-    throw Minor.fail(message, details);
+export const warn = (message, ...metas)=>{
+    throw Minor.fail(message).addMetas(metas);
 }
