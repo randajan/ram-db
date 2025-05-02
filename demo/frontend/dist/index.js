@@ -36,7 +36,7 @@
   var define_slib_info_default;
   var init_define_slib_info = __esm({
     "<define:__slib_info>"() {
-      define_slib_info_default = { isServer: false, isBuild: false, name: "@randajan/ram-db", description: "Realtime database", version: "2.8.4", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "web", port: 3005, dir: { root: "C:\\dev\\lib\\ram-db", dist: "demo/frontend/dist" } };
+      define_slib_info_default = { isServer: false, isBuild: false, name: "@randajan/ram-db", description: "Realtime database", version: "2.8.5", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "web", port: 3005, dir: { root: "C:\\dev\\lib\\ram-db", dist: "demo/frontend/dist" } };
     }
   });
 
@@ -4105,17 +4105,17 @@
     socket2.on(_bifrostEvent, listener);
     return (_) => socket2.off(_bifrostEvent, listener);
   };
-  var unregisterExe = (list, exe) => {
-    const x = list.indexOf(exe);
+  var unregisterExe = (list, exe5) => {
+    const x = list.indexOf(exe5);
     if (x < 0) {
       return false;
     }
     list.splice(x, 1);
     return true;
   };
-  var registerExe = (list, exe) => {
-    list.unshift(exe);
-    return (_) => unregisterExe(list, exe);
+  var registerExe = (list, exe5) => {
+    list.unshift(exe5);
+    return (_) => unregisterExe(list, exe5);
   };
   var mapList = async (map, list, ...args) => {
     for (let i = list.length - 1; i >= 0; i--) {
@@ -4129,8 +4129,8 @@
       }
     }
   };
-  var wrapWithQueue = (exe, queue) => !queue ? exe : createQueue(exe, queue);
-  var wrapWithTrait = (exe, trait) => !trait ? exe : async (s, ...a) => exe(await trait(s, ...a), ...a);
+  var wrapWithQueue = (exe5, queue) => !queue ? exe5 : createQueue(exe5, queue);
+  var wrapWithTrait = (exe5, trait) => !trait ? exe5 : async (s, ...a) => exe5(await trait(s, ...a), ...a);
   var stateExtract = (stateProperty, reply) => {
     if (stateProperty == null) {
       return reply;
@@ -4623,10 +4623,10 @@
     if (def.name === at.name) {
       return any;
     }
-    const exe = at.to[name] || at.to["*"];
-    return exe ? to(name, exe(any, ...args), ...args) : def.create(any);
+    const exe5 = at.to[name] || at.to["*"];
+    return exe5 ? to(name, exe5(any, ...args), ...args) : def.create(any);
   };
-  var defineTo = (from, to22, exe) => {
+  var defineTo = (from, to22, exe5) => {
     const tt = typeof to22;
     const def = getDefByName(from);
     if (!def) {
@@ -4637,14 +4637,14 @@
       conv["*"] = to22;
     } else if (tt === "object" && Array.isArray(to22)) {
       for (let i in to22) {
-        conv[to22[i]] = exe;
+        conv[to22[i]] = exe5;
       }
     } else if (tt === "object") {
       for (let i in to22) {
         conv[i] = to22[i];
       }
     } else {
-      conv[to22] = exe;
+      conv[to22] = exe5;
     }
   };
   var getRND = (arr, min, max, sqr) => {
@@ -4866,19 +4866,19 @@
       isPending = false;
     };
     const dprun = base_default.isRunnable(deep);
-    const exe = (ctx22, skipDeep = false) => {
-      const { parent, path, def } = ctx22;
+    const exe5 = (ctx2, skipDeep = false) => {
+      const { parent, path, def } = ctx2;
       const de = def?.entries;
       if (!de || !deep && parent) {
-        fce(ctx22);
+        fce(ctx2);
       } else if (dprun && !skipDeep) {
-        deep(ctx22, (_) => {
-          exe(ctx22, true);
+        deep(ctx2, (_) => {
+          exe5(ctx2, true);
         });
       } else {
-        for (let [key, val] of de(ctx22.val)) {
-          exe({
-            parent: ctx22,
+        for (let [key, val] of de(ctx2.val)) {
+          exe5({
+            parent: ctx2,
             val,
             key,
             stop,
@@ -4891,13 +4891,13 @@
         }
         ;
       }
-      return ctx22.result;
+      return ctx2.result;
     };
-    const ctx2 = { val: any, stop, def: getDefByInst(any) };
+    const ctx = { val: any, stop, def: getDefByInst(any) };
     if (init) {
-      init(ctx2);
+      init(ctx);
     }
-    return exe(ctx2, true);
+    return exe5(ctx, true);
   };
   var reducer = (reductor) => {
     let i = 0, next;
@@ -5011,19 +5011,19 @@
     return diffList ? res : !res.length;
   };
   var copy = (any, deep = false, copyUnmapable = false) => {
-    return each(any, (ctx2) => {
-      const { parent, val, key, def } = ctx2;
+    return each(any, (ctx) => {
+      const { parent, val, key, def } = ctx;
       if (!parent) {
         return;
       }
-      parent.def.set(parent.result, key, ctx2.result = copyUnmapable ? def.copy(val) : val);
-    }, !deep ? false : (ctx2, next) => {
-      const { parent, key, def } = ctx2;
-      parent.def.set(parent.result, key, ctx2.result = def.create());
+      parent.def.set(parent.result, key, ctx.result = copyUnmapable ? def.copy(val) : val);
+    }, !deep ? false : (ctx, next) => {
+      const { parent, key, def } = ctx;
+      parent.def.set(parent.result, key, ctx.result = def.create());
       next();
-    }, (ctx2) => {
-      const { val, def } = ctx2;
-      ctx2.result = def.entries ? def.create() : def.copy(val);
+    }, (ctx) => {
+      const { val, def } = ctx;
+      ctx.result = def.entries ? def.create() : def.copy(val);
     });
   };
   var melt = (any, comma, trait) => {
@@ -5632,7 +5632,7 @@
       __defProp3(target, name, { get: all[name], enumerable: true });
   };
 
-  // node_modules/@randajan/props/dist/index.js
+  // node_modules/@randajan/props/dist/esm/index.mjs
   init_define_slib_info();
   var solid3 = (obj, name, value2, enumerable4 = true, configurable = false) => {
     return Object.defineProperty(obj, name, { enumerable: enumerable4, value: value2, configurable });
@@ -5789,7 +5789,7 @@
     const vals = Object.values(injectScope);
     const injected = new Function([...keys, ...args], body);
     const binded = (...a) => injected(...vals, ...a);
-    return Object.defineProperty(binded, "toString", (_) => origin.toString());
+    return Object.defineProperty(binded, "toString", { value: (_) => origin.toString() });
   };
   var fromAny = (any, type = "string") => {
     let body;
@@ -5861,21 +5861,21 @@
       this.reason = reason;
       this.severity = severity;
     }
-    addMeta(key, value2) {
-      const meta = this.meta || (this.meta = []);
-      meta.unshift([key, value2]);
+    addInfo(key, value2) {
+      const info2 = this.info || (this.info = []);
+      info2.unshift([key, value2]);
       return this;
     }
-    addMetas(keyValuePairs = []) {
+    addInfos(keyValuePairs = []) {
       for (let [key, value2] of keyValuePairs) {
-        this.addMeta(key, value2);
+        this.addInfo(key, value2);
       }
       return this;
     }
     get message() {
       let msg2 = `${this.reason}`;
-      if (this.meta) {
-        const metaStr = this.meta.map(([k, v]) => `${k} ${JSON.stringify(v)}`).join(", ");
+      if (this.info) {
+        const metaStr = this.info.map(([k, v]) => `${k} ${JSON.stringify(v)}`).join(", ");
         msg2 += ` ${metaStr}`;
       }
       if (this.cause?.message) {
@@ -5908,7 +5908,7 @@
       super("critical", reason, cause);
     }
   };
-  var toFail = (err, metas = []) => {
+  var toFail = (err, infos = []) => {
     let fail3;
     if (err instanceof Fail) {
       fail3 = err;
@@ -5917,7 +5917,7 @@
     } else {
       fail3 = Critical.fail(err);
     }
-    return fail3.addMetas(metas);
+    return fail3.addInfos(infos);
   };
   var strings_exports = {};
   __export3(strings_exports, {
@@ -5991,15 +5991,15 @@
     }
     return s;
   };
-  var fail2 = (message, ...metas) => {
-    throw Major.fail(message).addMetas(metas);
+  var fail2 = (message, ...infos) => {
+    throw Major.fail(message).addInfos(infos);
   };
-  var warn = (message, ...metas) => {
-    throw Minor.fail(message).addMetas(metas);
+  var warn = (message, ...infos) => {
+    throw Minor.fail(message).addInfos(infos);
   };
-  var _chopGetAllRecs = (chop2) => vault.get(chop2).byRec;
-  var _chopGetRecs = (chop2, groupId) => vault.get(chop2).byGroup.getAll(groupId);
-  var _chopGetRec = (chop2, groupId, recId) => vault.get(chop2).byGroup.get(groupId, recId);
+  var _chopGetAllRecs = (chop) => vault.get(chop).byRec;
+  var _chopGetRecs = (chop, groupId) => vault.get(chop).byGroup.getAll(groupId);
+  var _chopGetRec = (chop, groupId, recId) => vault.get(chop).byGroup.get(groupId, recId);
   var pushSingleGroup = (_chop, rec, id, from, to3) => {
     const { byRec, byGroup } = _chop;
     if (from === to3) {
@@ -6050,8 +6050,8 @@
       }
     }
   };
-  var pushRecursive = (inc, chop2, rec, task) => {
-    const _chop = vault.get(chop2);
+  var pushRecursive = (inc, chop, rec, task) => {
+    const _chop = vault.get(chop);
     const { byRec, childs, getId, getGroup, filter: filter2, fits, effects, isMultiGroup } = _chop;
     inc = inc && filter2(rec);
     const has = byRec.has(rec);
@@ -6075,14 +6075,14 @@
       task.effect((_) => effects.run(event, task.echo));
     }
   };
-  var pushInit = (inc, chop2, rec, task) => {
+  var pushInit = (inc, chop, record, task) => {
     if (task) {
-      task.setRecord(rec);
+      task.assign({ record });
     }
-    pushRecursive(inc, chop2, rec, task);
+    pushRecursive(inc, chop, record, task);
   };
-  var _chopSyncIn = (chop2, rec, task) => pushInit(true, chop2, rec, task);
-  var _chopSyncOut = (chop2, rec, task) => pushInit(false, chop2, rec, task);
+  var _chopSyncIn = (chop, record, task) => pushInit(true, chop, record, task);
+  var _chopSyncOut2 = (chop, record, task) => pushInit(false, chop, record, task);
   var booleans_exports = {};
   __export3(booleans_exports, {
     toBoolean: () => toBoolean
@@ -6317,26 +6317,25 @@
       virtuals(this.echo, {
         isOk: (_) => this.isOk,
         isDone: (_) => this.isDone,
-        fails: (_) => !this.fails ? void 0 : [...this.fails],
+        error: (_) => this.error,
+        warnings: (_) => !this.warnings ? void 0 : [...this.warnings],
         subs: (_) => !this.subs ? void 0 : this.subs.map((c) => c.echo),
         context: (_) => this.context,
-        record: (_) => this.record
+        record: (_) => this.record,
+        changes: (_) => !this.changes ? void 0 : new Set(this.changes)
       });
     }
     sub() {
       return new Task(this);
     }
-    setContext(context) {
-      this.context = context;
+    assign(obj) {
+      Object.assign(this, obj);
       return this;
     }
-    setRollback(rollback5) {
-      this.rollback = rollback5;
-      return this;
-    }
-    setRecord(record) {
-      this.record = record;
-      return this;
+    unsign(...props) {
+      for (const prop of props) {
+        delete this[prop];
+      }
     }
     effect(callback) {
       const { parent, effects } = this;
@@ -6345,63 +6344,88 @@
       }
       return parent.effect(callback);
     }
-    catch(err, nonMinorThrow = false, metas = []) {
-      const fail3 = toFail(err, metas);
-      if (fail3.severity !== "minor") {
+    catch(err, nonMinorThrow = false, infos = []) {
+      const fail3 = toFail(err, infos);
+      if (fail3.severity === "minor") {
+        (this.warnings || (this.warnings = [])).push(fail3);
+      } else {
+        const { parent } = this;
         this.isOk = false;
+        this.error = fail3;
+        if (parent) {
+          parent.isOk = false;
+          parent.error = fail3;
+        }
         if (nonMinorThrow) {
           throw fail3;
         }
-        if (this.parent) {
-          this.parent.isOk = false;
-        }
       }
-      (this.fails || (this.fails = [])).push(fail3);
       return fail3;
     }
-    catchAll(err, metas = []) {
-      return this.catch(err, false, metas);
+    catchAll(err, infos = []) {
+      return this.catch(err, false, infos);
     }
-    catchMinor(err, metas = []) {
-      return this.catch(err, true, metas);
+    catchMinor(err, infos = []) {
+      return this.catch(err, true, infos);
     }
-    finish() {
-      const { isOk, effects, subs, rollback: rollback5, echo } = this;
-      if (isOk) {
-        effects?.run();
-        return echo;
-      }
+    doRoll() {
+      const { effects, roll: roll4, subs, result } = this;
+      this.isOk = true;
       if (subs) {
-        for (let i = this.subs.length - 1; i >= 0; i--) {
-          subs[i].finish();
+        for (let i = subs.length - 1; i >= 0; i--) {
+          subs[i].doRoll();
+        }
+      }
+      if (roll4) {
+        roll4(this, result);
+      }
+      effects?.run();
+    }
+    doRollback() {
+      const { subs, rollback: rollback5, result } = this;
+      this.isOk = false;
+      if (subs) {
+        for (let i = subs.length - 1; i >= 0; i--) {
+          subs[i].doRollback();
         }
       }
       if (rollback5) {
-        rollback5(this);
+        rollback5(this, result);
+      }
+    }
+    finish(throwError2 = false) {
+      const { isOk, error, echo } = this;
+      if (isOk) {
+        this.doRoll();
+      } else {
+        this.doRollback();
+      }
+      if (throwError2 && !isOk) {
+        throw error;
       }
       return echo;
     }
   };
-  var taskWrap = (roll5, rollback5) => {
-    return (db, args, context, throwError2 = false) => {
+  var taskWrap = (exe5, { roll: roll4, rollback: rollback5 }) => {
+    return (db, args, throwError2 = false, context = null) => {
       const _db = vault.get(db);
       const parent = _db.task;
       const task = parent ? parent.sub() : Task.create(db);
-      task.setContext(context).setRollback(rollback5);
+      task.assign({ context, roll: roll4, rollback: rollback5 });
       if (!parent) {
         _db.task = task;
       }
       try {
-        roll5(task, ...args);
+        task.result = exe5(task, ...args);
       } catch (err) {
-        task.catch(err, throwError2);
+        task.catch(err);
       }
       task.isDone = true;
       if (parent) {
         return task.echo;
       }
       delete _db.task;
-      return task.finish();
+      return task.finish(throwError2);
     };
   };
   var functions_exports = {};
@@ -6521,28 +6545,28 @@
   var metaEnts = ["_ents", "_types", "_cols"];
   var metaData = {
     "_ents": {
-      "_ents": { meta: "numb" },
-      "_cols": { meta: "numb" },
-      "_types": { meta: "numb" }
+      "_ents": { meta: 3 },
+      "_cols": { meta: 3 },
+      "_types": { meta: 3 }
     },
     "_types": {
-      "string": { meta: "numb", setter: (v, c) => toString3(v, c), getter },
-      "boolean": { meta: "numb", setter: (v, c) => toBoolean(v, c), getter },
-      "number": { meta: "numb", setter: (v, c) => toNumber(v, c), getter },
-      "datetime": { meta: "numb", setter: (v, c) => toDate(v, c), getter },
-      "duration": { meta: "numb", setter: (v, c) => toNumber(v, c), getter },
-      "function": { meta: "numb", setter: (v, c) => toFunction(v, c), getter, saver: (v) => toString3(v) },
-      "regexp": { meta: "numb", setter: (v, c) => toRegExp(v, c), getter },
-      "object": { meta: "numb", setter: (v, c) => toObject(v, c), getter, saver: (v) => toString3(v) },
-      "ref": { meta: "numb", setter: (v, c) => toId2(v, c), getter, saver: (v) => toId2(v) },
-      "nref": { meta: "numb", setter, getter }
+      "string": { meta: 3, setter: (v, c) => toString3(v, c), getter },
+      "boolean": { meta: 3, setter: (v, c) => toBoolean(v, c), getter },
+      "number": { meta: 3, setter: (v, c) => toNumber(v, c), getter },
+      "datetime": { meta: 3, setter: (v, c) => toDate(v, c), getter },
+      "duration": { meta: 3, setter: (v, c) => toNumber(v, c), getter },
+      "function": { meta: 3, setter: (v, c) => toFunction(v, c), getter, saver: (v) => toString3(v) },
+      "regexp": { meta: 3, setter: (v, c) => toRegExp(v, c), getter },
+      "object": { meta: 3, setter: (v, c) => toObject(v, c), getter, saver: (v) => toString3(v) },
+      "ref": { meta: 3, setter: (v, c) => toId2(v, c), getter, saver: (v) => toId2(v) },
+      "nref": { meta: 3, setter, getter }
     },
     "_cols": {
-      "_ents-_ent": { meta: "numb", ent: "_ents", name: "_ent", type: "ref", ref: "_ents", isReadonly, isRequired },
-      "_ents-id": { meta: "numb", ent: "_ents", name: "id", type: "string", isReadonly, isRequired },
-      "_ents-meta": { meta: "numb", ent: "_ents", name: "meta", type: "string", isReadonly },
+      "_ents-_ent": { meta: 3, ent: "_ents", name: "_ent", type: "ref", ref: "_ents", isReadonly, isRequired },
+      "_ents-id": { meta: 3, ent: "_ents", name: "id", type: "string", isReadonly, isRequired },
+      "_ents-meta": { meta: 3, ent: "_ents", name: "meta", type: "string", isReadonly },
       // "_ents-cols":{
-      //     meta:"numb", ent:"_ents", name:"cols", type:"ref", ref:"_cols", parent:"_cols-ent", isList:true, noCache:true,
+      //     meta:3, ent:"_ents", name:"cols", type:"ref", ref:"_cols", parent:"_cols-ent", isList:true, noCache:true,
       //     store:(c, db)=>{
       //         const { ref, parent:{ name, isList }} = c;
       //         return db.chop(ref.id, {
@@ -6553,45 +6577,45 @@
       //     formula:(r, b, s)=>s.getList(r, false)
       // },
       // "_ents-size":{
-      //     meta:"numb", ent:"_ents", name:"size", type:"number", noCache:true,
+      //     meta:3, ent:"_ents", name:"size", type:"number", noCache:true,
       //     store:(c, db)=>db,
       //     formula:(r, b, s)=>s.getSize(r.id, false)
       // },
       //_types
-      "_types-_ent": { meta: "numb", ent: "_types", name: "_ent", type: "ref", ref: "_ents", isReadonly, isRequired },
-      "_types-id": { meta: "numb", ent: "_types", name: "id", type: "string", isReadonly, isRequired },
-      "_types-meta": { meta: "numb", ent: "_types", name: "meta", type: "string", isReadonly },
-      "_types-setter": { meta: "numb", ent: "_types", name: "setter", type: "function", isReadonly, fallback: (_) => (v) => v },
-      "_types-getter": { meta: "numb", ent: "_types", name: "getter", type: "function", isReadonly, fallback: (_) => (v) => v },
-      "_types-saver": { meta: "numb", ent: "_types", name: "saver", type: "function", isReadonly },
-      "_types-loader": { meta: "numb", ent: "_types", name: "loader", type: "function", isReadonly },
+      "_types-_ent": { meta: 3, ent: "_types", name: "_ent", type: "ref", ref: "_ents", isReadonly, isRequired },
+      "_types-id": { meta: 3, ent: "_types", name: "id", type: "string", isReadonly, isRequired },
+      "_types-meta": { meta: 3, ent: "_types", name: "meta", type: "string", isReadonly },
+      "_types-setter": { meta: 3, ent: "_types", name: "setter", type: "function", isReadonly, fallback: (_) => (v) => v },
+      "_types-getter": { meta: 3, ent: "_types", name: "getter", type: "function", isReadonly, fallback: (_) => (v) => v },
+      "_types-saver": { meta: 3, ent: "_types", name: "saver", type: "function", isReadonly },
+      "_types-loader": { meta: 3, ent: "_types", name: "loader", type: "function", isReadonly },
       //_cols
-      "_cols-_ent": { meta: "numb", ent: "_cols", name: "_ent", type: "ref", ref: "_ents", isReadonly, isRequired },
-      "_cols-id": { meta: "numb", ent: "_cols", name: "id", type: "string", isReadonly, isRequired, formula: (r) => join("-", r.ent?.id, r.name) },
-      "_cols-meta": { meta: "numb", ent: "_cols", name: "meta", type: "string", isReadonly },
-      "_cols-ent": { meta: "numb", ent: "_cols", name: "ent", type: "ref", ref: "_ents", isReadonly, isRequired },
-      "_cols-name": { meta: "numb", ent: "_cols", name: "name", type: "string", isReadonly, isRequired },
-      "_cols-type": { meta: "numb", ent: "_cols", name: "type", type: "ref", ref: "_types", fallback: (_) => "string" },
-      "_cols-ref": { meta: "numb", ent: "_cols", name: "ref", type: "ref", ref: "_ents" },
-      "_cols-parent": { meta: "numb", ent: "_cols", name: "parent", type: "ref", ref: "_cols" },
-      "_cols-store": { meta: "numb", ent: "_cols", name: "store", type: "function" },
-      "_cols-isList": { meta: "numb", ent: "_cols", name: "isList", type: "boolean" },
-      "_cols-isReadonly": { meta: "numb", ent: "_cols", name: "isReadonly", type: "function" },
-      "_cols-isRequired": { meta: "numb", ent: "_cols", name: "isRequired", type: "function" },
-      "_cols-resetIf": { meta: "numb", ent: "_cols", name: "resetIf", type: "function" },
-      "_cols-init": { meta: "hard", ent: "_cols", name: "init", type: "function" },
+      "_cols-_ent": { meta: 3, ent: "_cols", name: "_ent", type: "ref", ref: "_ents", isReadonly, isRequired },
+      "_cols-id": { meta: 3, ent: "_cols", name: "id", type: "string", isReadonly, isRequired, formula: (r) => join("-", r.ent?.id, r.name) },
+      "_cols-meta": { meta: 3, ent: "_cols", name: "meta", type: "string", isReadonly },
+      "_cols-ent": { meta: 3, ent: "_cols", name: "ent", type: "ref", ref: "_ents", isReadonly, isRequired },
+      "_cols-name": { meta: 3, ent: "_cols", name: "name", type: "string", isReadonly, isRequired },
+      "_cols-type": { meta: 3, ent: "_cols", name: "type", type: "ref", ref: "_types", fallback: (_) => "string" },
+      "_cols-ref": { meta: 3, ent: "_cols", name: "ref", type: "ref", ref: "_ents" },
+      "_cols-parent": { meta: 3, ent: "_cols", name: "parent", type: "ref", ref: "_cols" },
+      "_cols-store": { meta: 3, ent: "_cols", name: "store", type: "function" },
+      "_cols-isList": { meta: 3, ent: "_cols", name: "isList", type: "boolean" },
+      "_cols-isReadonly": { meta: 3, ent: "_cols", name: "isReadonly", type: "function" },
+      "_cols-isRequired": { meta: 3, ent: "_cols", name: "isRequired", type: "function" },
+      "_cols-resetIf": { meta: 3, ent: "_cols", name: "resetIf", type: "function" },
+      "_cols-init": { meta: 2, ent: "_cols", name: "init", type: "function" },
       //Type should be defined as a function
-      "_cols-fallback": { meta: "hard", ent: "_cols", name: "fallback", type: "function" },
+      "_cols-fallback": { meta: 2, ent: "_cols", name: "fallback", type: "function" },
       //Type should be defined as a function
-      "_cols-validator": { meta: "hard", ent: "_cols", name: "validator", type: "function" },
-      "_cols-decimal": { meta: "hard", ent: "_cols", name: "decimal", type: "number", decimal: 0, min: 0 },
-      "_cols-min": { meta: "hard", ent: "_cols", name: "min", type: "number" },
+      "_cols-validator": { meta: 2, ent: "_cols", name: "validator", type: "function" },
+      "_cols-decimal": { meta: 2, ent: "_cols", name: "decimal", type: "number", decimal: 0, min: 0 },
+      "_cols-min": { meta: 2, ent: "_cols", name: "min", type: "number" },
       //decimal should be defined as a function
-      "_cols-max": { meta: "hard", ent: "_cols", name: "max", type: "number" },
+      "_cols-max": { meta: 2, ent: "_cols", name: "max", type: "number" },
       //decimal:_=>r.decimal //decimal should be defined as a function
-      "_cols-formula": { meta: "hard", ent: "_cols", name: "formula", type: "function" },
-      "_cols-isVirtual": { meta: "numb", ent: "_cols", name: "isVirtual", type: "boolean" },
-      "_cols-omitChange": { meta: "numb", ent: "_cols", name: "omitChange", type: "boolean" }
+      "_cols-formula": { meta: 2, ent: "_cols", name: "formula", type: "function" },
+      "_cols-isVirtual": { meta: 3, ent: "_cols", name: "isVirtual", type: "boolean" },
+      "_cols-omitChange": { meta: 3, ent: "_cols", name: "omitChange", type: "boolean" }
     }
   };
   var isMetaEnt = (_ent) => metaEnts.includes(_ent);
@@ -6611,7 +6635,7 @@
       if (col._ent !== _ent) {
         continue;
       }
-      if (col.meta !== "numb" && row.hasOwnProperty(colName)) {
+      if (col.meta < 2 && row.hasOwnProperty(colName)) {
         continue;
       }
       row[colName] = meta[colName];
@@ -6636,14 +6660,14 @@
       this._prepare();
     }
     _prepare() {
-      const { _rec, task } = this;
+      const { _rec, task, pendings } = this;
       const { values, state } = _rec;
       if (!values._ent) {
-        throw fail2("required", ["column", "_ent"]);
+        throw _rec.fail("required", ["column", "_ent"]);
       }
       const _cols = _rec.getCols();
       if (!_cols) {
-        throw fail2("invalid", ["column", "_ent"]);
+        throw _rec.fail("invalid", ["column", "_ent"]);
       }
       for (const _col of _cols) {
         try {
@@ -6652,23 +6676,24 @@
           task.catchMinor(err, [["column", _col.values.name]]);
         }
       }
-      if (state === "ready") {
-        fail2("blank");
+      if (state !== "ready" || pendings.size > 0) {
+        return;
       }
+      _rec.fail("blank", ["values", values]);
     }
     _prepareCol(_col) {
       const { _rec, force, input, output, pendings } = this;
       const { meta: metaRec, values, state } = _rec;
       const { meta: metaCol, values: { name, formula, resetIf, isVirtual } } = _col;
       const isReal = input.hasOwnProperty(name);
-      const isMeta = metaRec && metaCol && (metaCol === "numb" || metaRec !== "soft");
+      const isMeta = metaRec + metaCol > 3;
       output[name] = values[name];
       if (isReal && state === "ready") {
         if (isMeta) {
-          warn("is meta");
+          warn("meta");
         }
         if (formula) {
-          warn(`has formula`);
+          warn(`formula`);
         }
       }
       if (isVirtual) {
@@ -6692,11 +6717,11 @@
       }
     }
     execute() {
-      const { task, _rec, pendings, isChange } = this;
+      const { pendings } = this;
       for (const _col of pendings) {
         this.pull(_col);
       }
-      return task.isOk && isChange ? this.output : _rec.values;
+      return this;
     }
     pull(_col) {
       const { task, _rec, pendings, output, input, changes } = this;
@@ -6719,8 +6744,11 @@
       }
       return output[name];
     }
-    detach() {
-      const { _rec } = this;
+    detach(isOk) {
+      const { _rec, output } = this;
+      if (isOk) {
+        _rec.values = output;
+      }
       delete this._rec;
       delete _rec.turn;
     }
@@ -6763,7 +6791,6 @@
       if (formula) {
         to3 = output[name] = n(formula(current, before2, stored));
       } else {
-        console.log(name, typeof isReadonly2, typeof col.isReadonly);
         if (isReadonly2 && isReadonly2(current, before2, stored)) {
           if (before2) {
             warn(`readonly`, ["valueFrom", before2], ["valueTo", to3]);
@@ -6819,7 +6846,7 @@
       if (v._ent === "_cols") {
         v.ent = toId2(v.ent);
       }
-      this.meta = isMetaEnt(v._ent) ? v.meta : void 0;
+      this.meta = isMetaEnt(v._ent) ? v.meta : 0;
       solids(this, {
         _db: vault.get(db),
         db,
@@ -6828,45 +6855,37 @@
       });
       recReg(this);
     }
+    fail(reason, ...infos) {
+      const { id, _ent } = this.values;
+      return fail2(reason, ["entity", _ent], ["record", id], ...infos);
+    }
     init(task) {
       const { state, values } = this;
       if (state !== "pending") {
-        fail2("record is not pending");
+        this.fail("not pending");
       }
       Turn.attach(task, this, values, true);
       this.state = "init";
       return this;
     }
     ready() {
-      const { state, turn } = this;
+      const { db, state, current, turn, task } = this;
       if (state !== "init") {
-        fail2("record is not init");
+        this.fail("not init");
       }
-      this.values = turn.execute();
-      this.turn.detach();
+      turn.execute();
       this.state = "ready";
+      _chopSyncIn(db, current, task);
       return this;
     }
-    //TODO update must be refactored
     update(task, values, isSet2 = false) {
-      if (this.state !== "ready") {
-        fail2("record is not ready");
+      const { state, db, current } = this;
+      if (state !== "ready") {
+        this.fail("not ready");
       }
-      this.values = Turn.attach(task, this, values, isSet2).execute();
-      if (this.turn.isChange) {
-        _colSet(this);
-        _chopSyncIn(this.db, this.current, task);
-      }
-      this.turn.detach();
-    }
-    remove(task, force = false) {
-      const { meta, current } = this;
-      if (!force && meta) {
-        fail2("is meta");
-      }
-      this.state = "removed";
-      _chopSyncOut(this.db, current, task);
-      recUnreg(this);
+      Turn.attach(task, this, values, isSet2).execute();
+      _chopSyncIn(db, current, task);
+      return this;
     }
     export() {
       const r = {};
@@ -6908,68 +6927,102 @@
       return _db.colsByEnt.has(values._ent, colName);
     }
   };
-  var roll = (task, values) => {
+  var exe = (task, values) => {
     const { db } = task;
     const _rec = new RecordPrivate(db, values);
     _rec.init(task).ready();
-    _chopSyncIn(db, _rec.current, task);
+    return _rec;
   };
-  var rollback = (task) => {
-    const { db, record } = task;
-    const _rec = _recGetPriv(db, record, false);
-    _rec?.remove(task, true);
+  var roll = (task, _rec) => {
+    const { changes } = _rec.turn;
+    task.assign({ changes });
+    _rec.turn.detach(true);
   };
-  var _recAdd = taskWrap(roll, rollback);
-  var roll2 = (isSet2, task, values) => {
+  var rollback = (task, _rec) => {
     const { db } = task;
-    const _rec = new RecordPrivate(db, values).init(task);
+    if (!_rec) {
+      return;
+    }
+    _chopSyncOut(db, _rec.current);
+    _rec.task.detach(false);
+    task.unsign("record");
+    recUnreg(_rec);
+  };
+  var _recAdd = taskWrap(exe, { roll, rollback });
+  var exe2 = (isSet2, task, values) => {
+    const { db } = task;
+    let _rec = new RecordPrivate(db, values).init(task);
     const { _ent, id } = _rec.current;
     const brother = _chopGetRec(db, toId(_ent), id);
     if (brother) {
-      _recGetPriv(db, brother).update(values, ctx, isSet2);
+      recUnreg(_rec);
+      _rec = _recGetPriv(db, brother);
+      _rec.update(task, values, isSet2);
     } else {
       _rec.ready();
-      _chopSyncIn(db, _rec.current, task);
     }
+    return _rec;
   };
-  var rollUpdate = (...a) => roll2(false, ...a);
-  var rollSet = (...a) => roll2(true, ...a);
+  var exeUpdate = (...a) => exe2(false, ...a);
+  var exeSet = (...a) => exe2(true, ...a);
   var rollback2 = (task) => {
   };
-  var _recAddOrUpdate = taskWrap(rollUpdate, rollback2);
-  var _recAddOrSet = taskWrap(rollSet, rollback2);
-  var roll3 = (isSet2, task, record, values) => {
+  var _recAddOrUpdate = taskWrap(exeUpdate, { rollback: rollback2 });
+  var _recAddOrSet = taskWrap(exeSet, { rollback: rollback2 });
+  var exe3 = (isSet2, task, record, values) => {
     const { db } = task;
-    _recGetPriv(db, record).update(task, values, isSet2);
+    const _rec = _recGetPriv(db, record);
+    _rec.update(task, values, isSet2);
+    return _rec;
   };
-  var rollUpdate2 = (...a) => roll3(false, ...a);
-  var rollSet2 = (...a) => roll3(true, ...a);
-  var rollback3 = (task, values) => {
+  var roll2 = (task, _rec) => {
+    const { changes } = _rec.turn;
+    task.assign({ changes });
+    _rec.turn.detach(true);
   };
-  var _recSet = taskWrap(rollSet2, rollback3);
-  var _recUpdate = taskWrap(rollUpdate2, rollback3);
-  var roll4 = (task, record, force = false) => {
+  var rollback3 = (task, _rec) => {
     const { db } = task;
-    _recGetPriv(db, record).remove(task, force);
-  };
-  var rollRemoveForce = (task, record) => roll4(task, record, true);
-  var rollRemove = (task, record) => roll4(task, record, false);
-  var rollback4 = (task) => {
-    const { db, record } = chop;
-    if (!record) {
+    if (!_rec) {
       return;
     }
-    _chopSyncIn(db, record);
+    _rec.turn.detach(false);
+    task.unsign("record");
+    _chopSyncIn(db, _rec.current);
   };
-  var _recRemove = taskWrap(rollRemove, rollback4);
-  var _recRemoveForce = taskWrap(rollRemoveForce, rollback4);
+  var exeUpdate2 = (...a) => exe3(false, ...a);
+  var exeSet2 = (...a) => exe3(true, ...a);
+  var _recSet = taskWrap(exeSet2, { roll: roll2, rollback: rollback3 });
+  var _recUpdate = taskWrap(exeUpdate2, { roll: roll2, rollback: rollback3 });
+  var exe4 = (task, record, force = false) => {
+    const { db } = task;
+    const _rec = _recGetPriv(db, record);
+    if (!force && _rec.meta) {
+      _rec.fail("is meta");
+    }
+    _chopSyncOut2(db, record, task);
+    return _rec;
+  };
+  var roll3 = (task, _rec) => {
+    recUnreg(_rec);
+  };
+  var rollback4 = (task, _rec) => {
+    const { db } = task;
+    if (!_rec) {
+      return;
+    }
+    _chopSyncIn(db, _rec.current);
+  };
+  var exeRemoveForce = (task, record) => exe4(task, record, true);
+  var exeRemove = (task, record) => exe4(task, record, false);
+  var _recRemove = taskWrap(exeRemove, { roll: roll3, rollback: rollback4 });
+  var _recRemoveForce = taskWrap(exeRemoveForce, { roll: roll3, rollback: rollback4 });
   var _entAdd = (task, _rec) => {
     const { db, values: { _ent, id } } = _rec;
     if (_ent !== "_ents") {
       return;
     }
-    db.add({ _ent: "_cols", ent: id, name: "_ent", type: "ref", ref: "_ents", meta: "numb", isReadonly: fceTrue, isRequired: fceTrue }, task.context);
-    db.add({ _ent: "_cols", ent: id, name: "id", type: "string", meta: "soft", isReadonly: fceTrue, isRequired: fceTrue }, task.context);
+    db.add({ _ent: "_cols", ent: id, name: "_ent", type: "ref", ref: "_ents", meta: 3, isReadonly: fceTrue, isRequired: fceTrue }, task.context);
+    db.add({ _ent: "_cols", ent: id, name: "id", type: "string", meta: 1, isReadonly: fceTrue, isRequired: fceTrue }, task.context);
   };
   var _entRem = (task, _rec) => {
     const { _db, db, values: { _ent, id } } = _rec;
@@ -7050,23 +7103,32 @@
     isRecord(any, throwError2 = false) {
       return !!_recGetPriv(any, throwError2);
     }
-    add(values, context, throwError2 = false) {
-      return _recAdd(this, arguments, context, throwError2);
+    add(values, throwError2 = false, context = null) {
+      return _recAdd(this, arguments, throwError2, context);
     }
-    addOrSet(values, context, throwError2 = false) {
-      return _recAddOrSet(this, arguments, context, throwError2);
+    addOrSet(values, throwError2 = false, context = null) {
+      return _recAddOrSet(this, arguments, throwError2, context);
     }
-    addOrUpdate(values, context, throwError2 = false) {
-      return _recAddOrUpdate(this, arguments, context, throwError2);
+    addOrUpdate(values, throwError2 = false, context = null) {
+      return _recAddOrUpdate(this, arguments, throwError2, context);
     }
-    set(record, values, context, throwError2 = false) {
-      return _recSet(this, arguments, context, throwError2);
+    set(record, values, throwError2 = false, context = null) {
+      return _recSet(this, arguments, throwError2, context);
     }
-    update(record, values, context, throwError2 = false) {
-      return _recUpdate(this, arguments, context, throwError2);
+    update(record, values, throwError2 = false, context = null) {
+      return _recUpdate(this, arguments, throwError2, context);
     }
-    remove(record, context, throwError2 = false) {
-      return _recRemove(this, arguments, context, throwError2);
+    remove(record, throwError2 = false, context = null) {
+      return _recRemove(this, arguments, throwError2, context);
+    }
+    setBy(groupId, recId, values, throwError2 = false, context = null) {
+      return this.set(this.get(groupId, recId, throwError2), values, throwError2, context);
+    }
+    updateBy(groupId, recId, values, throwError2 = false, context = null) {
+      return this.update(this.get(groupId, recId, throwError2), values, throwError2, context);
+    }
+    removeBy(groupId, recId, throwError2 = false, context = null) {
+      return this.remove(this.get(groupId, recId, throwError2), throwError2, context);
     }
   };
 

@@ -81,10 +81,10 @@ const pushRecursive = (inc, chop, rec, task)=>{
 
 }
 
-const pushInit = (inc, chop, rec, task)=>{
-    if (task) { task.setRecord(rec); }
-    pushRecursive(inc, chop, rec, task);
+const pushInit = (inc, chop, record, task)=>{
+    if (task) { task.assign({record}); }
+    pushRecursive(inc, chop, record, task);
 }
 
-export const _chopSyncIn = (chop, rec, task)=>pushInit(true, chop, rec, task);
-export const _chopSyncOut = (chop, rec, task)=>pushInit(false, chop, rec, task);
+export const _chopSyncIn = (chop, record, task)=>pushInit(true, chop, record, task);
+export const _chopSyncOut = (chop, record, task)=>pushInit(false, chop, record, task);

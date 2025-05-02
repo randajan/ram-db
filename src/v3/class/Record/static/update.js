@@ -1,20 +1,34 @@
+import { _chopSyncIn } from "../../Chop/static/sync";
 import { taskWrap } from "../../Task/Task";
 import { _recGetPriv } from "../Record";
 
-const roll = (isSet, task, record, values)=>{
+const exe = (isSet, task, record, values)=>{
     const { db } = task;
-    _recGetPriv(db, record).update(task, values, isSet);
+    const _rec = _recGetPriv(db, record);
+
+    _rec.update(task, values, isSet);
+
+    return _rec;
 }
 
-const rollUpdate = (...a)=>roll(false, ...a);
-const rollSet = (...a)=>roll(true, ...a);
+const roll = (task, _rec)=>{
+    const { changes } = _rec.turn;
+    task.assign({ changes });
+    _rec.turn.detach(true);
+}
 
-
-//TODO ROLLBACK
-const rollback = (task, values)=>{
-
+const rollback = (task, _rec)=>{
+    const { db } = task;
+    if (!_rec) { return; }
+    
+    _rec.turn.detach(false);
+    task.unsign("record");
+    _chopSyncIn(db, _rec.current);
 }
 
 
-export const _recSet = taskWrap(rollSet, rollback);
-export const _recUpdate = taskWrap(rollUpdate, rollback);
+const exeUpdate = (...a)=>exe(false, ...a);
+const exeSet = (...a)=>exe(true, ...a);
+
+export const _recSet = taskWrap(exeSet, {roll, rollback});
+export const _recUpdate = taskWrap(exeUpdate, {roll, rollback});

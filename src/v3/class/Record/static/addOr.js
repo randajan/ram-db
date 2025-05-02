@@ -1,27 +1,30 @@
 import { taskWrap } from "../../Task/Task";
 import { RecordPrivate } from "../RecordPrivate";
 import { _chopGetRec, _chopSyncIn } from "../../Chop/static/sync";
-import { _recGetPriv } from "../Record";
+import { _recGetPriv, recUnreg } from "../Record";
 
 
-const roll = (isSet, task, values)=>{
+const exe = (isSet, task, values)=>{
     const { db } = task;
     
-    const _rec = new RecordPrivate(db, values).init(task);
+    let _rec = new RecordPrivate(db, values).init(task);
     const { _ent, id } = _rec.current;
 
     const brother = _chopGetRec(db, toId(_ent), id);
 
     if (brother) {
-        _recGetPriv(db, brother).update(values, ctx, isSet);
+        recUnreg(_rec);
+        _rec = _recGetPriv(db, brother);
+        _rec.update(task, values, isSet);
     } else {
         _rec.ready();
-        _chopSyncIn(db, _rec.current, task);
     }
+
+    return _rec;
 }
 
-const rollUpdate = (...a)=>roll(false, ...a);
-const rollSet = (...a)=>roll(true, ...a);
+const exeUpdate = (...a)=>exe(false, ...a);
+const exeSet = (...a)=>exe(true, ...a);
 
 //TODO ROLLBACK
 const rollback = (task)=>{
@@ -29,5 +32,5 @@ const rollback = (task)=>{
 }
 
 
-export const _recAddOrUpdate = taskWrap(rollUpdate, rollback);
-export const _recAddOrSet = taskWrap(rollSet, rollback);
+export const _recAddOrUpdate = taskWrap(exeUpdate, {rollback});
+export const _recAddOrSet = taskWrap(exeSet, {rollback});

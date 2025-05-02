@@ -17,7 +17,7 @@ export const rowMetaMerge = (_ent, id, rawRow)=>{
     for (const colName in metaData._cols) {
         const col = metaData._cols[colName];
         if (col._ent !== _ent) { continue; }
-        if (col.meta !== "numb" && row.hasOwnProperty(colName)) { continue; }
+        if (col.meta < 2 && row.hasOwnProperty(colName)) { continue; }
         row[colName] = meta[colName];
     }
 

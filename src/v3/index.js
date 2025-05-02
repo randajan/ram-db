@@ -12,10 +12,6 @@ export {
 
 //TODO:
 
-// - loading is huge mess it requires to improve, how to merge meta with regular rows while loading?
-
-// - deduplicates records, will this solves indexes that we require too?
-
 // - self updating formulas (computed values caching)
 // - better nref (simplier definition)
 

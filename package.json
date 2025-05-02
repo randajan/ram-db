@@ -19,9 +19,8 @@
   "peerDependencies": {
     "@randajan/jet-core": "^4.1.0",
     "@randajan/odata-server": "^2.3.1",
-    "@randajan/props": "^0.1.2",
     "@randajan/queue": "^0.1.6",
-    "fs-extra": "^11.2.0"
+    "fs-extra": "^11.3.0"
   },
   "devDependencies": {
     "@randajan/bifrost": "^1.4.2",
@@ -49,7 +48,8 @@
     "url": "https://www.linkedin.com/in/randajan/"
   },
   "dependencies": {
-    "@randajan/function-parser": "^0.1.0",
+    "@randajan/function-parser": "^0.1.1",
+    "@randajan/props": "^0.1.4",
     "regex-parser": "^2.3.0"
   }
 }

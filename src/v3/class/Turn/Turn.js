@@ -28,13 +28,13 @@ export class Turn {
     }
 
     _prepare() {
-        const { _rec, task } = this;
+        const { _rec, task, pendings } = this;
         const { values, state } = _rec;
 
-        if (!values._ent) { throw fail("required", ["column", "_ent"]); }
+        if (!values._ent) { throw _rec.fail("required", ["column", "_ent"]); }
 
         const _cols = _rec.getCols();
-        if (!_cols) { throw fail("invalid", ["column", "_ent"]); }
+        if (!_cols) { throw _rec.fail("invalid", ["column", "_ent"]); }
 
         for (const _col of _cols) {
             try { this._prepareCol(_col); } catch(err) {
@@ -42,8 +42,9 @@ export class Turn {
             }
         }
 
-        if (state === "ready") { fail("blank"); }
+        if (state !== "ready" || pendings.size > 0) { return; }
 
+        _rec.fail("blank", ["values", values]);
     }
 
     _prepareCol(_col) {
@@ -52,14 +53,14 @@ export class Turn {
         const { meta:metaCol, values:{ name, formula, resetIf, isVirtual } } = _col;
 
         const isReal = input.hasOwnProperty(name);
-        const isMeta = (metaRec && metaCol && (metaCol === "numb" || metaRec !== "soft"));
+        const isMeta = (metaRec + metaCol) > 3;
 
         output[name] = values[name]; //default output is value without change
 
         //fail quick
         if (isReal && state === "ready") {
-            if (isMeta) { warn("is meta"); }
-            if (formula) { warn(`has formula`); }
+            if (isMeta) { warn("meta"); }
+            if (formula) { warn(`formula`); }
         }
 
         if (isVirtual) { return; }
@@ -71,11 +72,9 @@ export class Turn {
     }
 
     execute() {
-        const { task, _rec, pendings, isChange } = this;
-
+        const { pendings } = this;
         for (const _col of pendings) { this.pull(_col); }
-
-        return (task.isOk && isChange) ? this.output : _rec.values;
+        return this;
     }
 
     pull(_col) {
@@ -106,9 +105,9 @@ export class Turn {
         return output[name];
     }
 
-    detach() {
-        const { _rec } = this;
-        
+    detach(isOk) {
+        const { _rec, output } = this;
+        if (isOk) { _rec.values = output; }
         delete this._rec;
         delete _rec.turn;
     }

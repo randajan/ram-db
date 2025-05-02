@@ -138,10 +138,10 @@
   resolved "https://registry.yarnpkg.com/@randajan/bifrost/-/bifrost-1.4.2.tgz#e21b9cea7e6b365b19d9162bbca352cb5885458c"
   integrity sha512-qaU2p9q28evezmR9+71ry8EuBL6wxPHwbPWNKproellF531S30NlTuwLHSRhz377MIiz1AyOla1pemdmThHfQg==
 
-"@randajan/function-parser@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@randajan/function-parser/-/function-parser-0.1.0.tgz#0b89aae9923b064c1d31d862ea7dccb44eb255c5"
-  integrity sha512-uFSSJ5MtDJRBRG8ycHNOW3PDlBi94f/C1HnVU7a2UxlfCRA/2TE8URJNMnhxkWkZIWsxAiHFepj3SPmfBPFvzA==
+"@randajan/function-parser@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@randajan/function-parser/-/function-parser-0.1.1.tgz#eddb4ae748a1288463b7d3f31f748e09f94b4412"
+  integrity sha512-yRZGb7FJRORv3a2r/INMaukRWMA1iOZ9F3KNVnH0XsLeDQ2KUnu9fIxJQyjC0fJio4CUEK1Tl3XAhlsEeBB3lA==
   dependencies:
     "@randajan/simple-lib" "^2.3.2"
 
@@ -160,12 +160,10 @@
     path-to-regexp "6.2.1"
     xmlbuilder "15.1.1"
 
-"@randajan/props@^0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@randajan/props/-/props-0.1.2.tgz#ec8b51fcacca7082744783a2ff0d03774bbb4156"
-  integrity sha512-QFY3AhtzLtrA3xLk90kbWQP7gfUAc7TzCs9iPDRSlPi/Bpr8blBd2hw46P2G6eFfDGtr+xGz+mTk00WeaGnJ6Q==
-  dependencies:
-    "@randajan/simple-lib" "^2.3.2"
+"@randajan/props@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@randajan/props/-/props-0.1.4.tgz#af4fa4327d69e1cbfd281df0c2e546cf6761f66d"
+  integrity sha512-F0qkf+s2p6SEO5nkHNCAL34/m39CAPF8j0+isx7TazvBHk8BXoCQxLEM5f6PL3G6R1TCSFVkqerI4T017yTQBA==
 
 "@randajan/queue@^0.1.6":
   version "0.1.6"
@@ -798,6 +796,15 @@ fs-extra@^11.2.0:
   version "11.2.0"
   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-11.2.0.tgz#e70e17dfad64232287d01929399e0ea7c86b0e5b"
   integrity sha512-PmDi3uwK5nFuXh7XDTlVnS17xJS7vW36is2+w3xcv8SVxiB4NyATf4ctkVY5bkSjX0Y4nbvZCq1/EjtEyr9ktw==
+  dependencies:
+    graceful-fs "^4.2.0"
+    jsonfile "^6.0.1"
+    universalify "^2.0.0"
+
+fs-extra@^11.3.0:
+  version "11.3.0"
+  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-11.3.0.tgz#0daced136bbaf65a555a326719af931adc7a314d"
+  integrity sha512-Z4XaCL6dUDHfP/jT25jJKMmtxvuwbkrD1vNSMFlo9lNLY2c5FHYSQgHPRZUjAB26TpDEoW9HCOgplrdbaPV/ew==
   dependencies:
     graceful-fs "^4.2.0"
     jsonfile "^6.0.1"

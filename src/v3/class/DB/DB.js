@@ -34,14 +34,26 @@ export class DB extends Chop {
 
     isRecord(any, throwError=false) { return !!_recGetPriv(any, throwError); }
 
-    add(values, context, throwError=false) { return _recAdd(this, arguments, context, throwError); }
+    add(values, throwError=false, context=null) { return _recAdd(this, arguments, throwError, context); }
 
-    addOrSet(values, context, throwError=false) { return _recAddOrSet(this, arguments, context, throwError); }
-    addOrUpdate(values, context, throwError=false) { return _recAddOrUpdate(this, arguments, context, throwError); }
+    addOrSet(values, throwError=false, context=null) { return _recAddOrSet(this, arguments, throwError, context); }
+    addOrUpdate(values, throwError=false, context=null) { return _recAddOrUpdate(this, arguments, throwError, context); }
 
-    set(record, values, context, throwError=false) { return _recSet(this, arguments, context, throwError); }
-    update(record, values, context, throwError=false) { return _recUpdate(this, arguments, context, throwError); }
+    set(record, values, throwError=false, context=null) { return _recSet(this, arguments, throwError, context); }
+    update(record, values, throwError=false, context=null) { return _recUpdate(this, arguments, throwError, context); }
 
-    remove(record, context, throwError=false) { return _recRemove(this, arguments, context, throwError); }
+    remove(record, throwError=false, context=null) { return _recRemove(this, arguments, throwError, context); }
+
+    setBy(groupId, recId, values, throwError = false, context=null) {
+        return this.set(this.get(groupId, recId, throwError), values, throwError, context);
+    }
+
+    updateBy(groupId, recId, values, throwError = false, context=null) {
+        return this.update(this.get(groupId, recId, throwError), values, throwError, context);
+    }
+
+    removeBy(groupId, recId, throwError = false, context=null) {
+        return this.remove(this.get(groupId, recId, throwError), throwError, context);
+    }
 
 }

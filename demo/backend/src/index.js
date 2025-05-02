@@ -13,7 +13,7 @@ bifrost.createBeam("data", {
     get:_=>records,
     set:data=>{
         console.log(data);
-        fs.writeJsonSync("demo/backend/src/data/db.json", data);
+        fs.writeJsonSync("demo/backend/src/data/db.json", data, { spaces:2 });
         return records = data;
     }
 });

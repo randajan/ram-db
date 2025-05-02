@@ -19,7 +19,7 @@ export class RecordPrivate {
         v._ent = toId(v._ent);
         if (v._ent === "_cols") { v.ent = toId(v.ent); }
 
-        this.meta = isMetaEnt(v._ent) ? v.meta : undefined; //TODO
+        this.meta = isMetaEnt(v._ent) ? v.meta : 0;
         
         solids(this, {
             _db:vault.get(db),
@@ -31,45 +31,38 @@ export class RecordPrivate {
         recReg(this);
     }
 
+    fail(reason, ...infos) {
+        const { id, _ent } = this.values;
+        return fail(reason, ["entity", _ent], ["record", id], ...infos);
+    }
+
     init(task) {
         const { state, values } = this;
-        if (state !== "pending") { fail("record is not pending"); }
+        if (state !== "pending") { this.fail("not pending"); }
         Turn.attach(task, this, values, true);
         this.state = "init";
         return this;
     }
 
     ready() {
-        const { state, turn } = this;
-        if (state !== "init") { fail("record is not init"); }
-        this.values = turn.execute();
-        this.turn.detach();
+        const { db, state, current, turn, task } = this;
+        if (state !== "init") { this.fail("not init"); }
+
+        turn.execute();
         this.state = "ready";
+        _chopSyncIn(db, current, task);
+
         return this;
     }
 
-    //TODO update must be refactored
     update(task, values, isSet=false) {
-        if (this.state !== "ready") { fail("record is not ready"); }
+        const { state, db, current } = this;
+        if (state !== "ready") { this.fail("not ready"); }
 
-        this.values = Turn.attach(task, this, values, isSet).execute();
-        
-        if (this.turn.isChange) {
-            _colSet(this);
-            _chopSyncIn(this.db, this.current, task);
-        }
+        Turn.attach(task, this, values, isSet).execute();
+        _chopSyncIn(db, current, task);
 
-        this.turn.detach();
-    }
-
-    remove(task, force=false) {
-        const { meta, current } = this;
-
-        if (!force && meta) { fail("is meta"); }
-        
-        this.state = "removed";
-        _chopSyncOut(this.db, current, task);
-        recUnreg(this);
+        return this;
     }
 
     export() {

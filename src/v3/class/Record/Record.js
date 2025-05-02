@@ -1,4 +1,3 @@
-import { solids } from "@randajan/props";
 import { fail } from "../../tools/traits/uni";
 import { _chopGetRec } from "../Chop/static/sync";
 

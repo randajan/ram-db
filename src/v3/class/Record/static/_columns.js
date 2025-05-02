@@ -43,7 +43,7 @@ const createSetter = _col => {
 
         if (formula) { to = output[name] = n(formula(current, before, stored)); }
         else {
-            console.log(name, typeof isReadonly, typeof col.isReadonly);
+            //console.log(name, typeof isReadonly, typeof col.isReadonly);
             if (isReadonly && isReadonly(current, before, stored)) {
                 if (before) { warn(`readonly`, ["valueFrom", before], ["valueTo", to]); }
             } else {

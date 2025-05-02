@@ -1,30 +1,29 @@
 {
-    "_cols": {
-        "foo-_ent": {
-            "meta": "numb",
-            "ent": "foo",
-            "name": "_ent",
-            "type": "ref",
-            "ref": "_ents",
-            "isReadonly": "_=>true",
-            "isRequired": "_=>true"
-        },
-        "foo-id": {
-            "meta": "soft",
-            "ent": "foo",
-            "name": "id",
-            "type": "string",
-            "isReadonly": "_=>true",
-            "isRequired": "_=>true"
-        },
-        "foo-name": {
-            "ent": "foo",
-            "name": "name",
-            "type": "string",
-            "isRequired":"_=>true"
-        }
+  "_cols": {
+    "foo-_ent": {
+      "meta": "numb",
+      "ent": "foo",
+      "name": "_ent",
+      "type": "ref",
+      "ref": "_ents",
+      "isReadonly": "_=>true",
+      "isRequired": "_=>true"
     },
-    "_ents": {
-        "foo": {}
+    "foo-id": {
+      "meta": "soft",
+      "ent": "foo",
+      "name": "id",
+      "type": "string",
+      "isReadonly": "_=>true",
+      "isRequired": "_=>true"
     }
+  },
+  "_ents": {
+    "foo": {}
+  },
+  "foo": {
+    "bar": {
+      "name": "bar"
+    }
+  }
 }
