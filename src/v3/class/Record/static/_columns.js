@@ -3,7 +3,6 @@ import { metaData } from "../../../metaData/interface";
 import { _chopGetRecs } from "../../Chop/static/sync";
 import { cacheds, solid } from "@randajan/props";
 import { fail, toId, warn } from "../../../tools/traits/uni";
-import { Major } from "../../Task/Fails";
 
 
 const blackList = [
@@ -43,7 +42,6 @@ const createSetter = _col => {
 
         if (formula) { to = output[name] = n(formula(current, before, stored)); }
         else {
-            //console.log(name, typeof isReadonly, typeof col.isReadonly);
             if (isReadonly && isReadonly(current, before, stored)) {
                 if (before) { warn(`readonly`, ["valueFrom", before], ["valueTo", to]); }
             } else {

@@ -5851,7 +5851,7 @@
     fail: () => fail2,
     isEmpty: () => isEmpty,
     join: () => join,
-    toId: () => toId2,
+    toId: () => toId,
     warn: () => warn
   });
   var Fail = class extends Error {
@@ -5951,7 +5951,7 @@
     }
     return str;
   };
-  var toId2 = (ref) => typeof ref !== "string" ? ref?.id : ref;
+  var toId = (ref) => typeof ref !== "string" ? ref?.id : ref;
   var isEmpty = (any) => {
     if (any == null) {
       return true;
@@ -6261,9 +6261,9 @@
   var _records = /* @__PURE__ */ new WeakMap();
   var recReg = (_rec) => _records.set(_rec.current, _rec);
   var recUnreg = (_rec) => _records.delete(_rec.current);
-  var _recGetPriv = (db, rec, throwError2 = true) => {
+  var _recGetPriv = (db2, rec, throwError2 = true) => {
     const _p = _records.get(rec);
-    if (_p && _p.db === db) {
+    if (_p && _p.db === db2) {
       return _p;
     }
     if (throwError2) {
@@ -6294,8 +6294,8 @@
     static is(any) {
       return any instanceof Task;
     }
-    static create(db) {
-      return new Task(db);
+    static create(db2) {
+      return new Task(db2);
     }
     constructor(parent) {
       if (!Task.is(parent)) {
@@ -6369,15 +6369,15 @@
       return this.catch(err, true, infos);
     }
     doRoll() {
-      const { effects, roll: roll4, subs, result } = this;
+      const { effects, roll: roll5, subs, result } = this;
       this.isOk = true;
       if (subs) {
         for (let i = subs.length - 1; i >= 0; i--) {
           subs[i].doRoll();
         }
       }
-      if (roll4) {
-        roll4(this, result);
+      if (roll5) {
+        roll5(this, result);
       }
       effects?.run();
     }
@@ -6406,12 +6406,12 @@
       return echo;
     }
   };
-  var taskWrap = (exe5, { roll: roll4, rollback: rollback5 }) => {
-    return (db, args, throwError2 = false, context = null) => {
-      const _db = vault.get(db);
+  var taskWrap = (exe5, roll5, rollback5) => {
+    return (db2, args, throwError2 = false, context = null) => {
+      const _db = vault.get(db2);
       const parent = _db.task;
-      const task = parent ? parent.sub() : Task.create(db);
-      task.assign({ context, roll: roll4, rollback: rollback5 });
+      const task = parent ? parent.sub() : Task.create(db2);
+      task.assign({ context, roll: roll5, rollback: rollback5 });
       if (!parent) {
         _db.task = task;
       }
@@ -6558,7 +6558,7 @@
       "function": { meta: 3, setter: (v, c) => toFunction(v, c), getter, saver: (v) => toString3(v) },
       "regexp": { meta: 3, setter: (v, c) => toRegExp(v, c), getter },
       "object": { meta: 3, setter: (v, c) => toObject(v, c), getter, saver: (v) => toString3(v) },
-      "ref": { meta: 3, setter: (v, c) => toId2(v, c), getter, saver: (v) => toId2(v) },
+      "ref": { meta: 3, setter: (v, c) => toId(v, c), getter, saver: (v) => toId(v) },
       "nref": { meta: 3, setter, getter }
     },
     "_cols": {
@@ -6774,19 +6774,19 @@
     // výstup při JSON.stringify()
   ];
   var createGetter = (_col) => {
-    const { db, current: col, values: v } = _col;
+    const { db: db2, current: col, values: v } = _col;
     const { getter: getter2 } = metaData._types[v.type] || col.type;
-    const typize = v.type == "ref" ? (from) => db.get(v.ref, from, false) : (v2) => getter2(v2, col);
+    const typize = v.type == "ref" ? (from) => db2.get(v.ref, from, false) : (v2) => getter2(v2, col);
     const n = !v.isList ? typize : (f) => reArray(f, typize);
     return n;
   };
   var createSetter = (_col) => {
-    const { db, current: col, values: v } = _col;
+    const { db: db2, current: col, values: v } = _col;
     const { name, formula, store, validator, isReadonly: isReadonly2, resetIf, init, fallback, isRequired: isRequired2, isList } = col;
     const { setter: setter2 } = metaData._types[v.type] || col.type;
     const typize = (t) => isNull(t) ? void 0 : setter2(t, col);
     const n = !isList ? typize : (t) => isNull(t) ? void 0 : reArray(t, typize);
-    const stored = !store ? void 0 : store(col, db);
+    const stored = !store ? void 0 : store(col, db2);
     return (current, output, to3, before2) => {
       if (formula) {
         to3 = output[name] = n(formula(current, before2, stored));
@@ -6828,7 +6828,7 @@
     if (blackList.includes(name)) {
       throw fail2(`blacklist`, ["column", "name"], ["valueTo", name]);
     }
-    _db.colsByEnt.set(toId2(ent), name, _rec);
+    _db.colsByEnt.set(toId(ent), name, _rec);
     solid3(_rec, "traits", createTraits(_rec), true, true);
   };
   var _colRem = (_rec) => {
@@ -6836,20 +6836,20 @@
     if (_ent !== "_cols") {
       return;
     }
-    _db.colsByEnt.delete(toId2(ent), name);
+    _db.colsByEnt.delete(toId(ent), name);
   };
   var RecordPrivate = class {
-    constructor(db, values) {
+    constructor(db2, values) {
       this.state = "pending";
       const v = this.values = Object.assign({}, values);
-      v._ent = toId2(v._ent);
+      v._ent = toId(v._ent);
       if (v._ent === "_cols") {
-        v.ent = toId2(v.ent);
+        v.ent = toId(v.ent);
       }
       this.meta = isMetaEnt(v._ent) ? v.meta : 0;
       solids(this, {
-        _db: vault.get(db),
-        db,
+        _db: vault.get(db2),
+        db: db2,
         current: createRecord(this, true),
         before: createRecord(this, false)
       });
@@ -6869,22 +6869,22 @@
       return this;
     }
     ready() {
-      const { db, state, current, turn, task } = this;
+      const { db: db2, state, current, turn, task } = this;
       if (state !== "init") {
         this.fail("not init");
       }
       turn.execute();
       this.state = "ready";
-      _chopSyncIn(db, current, task);
+      _chopSyncIn(db2, current, task);
       return this;
     }
     update(task, values, isSet2 = false) {
-      const { state, db, current } = this;
+      const { state, db: db2, current } = this;
       if (state !== "ready") {
         this.fail("not ready");
       }
       Turn.attach(task, this, values, isSet2).execute();
-      _chopSyncIn(db, current, task);
+      _chopSyncIn(db2, current, task);
       return this;
     }
     export() {
@@ -6910,7 +6910,7 @@
       const value2 = values[colName];
       const _col = _db.colsByEnt.get(values._ent, colName);
       if (!_col) {
-        return value2;
+        return state === "ready" ? void 0 : value2;
       }
       const t = _col.traits;
       if (!isCurrent) {
@@ -6928,8 +6928,8 @@
     }
   };
   var exe = (task, values) => {
-    const { db } = task;
-    const _rec = new RecordPrivate(db, values);
+    const { db: db2 } = task;
+    const _rec = new RecordPrivate(db2, values);
     _rec.init(task).ready();
     return _rec;
   };
@@ -6939,126 +6939,146 @@
     _rec.turn.detach(true);
   };
   var rollback = (task, _rec) => {
-    const { db } = task;
+    const { db: db2 } = task;
     if (!_rec) {
       return;
     }
-    _chopSyncOut(db, _rec.current);
+    _chopSyncOut(db2, _rec.current);
     _rec.task.detach(false);
     task.unsign("record");
     recUnreg(_rec);
   };
-  var _recAdd = taskWrap(exe, { roll, rollback });
+  var _recAdd = taskWrap(exe, roll, rollback);
   var exe2 = (isSet2, task, values) => {
-    const { db } = task;
-    let _rec = new RecordPrivate(db, values).init(task);
+    const { db: db2 } = task;
+    let _rec = new RecordPrivate(db2, values).init(task);
     const { _ent, id } = _rec.current;
-    const brother = _chopGetRec(db, toId(_ent), id);
-    if (brother) {
-      recUnreg(_rec);
-      _rec = _recGetPriv(db, brother);
-      _rec.update(task, values, isSet2);
-    } else {
+    const brother = _chopGetRec(db2, toId(_ent), id);
+    if (!brother) {
       _rec.ready();
+      return [_rec, true];
+    } else {
+      recUnreg(_rec);
+      _rec = _recGetPriv(db2, brother);
+      _rec.update(task, values, isSet2);
+      return [_rec, false];
     }
-    return _rec;
   };
-  var exeUpdate = (...a) => exe2(false, ...a);
+  var roll2 = (task, [_rec, isAdd]) => {
+    const { changes } = _rec.turn;
+    task.assign({ changes });
+    _rec.turn.detach(true);
+  };
+  var rollback2 = (task, res) => {
+    if (!res) {
+      return;
+    }
+    const [_rec, isAdd] = res;
+    if (isAdd) {
+      _chopSyncOut(db, _rec.current);
+    }
+    _rec.task.detach(false);
+    task.unsign("record");
+    if (isAdd) {
+      recUnreg(_rec);
+    } else {
+      _chopSyncIn(db, _rec.current);
+    }
+  };
   var exeSet = (...a) => exe2(true, ...a);
-  var rollback2 = (task) => {
-  };
-  var _recAddOrUpdate = taskWrap(exeUpdate, { rollback: rollback2 });
-  var _recAddOrSet = taskWrap(exeSet, { rollback: rollback2 });
+  var exeUpdate = (...a) => exe2(false, ...a);
+  var _recAddOrSet = taskWrap(exeSet, roll2, rollback2);
+  var _recAddOrUpdate = taskWrap(exeUpdate, roll2, rollback2);
   var exe3 = (isSet2, task, record, values) => {
-    const { db } = task;
-    const _rec = _recGetPriv(db, record);
+    const { db: db2 } = task;
+    const _rec = _recGetPriv(db2, record);
     _rec.update(task, values, isSet2);
     return _rec;
   };
-  var roll2 = (task, _rec) => {
+  var roll3 = (task, _rec) => {
     const { changes } = _rec.turn;
     task.assign({ changes });
     _rec.turn.detach(true);
   };
   var rollback3 = (task, _rec) => {
-    const { db } = task;
+    const { db: db2 } = task;
     if (!_rec) {
       return;
     }
     _rec.turn.detach(false);
     task.unsign("record");
-    _chopSyncIn(db, _rec.current);
+    _chopSyncIn(db2, _rec.current);
   };
   var exeUpdate2 = (...a) => exe3(false, ...a);
   var exeSet2 = (...a) => exe3(true, ...a);
-  var _recSet = taskWrap(exeSet2, { roll: roll2, rollback: rollback3 });
-  var _recUpdate = taskWrap(exeUpdate2, { roll: roll2, rollback: rollback3 });
+  var _recSet = taskWrap(exeSet2, roll3, rollback3);
+  var _recUpdate = taskWrap(exeUpdate2, roll3, rollback3);
   var exe4 = (task, record, force = false) => {
-    const { db } = task;
-    const _rec = _recGetPriv(db, record);
+    const { db: db2 } = task;
+    const _rec = _recGetPriv(db2, record);
     if (!force && _rec.meta) {
       _rec.fail("is meta");
     }
-    _chopSyncOut2(db, record, task);
+    _chopSyncOut2(db2, record, task);
     return _rec;
   };
-  var roll3 = (task, _rec) => {
+  var roll4 = (task, _rec) => {
     recUnreg(_rec);
   };
   var rollback4 = (task, _rec) => {
-    const { db } = task;
+    const { db: db2 } = task;
     if (!_rec) {
       return;
     }
-    _chopSyncIn(db, _rec.current);
+    _chopSyncIn(db2, _rec.current);
   };
   var exeRemoveForce = (task, record) => exe4(task, record, true);
   var exeRemove = (task, record) => exe4(task, record, false);
-  var _recRemove = taskWrap(exeRemove, { roll: roll3, rollback: rollback4 });
-  var _recRemoveForce = taskWrap(exeRemoveForce, { roll: roll3, rollback: rollback4 });
+  var _recRemove = taskWrap(exeRemove, roll4, rollback4);
+  var _recRemoveForce = taskWrap(exeRemoveForce, roll4, rollback4);
   var _entAdd = (task, _rec) => {
-    const { db, values: { _ent, id } } = _rec;
+    const { db: db2, values: { _ent, id } } = _rec;
     if (_ent !== "_ents") {
       return;
     }
-    db.add({ _ent: "_cols", ent: id, name: "_ent", type: "ref", ref: "_ents", meta: 3, isReadonly: fceTrue, isRequired: fceTrue }, task.context);
-    db.add({ _ent: "_cols", ent: id, name: "id", type: "string", meta: 1, isReadonly: fceTrue, isRequired: fceTrue }, task.context);
+    db2.add({ _ent: "_cols", ent: id, name: "_ent", type: "ref", ref: "_ents", meta: 3, isReadonly: fceTrue, isRequired: fceTrue }, task.context);
+    db2.add({ _ent: "_cols", ent: id, name: "id", type: "string", meta: 1, isReadonly: fceTrue, isRequired: fceTrue }, task.context);
   };
   var _entRem = (task, _rec) => {
-    const { _db, db, values: { _ent, id } } = _rec;
+    const { _db, db: db2, values: { _ent, id } } = _rec;
     if (_ent !== "_ents") {
       return;
     }
     for (const _col of _db.colsByEnt.values(id)) {
-      _recRemoveForce(db, [_col.current], task.context);
+      _recRemoveForce(db2, [_col.current], task.context);
     }
     ;
   };
-  var _dbInit = (db, task, data, save) => {
+  var _dbInit = (db2, task, data, save) => {
     const loaded = /* @__PURE__ */ new Set();
     const loadRecs = (_ent, recsRaw) => {
       loaded.add(_ent);
       for (const id in recsRaw) {
-        const _rec = new RecordPrivate(db, rowMetaMerge(_ent, id, recsRaw[id]));
-        _chopSyncIn(db, _rec.current);
+        const _rec = new RecordPrivate(db2, rowMetaMerge(_ent, id, recsRaw[id]));
+        _chopSyncIn(db2, _rec.current);
       }
       ;
     };
     loadRecs("_ents", { ...metaData._ents, ...data._ents || {} });
     loadRecs("_types", { ...metaData._types, ...data._types || {} });
     loadRecs("_cols", { ...metaData._cols, ...data._cols || {} });
-    for (const [_ent] of _chopGetRecs(db, "_ents")) {
+    for (const [_ent] of _chopGetRecs(db2, "_ents")) {
       if (!loaded.has(_ent)) {
         loadRecs(_ent, data[_ent]);
       }
     }
-    for (const [_, rec] of _chopGetRecs(db, "_cols")) {
-      const _rec = _recGetPriv(db, rec);
+    for (const [_, rec] of _chopGetRecs(db2, "_cols")) {
+      const _rec = _recGetPriv(db2, rec);
       _colSet(_rec);
     }
     const _recs = [];
-    for (const [rec] of _chopGetAllRecs(db)) {
-      const _rec = _recGetPriv(db, rec);
+    for (const [rec] of _chopGetAllRecs(db2)) {
+      const _rec = _recGetPriv(db2, rec);
       if (_rec.state === "pending") {
         _recs.push(_rec.init(task));
       }
@@ -7066,10 +7086,10 @@
     for (const _rec of _recs) {
       _rec.ready();
     }
-    db.fit((next, event, task2) => {
+    db2.fit((next, event, task2) => {
       const { record } = task2;
       next();
-      const _rec = _recGetPriv(db, record);
+      const _rec = _recGetPriv(db2, record);
       if (event === "add") {
         _entAdd(task2, _rec);
         _colSet(_rec);
@@ -7080,7 +7100,7 @@
         _colRem(_rec);
       }
     });
-    db.effect((event, task2) => {
+    db2.effect((event, task2) => {
       const { record } = task2;
       const ex = record.toJSON();
       const { _ent, id } = ex;
@@ -7093,8 +7113,8 @@
     constructor(id, opt = {}) {
       const { data, save } = opt;
       super(id, {
-        getId: (rec) => toId2(rec.id),
-        getGroup: (rec) => toId2(rec._ent)
+        getId: (rec) => toId(rec.id),
+        getGroup: (rec) => toId(rec._ent)
       });
       const _p = vault.get(this);
       _p.colsByEnt = new SuperMap();
@@ -7137,7 +7157,7 @@
   var bifrost = new ClientRouter(socket);
   var beam = window.beam = bifrost.createBeam("data");
   beam.get().then((data) => {
-    const db = window.db = new DB("db", {
+    const db2 = window.db = new DB("db", {
       data,
       save: (entName, recId, rec) => {
         if (rec) {
@@ -7151,7 +7171,7 @@
         beam.set(data);
       }
     });
-    db.fit((next, event, process) => {
+    db2.fit((next, event, process) => {
       console.log("FIT", event, process);
       return next();
     });

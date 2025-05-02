@@ -29,4 +29,4 @@ const rollback = (task, _rec)=>{
 }
 
 
-export const _recAdd = taskWrap(exe, {roll, rollback});
+export const _recAdd = taskWrap(exe, roll, rollback);

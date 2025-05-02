@@ -29,5 +29,5 @@ const exeRemoveForce = (task, record)=>exe(task, record, true);
 const exeRemove = (task, record)=>exe(task, record, false);
 
 
-export const _recRemove = taskWrap(exeRemove, {roll, rollback});
-export const _recRemoveForce = taskWrap(exeRemoveForce, {roll, rollback});
+export const _recRemove = taskWrap(exeRemove, roll, rollback);
+export const _recRemoveForce = taskWrap(exeRemoveForce, roll, rollback);

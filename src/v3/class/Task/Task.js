@@ -114,7 +114,7 @@ export class Task {
 }
 
 
-export const taskWrap = (exe, {roll, rollback})=>{
+export const taskWrap = (exe, roll, rollback)=>{
     return (db, args, throwError=false, context=null)=>{
 
         const _db = vault.get(db);

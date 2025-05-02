@@ -84,7 +84,7 @@ export class RecordPrivate {
         const value = values[colName];
 
         const _col = _db.colsByEnt.get(values._ent, colName);
-        if (!_col) { return value; }
+        if (!_col) { return state === "ready" ? undefined : value; }
 
         const t = _col.traits;
 
@@ -102,6 +102,5 @@ export class RecordPrivate {
         const { _db, values } = this;
         return _db.colsByEnt.has(values._ent, colName);
     }
-
 
 }

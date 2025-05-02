@@ -12,6 +12,7 @@ export {
 
 //TODO:
 
+// - how to set fallback on existing rows? 
 // - self updating formulas (computed values caching)
 // - better nref (simplier definition)
 

@@ -16,6 +16,13 @@
       "type": "string",
       "isReadonly": "_=>true",
       "isRequired": "_=>true"
+    },
+    "foo-name": {
+      "ent": "foo",
+      "name": "name",
+      "type": "string",
+      "init": "r=>r.id",
+      "fallback": "r=>r.id"
     }
   },
   "_ents": {

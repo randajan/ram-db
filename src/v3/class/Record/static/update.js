@@ -30,5 +30,5 @@ const rollback = (task, _rec)=>{
 const exeUpdate = (...a)=>exe(false, ...a);
 const exeSet = (...a)=>exe(true, ...a);
 
-export const _recSet = taskWrap(exeSet, {roll, rollback});
-export const _recUpdate = taskWrap(exeUpdate, {roll, rollback});
+export const _recSet = taskWrap(exeSet, roll, rollback);
+export const _recUpdate = taskWrap(exeUpdate, roll, rollback);
