@@ -1,26 +1,24 @@
-import { isMetaEnt } from "../../metaData/methods";
 import { Turn } from "../Turn/Turn";
 import { _recGetPriv, _recIs, recReg, recUnreg } from "./Record";
 import { createRecord } from "./Record";
 import { fail, toId } from "../../tools/traits/uni";
 import { _chopSyncIn, _chopSyncOut } from "../Chop/static/sync";
-import { vault } from "../../../components/uni/consts";
+import { vault } from "../../tools/const";
 
 
-export class Row {
+export class _Record {
 
     constructor(db, values) {
 
         this.db = db;
         this._db = vault.get(db);
 
+        this.meta = 0;
         this.state = "pending"; //created, pending, ready;
+        
         const v = this.values = Object.assign({}, values);
-
         v._ent = toId(v._ent);
-
-        this.meta = isMetaEnt(v._ent) ? v.meta : 0;
-
+        
         this.current = createRecord(this, true);
 
         recReg(this);

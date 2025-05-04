@@ -36,7 +36,7 @@
   var define_slib_info_default;
   var init_define_slib_info = __esm({
     "<define:__slib_info>"() {
-      define_slib_info_default = { isServer: false, isBuild: false, name: "@randajan/ram-db", description: "Realtime database", version: "2.8.8", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "web", port: 3005, dir: { root: "C:\\dev\\lib\\ram-db", dist: "demo/frontend/dist" } };
+      define_slib_info_default = { isServer: false, isBuild: false, name: "@randajan/ram-db", description: "Realtime database", version: "2.8.9", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "web", port: 3005, dir: { root: "C:\\dev\\lib\\ram-db", dist: "demo/frontend/dist" } };
     }
   });
 
@@ -4106,11 +4106,11 @@
     return (_) => socket2.off(_bifrostEvent, listener);
   };
   var unregisterExe = (list, exe5) => {
-    const x = list.indexOf(exe5);
-    if (x < 0) {
+    const x2 = list.indexOf(exe5);
+    if (x2 < 0) {
       return false;
     }
-    list.splice(x, 1);
+    list.splice(x2, 1);
     return true;
   };
   var registerExe = (list, exe5) => {
@@ -4702,9 +4702,9 @@
     rnd = rnd || create;
     isFull2 = isFull2 || ((any) => isFull(any, vals));
     if (entries) {
-      get = get || ((x, k) => x[k]);
-      set = set || ((x, k, v) => x[k] = v);
-      rem = rem || ((x, k) => delete x[k]);
+      get = get || ((x2, k) => x2[k]);
+      set = set || ((x2, k, v) => x2[k] = v);
+      rem = rem || ((x2, k) => delete x2[k]);
     }
     const def = { name, constructor, prototype, is: is2, create, isFull: isFull2, copy: copy2, rnd, keys, vals, entries, get, set, rem, to: {} };
     register(def);
@@ -4838,14 +4838,14 @@
   var split = (str) => (str.match(/(?:\\.|[^.])+/g) || []).map(unescape);
   var bite = (str, direction, position) => {
     const dir = direction !== false;
-    const x = dir ? str.indexOf(".", position) : str.lastIndexOf(".", position);
-    if (x <= 0) {
+    const x2 = dir ? str.indexOf(".", position) : str.lastIndexOf(".", position);
+    if (x2 <= 0) {
       return [str, ""];
     }
-    if (x > 1 && str.charAt(x - 1) === "\\") {
-      return bite(str, dir, x + (dir * 2 - 1));
+    if (x2 > 1 && str.charAt(x2 - 1) === "\\") {
+      return bite(str, dir, x2 + (dir * 2 - 1));
     }
-    return direction ? [str.slice(0, x), str.slice(x + 1)] : [str.slice(x + 1), str.slice(0, x)];
+    return direction ? [str.slice(0, x2), str.slice(x2 + 1)] : [str.slice(x2 + 1), str.slice(0, x2)];
   };
   var biteLeft = (str, position) => bite(str, true, position);
   var biteRight = (str, position) => bite(str, false, position);
@@ -5130,10 +5130,10 @@
     define: new Plex_default(define_default, { to: defineTo, extend: defineExtend })
   });
   define_default("Plex", Plex_default, {
-    copy: (x) => Object.defineProperties({}, Object.getOwnPropertyDescriptors(x)),
-    keys: (x) => Object.keys(x),
-    vals: (x) => Object.values(x),
-    entries: (x) => Object.entries(x)
+    copy: (x2) => Object.defineProperties({}, Object.getOwnPropertyDescriptors(x2)),
+    keys: (x2) => Object.keys(x2),
+    vals: (x2) => Object.values(x2),
+    entries: (x2) => Object.entries(x2)
   });
 
   // node_modules/@randajan/jet-core/dist/chunk-UOVKGED6.js
@@ -5223,10 +5223,10 @@
   });
   defs_default.define("Array", Array, {
     create: Array,
-    copy: (x) => Array.from(x),
-    keys: (x) => [...x.keys()],
-    vals: (x) => [...x.values()],
-    entries: (x) => [...x.entries()],
+    copy: (x2) => Array.from(x2),
+    keys: (x2) => [...x2.keys()],
+    vals: (x2) => [...x2.values()],
+    entries: (x2) => [...x2.entries()],
     to: {
       Function: (arr) => (_) => arr,
       Boolean: (arr) => Array.jet.isFull(arr),
@@ -5301,7 +5301,7 @@
     }
   });
   defs_default.define("Date", Date, {
-    create: (x) => !x ? new Date() : new Date(x),
+    create: (x2) => !x2 ? new Date() : new Date(x2),
     rnd: (from, to22) => new Date(Number.jet.rnd(new Date(from).getTime(), to22 ? new Date(to22).getTime() : Date.now() * 2)),
     to: {
       Function: (date) => (_) => date
@@ -5316,7 +5316,7 @@
   });
   defs_default.define("Function", Function, {
     create: Function,
-    copy: (x) => Object.defineProperties({ [x.name]: (...a) => x(...a) }[x.name], Object.getOwnPropertyDescriptors(x)),
+    copy: (x2) => Object.defineProperties({ [x2.name]: (...a) => x2(...a) }[x2.name], Object.getOwnPropertyDescriptors(x2)),
     extend: {
       benchmark: (fces, inputs, iterations = 100) => {
         const results = [];
@@ -5347,13 +5347,13 @@
     }
   });
   defs_default.define("Map", Map, {
-    copy: (x) => new Map(x),
-    keys: (x) => [...x.keys()],
-    vals: (x) => [...x.values()],
-    entries: (x) => [...x.entries()],
-    get: (x, k) => x.get(k),
-    set: (x, k, v) => x.set(k, v),
-    rem: (x, k) => x.delete(k),
+    copy: (x2) => new Map(x2),
+    keys: (x2) => [...x2.keys()],
+    vals: (x2) => [...x2.values()],
+    entries: (x2) => [...x2.entries()],
+    get: (x2, k) => x2.get(k),
+    set: (x2, k, v) => x2.set(k, v),
+    rem: (x2, k) => x2.delete(k),
     to: {
       Function: (map) => (_) => map
     }
@@ -5375,10 +5375,10 @@
   };
   defs_default.define("Object", Object, {
     create: Object,
-    copy: (x) => Object.defineProperties({}, Object.getOwnPropertyDescriptors(x)),
-    keys: (x) => Object.keys(x),
-    vals: (x) => Object.values(x),
-    entries: (x) => Object.entries(x),
+    copy: (x2) => Object.defineProperties({}, Object.getOwnPropertyDescriptors(x2)),
+    keys: (x2) => Object.keys(x2),
+    vals: (x2) => Object.values(x2),
+    entries: (x2) => Object.entries(x2),
     extend: {
       filter,
       exclude: (obj, mask = []) => filter(obj, (v, k) => !mask.includes(k)),
@@ -5397,11 +5397,11 @@
     }
   });
   defs_default.define("Promise", Promise, {
-    create: (x) => new Promise(defs_default.only.Function(x, (e) => e()))
+    create: (x2) => new Promise(defs_default.only.Function(x2, (e) => e()))
   });
   defs_default.define("RegExp", RegExp, {
     create: RegExp,
-    copy: (x) => RegExp(x.source),
+    copy: (x2) => RegExp(x2.source),
     extend: {
       lib: {
         line: /[^\n\r]+/g,
@@ -5420,13 +5420,13 @@
     }
   });
   defs_default.define("Set", Set, {
-    copy: (x) => new Set(x),
-    keys: (x) => [...x.keys()],
-    vals: (x) => [...x.values()],
-    entries: (x) => [...x.entries()],
-    get: (x, k) => x.has(k) ? k : void 0,
-    set: (x, k, v) => x.add(v) ? v : void 0,
-    rem: (x, k) => x.delete(k),
+    copy: (x2) => new Set(x2),
+    keys: (x2) => [...x2.keys()],
+    vals: (x2) => [...x2.values()],
+    entries: (x2) => [...x2.entries()],
+    get: (x2, k) => x2.has(k) ? k : void 0,
+    set: (x2, k, v) => x2.add(v) ? v : void 0,
+    rem: (x2, k) => x2.delete(k),
     to: {
       "*": (set) => Array.from(set),
       Function: (set) => (_) => set,
@@ -5519,8 +5519,8 @@
       delone: (str) => {
         let r = "";
         for (let v of str) {
-          let x = deloneMap.from.indexOf(v);
-          r += x >= 0 ? deloneMap.to[x] : v;
+          let x2 = deloneMap.from.indexOf(v);
+          r += x2 >= 0 ? deloneMap.to[x2] : v;
         }
         return r;
       },
@@ -5544,8 +5544,8 @@
         return r;
       },
       bite: (str, separator) => {
-        const x = str.indexOf(separator);
-        return x <= 0 ? ["", str] : [str.slice(0, x), str.slice(x + separator.length)];
+        const x2 = str.indexOf(separator);
+        return x2 <= 0 ? ["", str] : [str.slice(0, x2), str.slice(x2 + separator.length)];
       },
       levenshtein: (s0, s1, blend) => {
         var s = blend === false ? [s0, s1] : [String.jet.simplify(s0, blend), String.jet.simplify(s1, blend)];
@@ -5592,17 +5592,17 @@
   var to2 = (sym) => String(sym).slice(7, -1);
   defs_default.define("Symbol", Symbol, {
     create: Symbol,
-    copy: (x) => Symbol(to2(x)),
+    copy: (x2) => Symbol(to2(x2)),
     rnd: (...a) => Symbol(defs_default.rnd.String(...a)),
     to: {
       Function: (sym) => (_) => sym
     }
   });
   defs_default.define("WeakMap", WeakMap, {
-    copy: (x) => /* @__PURE__ */ new WeakMap(),
-    get: (x, k) => x.get(k),
-    set: (x, k, v) => x.set(k, v),
-    rem: (x, k) => x.delete(k),
+    copy: (x2) => /* @__PURE__ */ new WeakMap(),
+    get: (x2, k) => x2.get(k),
+    set: (x2, k, v) => x2.set(k, v),
+    rem: (x2, k) => x2.delete(k),
     to: {
       Function: (map) => (_) => map
     }
@@ -5946,10 +5946,10 @@
     }
     const { min, max } = opt;
     if (min != null && str.length < min) {
-      fail2("too short", min);
+      fail2("too short", ["min", min]);
     }
     if (max != null && str.length > max) {
-      str = str.substring(0, max);
+      fail2("too long", ["max", max]);
     }
     return str;
   };
@@ -6261,8 +6261,8 @@
     }
   };
   var _records = /* @__PURE__ */ new WeakMap();
-  var recReg = (row2) => _records.set(row2.current, row2);
-  var recUnreg = (row2) => _records.delete(row2.current);
+  var recReg = (_rec) => _records.set(_rec.current, _rec);
+  var recUnreg = (_rec) => _records.delete(_rec.current);
   var _recGetPriv = (db2, rec, throwError2 = true) => {
     const _p = _records.get(rec);
     if (_p && _p.db === db2) {
@@ -6273,11 +6273,11 @@
     }
     ;
   };
-  var _recToJSON = (row2) => {
+  var _recToJSON = (_rec) => {
     const r = {};
-    for (const _col of row2.getCols()) {
+    for (const _col of _rec.getCols()) {
       const { name, type: { saver } } = _col.current;
-      let value2 = row2.getCol(name, true);
+      let value2 = _rec.getCol(name, true);
       if (isNull(value2)) {
         continue;
       }
@@ -6285,16 +6285,16 @@
     }
     return r;
   };
-  function createRecord(row2, isCurrent) {
-    const get = (p) => row2.getCol(p, isCurrent);
+  function createRecord(_rec, isCurrent) {
+    const get = (p) => _rec.getCol(p, isCurrent);
     const id = (_) => get("id");
-    const json2 = (_) => _recToJSON(row2);
+    const json2 = (_) => _recToJSON(_rec);
     const handler = {
       get: (_, p) => p === "toString" ? id : p === "toJSON" ? json2 : get(p),
-      has: (_, p) => row2.hasCol(p),
-      set: (_, p, value2) => row2.db.update(proxy, { [p]: value2 }),
-      deleteProperty: (_, p) => row2.db.update(proxy, { [p]: null }),
-      ownKeys: (_) => [...row2.getColsNames()],
+      has: (_, p) => _rec.hasCol(p),
+      set: (_, p, value2) => _rec.db.update(proxy, { [p]: value2 }),
+      deleteProperty: (_, p) => _rec.db.update(proxy, { [p]: null }),
+      ownKeys: (_) => [..._rec.getColsNames()],
       getOwnPropertyDescriptor: (_, p) => ({
         enumerable: true,
         configurable: true,
@@ -6442,6 +6442,191 @@
       return task.finish(throwError2);
     };
   };
+  var Turn = class {
+    static attach(task, _rec, input, force = false) {
+      return _rec.turn = new Turn(task, _rec, input, force);
+    }
+    constructor(task, _rec, input, force = false) {
+      this.task = task;
+      this._rec = _rec;
+      this.isChange = _rec.state === "pending";
+      solids(this, {
+        force,
+        input,
+        output: {},
+        changes: /* @__PURE__ */ new Set(),
+        pendings: /* @__PURE__ */ new Set()
+      });
+      this._prepare();
+    }
+    _prepare() {
+      const { _rec, task, pendings } = this;
+      const { values, state } = _rec;
+      if (!values._ent) {
+        throw _rec.fail("required", ["column", "_ent"]);
+      }
+      const _cols = _rec.getCols();
+      if (!_cols) {
+        throw _rec.fail("invalid", ["column", "_ent"]);
+      }
+      for (const _col of _cols) {
+        try {
+          this._prepareCol(_col);
+        } catch (err) {
+          task.catchMinor(err, [["column", _col.values.name]]);
+        }
+      }
+      if (state !== "ready" || pendings.size > 0) {
+        return;
+      }
+      _rec.fail("blank", ["values", values]);
+    }
+    _prepareCol(_col) {
+      const { _rec, force, input, output, pendings } = this;
+      const { meta: metaRec, values, state } = _rec;
+      const { meta: metaCol, values: { name, formula, resetIf, isVirtual } } = _col;
+      const isReal = input.hasOwnProperty(name);
+      const isMeta = metaRec + metaCol > 3;
+      output[name] = values[name];
+      if (isReal && state === "ready") {
+        if (isMeta) {
+          warn("meta");
+        }
+        if (formula) {
+          warn(`formula`);
+        }
+      }
+      if (isVirtual) {
+        return;
+      }
+      if (formula) {
+        pendings.add(_col);
+        return;
+      }
+      if (isMeta && state === "pending") {
+        return;
+      }
+      if (force || isReal) {
+        pendings.add(_col);
+        return;
+      }
+      if (resetIf) {
+        input[name] = values[name];
+        pendings.add(_col);
+        return;
+      }
+    }
+    execute() {
+      const { pendings } = this;
+      for (const _col of pendings) {
+        this.pull(_col);
+      }
+      return this;
+    }
+    pull(_col) {
+      const { task, _rec, pendings, input, output, changes } = this;
+      const { name, omitChange } = _col.values;
+      if (pendings.has(_col)) {
+        const { setter: setter2 } = _col.traits;
+        pendings.delete(_col);
+        try {
+          setter2(_rec, input[name], output);
+        } catch (err) {
+          task.catchMinor(err, [["column", name]]);
+        }
+        if (output[name] !== _rec.values[name]) {
+          changes.add(name);
+          if (!omitChange) {
+            this.isChange = true;
+          }
+        }
+      }
+      return output[name];
+    }
+    detach(isOk) {
+      const { _rec, output } = this;
+      if (isOk) {
+        _rec.values = output;
+      }
+      delete this._rec;
+      delete _rec.turn;
+    }
+  };
+  var _Record = class {
+    constructor(db2, values) {
+      this.db = db2;
+      this._db = vault.get(db2);
+      this.meta = 0;
+      this.state = "pending";
+      const v = this.values = Object.assign({}, values);
+      v._ent = toId(v._ent);
+      this.current = createRecord(this, true);
+      recReg(this);
+    }
+    fail(reason, ...infos) {
+      const { id, _ent } = this.values;
+      return fail2(reason, ["entity", _ent], ["record", id], ...infos);
+    }
+    init(task) {
+      const { state, values } = this;
+      if (state !== "pending") {
+        this.fail("not pending");
+      }
+      Turn.attach(task, this, values, true);
+      this.state = "init";
+      return this;
+    }
+    ready() {
+      const { db: db2, state, current, turn, task } = this;
+      if (state !== "init") {
+        this.fail("not init");
+      }
+      turn.execute();
+      this.before = createRecord(this, false);
+      this.state = "ready";
+      _chopSyncIn(db2, current, task);
+      return this;
+    }
+    update(task, values, isSet2 = false) {
+      const { state, db: db2, current } = this;
+      if (state !== "ready") {
+        this.fail("not ready");
+      }
+      Turn.attach(task, this, values, isSet2).execute();
+      _chopSyncIn(db2, current, task);
+      return this;
+    }
+    getColsNames() {
+      return this._db.colsByEnt.keys(this.values._ent);
+    }
+    getCols() {
+      return this._db.colsByEnt.values(this.values._ent);
+    }
+    getCol(colName, isCurrent = true) {
+      const { _db, values, state, turn } = this;
+      const _col = _db.colsByEnt.get(values._ent, colName);
+      if (!_col) {
+        return state === "ready" ? void 0 : values[colName];
+      }
+      return _col.traits.getter(this, isCurrent ? void 0 : turn);
+    }
+    hasCol(colName) {
+      const { _db, values } = this;
+      return _db.colsByEnt.has(values._ent, colName);
+    }
+    fit(next, event, task) {
+      next();
+    }
+    roll() {
+      this.turn?.detach(true);
+    }
+    rollback() {
+      this.turn?.detach(false);
+    }
+    unreg() {
+      recUnreg(this);
+    }
+  };
   var functions_exports = {};
   __export3(functions_exports, {
     toFunction: () => toFunction
@@ -6572,13 +6757,13 @@
       "function": { meta: 3, setter: (v, c) => toFunction(v, c), getter, saver: (v) => toString3(v) },
       "regexp": { meta: 3, setter: (v, c) => toRegExp(v, c), getter },
       "object": { meta: 3, setter: (v, c) => toObject(v, c), getter, saver: (v) => toString3(v) },
-      "ref": { meta: 3, setter: (v, c) => toId(v, c), getter, saver: (v) => toId(v) },
+      "ref": { meta: 3, setter: (v, c) => toId(v, c), getter: (v, c, db2) => db2.get(c.ref?.id, x, false), saver: (v) => toId(v) },
       "nref": { meta: 3, setter, getter }
     },
     "_cols": {
       "_ents-_ent": { meta: 3, ent: "_ents", name: "_ent", type: "ref", ref: "_ents", isReadonly, isRequired },
       "_ents-id": { meta: 3, ent: "_ents", name: "id", type: "string", isReadonly, isRequired },
-      "_ents-meta": { meta: 3, ent: "_ents", name: "meta", type: "string", isReadonly },
+      "_ents-meta": { meta: 3, ent: "_ents", name: "meta", type: "number", isReadonly },
       // "_ents-cols":{
       //     meta:3, ent:"_ents", name:"cols", type:"ref", ref:"_cols", parent:"_cols-ent", isList:true, noCache:true,
       //     store:(c, db)=>{
@@ -6598,18 +6783,18 @@
       //_types
       "_types-_ent": { meta: 3, ent: "_types", name: "_ent", type: "ref", ref: "_ents", isReadonly, isRequired },
       "_types-id": { meta: 3, ent: "_types", name: "id", type: "string", isReadonly, isRequired },
-      "_types-meta": { meta: 3, ent: "_types", name: "meta", type: "string", isReadonly },
-      "_types-setter": { meta: 3, ent: "_types", name: "setter", type: "function", isReadonly, fallback: (_) => (v) => v },
-      "_types-getter": { meta: 3, ent: "_types", name: "getter", type: "function", isReadonly, fallback: (_) => (v) => v },
+      "_types-meta": { meta: 3, ent: "_types", name: "meta", type: "number", isReadonly },
+      "_types-setter": { meta: 3, ent: "_types", name: "setter", type: "function", isReadonly },
+      "_types-getter": { meta: 3, ent: "_types", name: "getter", type: "function", isReadonly },
       "_types-saver": { meta: 3, ent: "_types", name: "saver", type: "function", isReadonly },
       "_types-loader": { meta: 3, ent: "_types", name: "loader", type: "function", isReadonly },
       //_cols
       "_cols-_ent": { meta: 3, ent: "_cols", name: "_ent", type: "ref", ref: "_ents", isReadonly, isRequired },
       "_cols-id": { meta: 3, ent: "_cols", name: "id", type: "string", isReadonly, isRequired, formula: (r) => join("-", r.ent?.id, r.name) },
-      "_cols-meta": { meta: 3, ent: "_cols", name: "meta", type: "string", isReadonly },
+      "_cols-meta": { meta: 3, ent: "_cols", name: "meta", type: "number", isReadonly },
       "_cols-ent": { meta: 3, ent: "_cols", name: "ent", type: "ref", ref: "_ents", isReadonly, isRequired },
       "_cols-name": { meta: 3, ent: "_cols", name: "name", type: "string", isReadonly, isRequired },
-      "_cols-type": { meta: 3, ent: "_cols", name: "type", type: "ref", ref: "_types", fallback: (_) => "string" },
+      "_cols-type": { meta: 3, ent: "_cols", name: "type", type: "ref", ref: "_types", init: (_) => "string", isRequired },
       "_cols-ref": { meta: 3, ent: "_cols", name: "ref", type: "ref", ref: "_ents" },
       "_cols-parent": { meta: 3, ent: "_cols", name: "parent", type: "ref", ref: "_cols" },
       "_cols-store": { meta: 3, ent: "_cols", name: "store", type: "function" },
@@ -6618,9 +6803,9 @@
       "_cols-isRequired": { meta: 3, ent: "_cols", name: "isRequired", type: "function" },
       "_cols-resetIf": { meta: 3, ent: "_cols", name: "resetIf", type: "function" },
       "_cols-init": { meta: 2, ent: "_cols", name: "init", type: "function" },
-      //Type should be defined as a function
+      //_Type should be defined as a function
       "_cols-fallback": { meta: 2, ent: "_cols", name: "fallback", type: "function" },
-      //Type should be defined as a function
+      //_Type should be defined as a function
       "_cols-validator": { meta: 2, ent: "_cols", name: "validator", type: "function" },
       "_cols-decimal": { meta: 2, ent: "_cols", name: "decimal", type: "number", decimal: 0, min: 0 },
       "_cols-min": { meta: 2, ent: "_cols", name: "min", type: "number" },
@@ -6632,215 +6817,6 @@
       "_cols-omitChange": { meta: 3, ent: "_cols", name: "omitChange", type: "boolean" }
     }
   };
-  var isMetaEnt = (_ent) => metaEnts.includes(_ent);
-  var getMetaRow = (_ent, id) => {
-    if (isMetaEnt(_ent)) {
-      return metaData[_ent][id];
-    }
-  };
-  var rowMetaMerge = (_ent, id, rawRow) => {
-    const meta = getMetaRow(_ent, id);
-    const row2 = { ...rawRow, _ent, id };
-    if (!meta) {
-      return row2;
-    }
-    for (const colName in metaData._cols) {
-      const col = metaData._cols[colName];
-      if (col._ent !== _ent) {
-        continue;
-      }
-      if (col.meta < 2 && row2.hasOwnProperty(colName)) {
-        continue;
-      }
-      row2[colName] = meta[colName];
-    }
-    return row2;
-  };
-  var Turn = class {
-    static attach(task, row2, input, force = false) {
-      return row2.turn = new Turn(task, row2, input, force);
-    }
-    constructor(task, row2, input, force = false) {
-      this.task = task;
-      this.row = row2;
-      this.isChange = row2.state === "pending";
-      solids(this, {
-        force,
-        input,
-        output: {},
-        changes: /* @__PURE__ */ new Set(),
-        pendings: /* @__PURE__ */ new Set()
-      });
-      this._prepare();
-    }
-    _prepare() {
-      const { row: row2, task, pendings } = this;
-      const { values, state } = row2;
-      if (!values._ent) {
-        throw row2.fail("required", ["column", "_ent"]);
-      }
-      const _cols = row2.getCols();
-      if (!_cols) {
-        throw row2.fail("invalid", ["column", "_ent"]);
-      }
-      for (const _col of _cols) {
-        try {
-          this._prepareCol(_col);
-        } catch (err) {
-          task.catchMinor(err, [["column", _col.values.name]]);
-        }
-      }
-      if (state !== "ready" || pendings.size > 0) {
-        return;
-      }
-      row2.fail("blank", ["values", values]);
-    }
-    _prepareCol(_col) {
-      const { row: row2, force, input, output, pendings } = this;
-      const { meta: metaRec, values, state } = row2;
-      const { meta: metaCol, values: { name, formula, resetIf, isVirtual } } = _col;
-      const isReal = input.hasOwnProperty(name);
-      const isMeta = metaRec + metaCol > 3;
-      output[name] = values[name];
-      if (isReal && state === "ready") {
-        if (isMeta) {
-          warn("meta");
-        }
-        if (formula) {
-          warn(`formula`);
-        }
-      }
-      if (isVirtual) {
-        return;
-      }
-      if (formula) {
-        pendings.add(_col);
-        return;
-      }
-      if (isMeta && state === "pending") {
-        return;
-      }
-      if (force || isReal) {
-        pendings.add(_col);
-        return;
-      }
-      if (resetIf) {
-        input[name] = values[name];
-        pendings.add(_col);
-        return;
-      }
-    }
-    execute() {
-      const { pendings } = this;
-      for (const _col of pendings) {
-        this.pull(_col);
-      }
-      return this;
-    }
-    pull(_col) {
-      const { task, row: row2, pendings, input, output, changes } = this;
-      const { name, omitChange } = _col.values;
-      if (pendings.has(_col)) {
-        const { setter: setter2 } = _col.traits;
-        pendings.delete(_col);
-        try {
-          setter2(row2, input[name], output);
-        } catch (err) {
-          task.catchMinor(err, [["column", name]]);
-        }
-        if (output[name] !== row2.values[name]) {
-          changes.add(name);
-          if (!omitChange) {
-            this.isChange = true;
-          }
-        }
-      }
-      return output[name];
-    }
-    detach(isOk) {
-      const { row: row2, output } = this;
-      if (isOk) {
-        row2.values = output;
-      }
-      delete this.row;
-      delete row2.turn;
-    }
-  };
-  var Row = class {
-    constructor(db2, values) {
-      this.db = db2;
-      this._db = vault.get(db2);
-      this.state = "pending";
-      const v = this.values = Object.assign({}, values);
-      v._ent = toId(v._ent);
-      this.meta = isMetaEnt(v._ent) ? v.meta : 0;
-      this.current = createRecord(this, true);
-      recReg(this);
-    }
-    fail(reason, ...infos) {
-      const { id, _ent } = this.values;
-      return fail2(reason, ["entity", _ent], ["record", id], ...infos);
-    }
-    init(task) {
-      const { state, values } = this;
-      if (state !== "pending") {
-        this.fail("not pending");
-      }
-      Turn.attach(task, this, values, true);
-      this.state = "init";
-      return this;
-    }
-    ready() {
-      const { db: db2, state, current, turn, task } = this;
-      if (state !== "init") {
-        this.fail("not init");
-      }
-      turn.execute();
-      this.before = createRecord(this, false);
-      this.state = "ready";
-      _chopSyncIn(db2, current, task);
-      return this;
-    }
-    update(task, values, isSet2 = false) {
-      const { state, db: db2, current } = this;
-      if (state !== "ready") {
-        this.fail("not ready");
-      }
-      Turn.attach(task, this, values, isSet2).execute();
-      _chopSyncIn(db2, current, task);
-      return this;
-    }
-    getColsNames() {
-      return this._db.colsByEnt.keys(this.values._ent);
-    }
-    getCols() {
-      return this._db.colsByEnt.values(this.values._ent);
-    }
-    getCol(colName, isCurrent = true) {
-      const { _db, values, state, turn } = this;
-      const _col = _db.colsByEnt.get(values._ent, colName);
-      if (!_col) {
-        return state === "ready" ? void 0 : values[colName];
-      }
-      return _col.traits.getter(this, isCurrent ? void 0 : turn);
-    }
-    hasCol(colName) {
-      const { _db, values } = this;
-      return _db.colsByEnt.has(values._ent, colName);
-    }
-    fit(next, event, task) {
-      next();
-    }
-    roll() {
-      this.turn?.detach(true);
-    }
-    rollback() {
-      this.turn?.detach(false);
-    }
-    unreg() {
-      recUnreg(this);
-    }
-  };
   var _colCreateStored = (_col) => {
     const { db: db2, current: col } = _col;
     const { store } = col;
@@ -6850,11 +6826,11 @@
     const { db: db2, current: col, values: v, traits } = _col;
     const { isList, name, ref, type, fallback, isVirtual } = v;
     const { getter: getter2 } = metaData._types[v.type] || col.type;
-    const typize = type == "ref" ? (x2) => db2.get(ref, x2, false) : (x2) => getter2(x2, col);
+    const typize = type == "ref" ? (x2) => db2.get(ref, x2, false) : (x2) => getter2(x2, col, db2);
     const n = !isList ? typize : (x2) => reArray(x2, typize);
-    return (row2, turn) => {
-      const { current, before, values } = row2;
-      let val = n(isVirtual ? traits.setter(row2) : turn ? turn.pull(_col) : values[name]);
+    return (_rec, turn) => {
+      const { current, before, values } = _rec;
+      let val = n(isVirtual ? traits.setter(_rec) : turn ? turn.pull(_col) : values[name]);
       if (fallback && isNull2(val)) {
         val = n(fallback(current, before, traits.stored));
       }
@@ -6863,12 +6839,12 @@
   };
   var _colCreateSetter = (_col) => {
     const { current: col, values: v, traits } = _col;
-    const { isList, name, formula, validator, isReadonly: isReadonly2, resetIf, init, isRequired: isRequired2 } = col;
+    const { isList, name, formula, validator, isReadonly: isReadonly2, resetIf, init, isRequired: isRequired2 } = v;
     const { setter: setter2 } = metaData._types[v.type] || col.type;
-    const typize = (x2) => isNull2(x2) ? void 0 : setter2(x2, col);
+    const typize = (x2) => isNull2(x2) ? void 0 : setter2(x2, col, db);
     const n = !isList ? typize : (x2) => reArray(x2, typize);
-    return (row2, val, values = {}) => {
-      const { current, before } = row2;
+    return (_rec, val, values = {}) => {
+      const { current, before } = _rec;
       const stored = traits.stored;
       if (formula) {
         val = values[name] = n(formula(current, before, stored));
@@ -6913,13 +6889,25 @@
     "toJSON"
     // výstup při JSON.stringify()
   ];
-  var Column = class extends Row {
+  var _Column = class extends _Record {
     constructor(db2, values) {
       super(db2, values);
       const v = this.values;
       v.ent = toId(v.ent);
+      v.name = toString3(v.name);
+      v.id = join("-", v.ent, v.name);
       if (nameBlackList.includes(v.name)) {
         throw this.fail(`blacklist`, ["column", "name"], ["value", v.name]);
+      }
+      const metaRec = metaData._cols[v.id];
+      if (metaRec) {
+        this.meta = v.meta = metaRec.meta;
+      } else if (v.name === "_ent") {
+        this.meta = 2;
+      } else if (v.name === "id") {
+        this.meta = 1;
+      } else {
+        this.meta = 0;
       }
       this._traits = {};
       this.traits = cacheds({}, this._traits, {
@@ -6930,9 +6918,10 @@
       this._db.colsByEnt.set(v.ent, v.name, this);
     }
     resetTraits() {
-      delete this._traits.stored;
-      delete this._traits.getter;
-      delete this._traits.setter;
+      const { _traits } = this;
+      delete _traits.stored;
+      delete _traits.getter;
+      delete _traits.setter;
     }
     fit(next, event, task) {
       next();
@@ -6946,37 +6935,45 @@
   };
   var exe = (task, record, force = false) => {
     const { db: db2 } = task;
-    const row2 = _recGetPriv(db2, record);
-    if (!force && row2.meta) {
-      row2.fail("is meta");
+    const _rec = _recGetPriv(db2, record);
+    if (!force && _rec.meta) {
+      _rec.fail("is meta");
     }
     _chopSyncOut2(db2, record, task);
-    return row2;
+    return _rec;
   };
-  var roll = (task, row2) => {
-    row2.unreg();
+  var roll = (task, _rec) => {
+    _rec.unreg();
   };
-  var rollback = (task, row2) => {
+  var rollback = (task, _rec) => {
     const { db: db2 } = task;
-    if (!row2) {
+    if (!_rec) {
       return;
     }
-    _chopSyncIn(db2, row2.current);
+    _chopSyncIn(db2, _rec.current);
   };
   var exeRemoveForce = (task, record) => exe(task, record, true);
   var exeRemove = (task, record) => exe(task, record, false);
   var _recRemove = taskWrap(exeRemove, roll, rollback);
   var _recRemoveForce = taskWrap(exeRemoveForce, roll, rollback);
-  var Entity = class extends Row {
+  var _Entity = class extends _Record {
     constructor(db2, values) {
       super(db2, values);
+      const v = this.values;
+      v.id = toString3(v.id);
+      const metaRec = metaData._ents[v.id];
+      if (metaRec) {
+        this.meta = v.meta = metaRec.meta;
+      } else {
+        this.meta = v.meta = 0;
+      }
     }
     fit(next, event, task) {
       next();
-      const { _db, db: db2, values: { id } } = row;
+      const { _db, db: db2, values: { id } } = this;
       if (event === "add") {
         const temp = { _ent: "_cols", ent: id, isReadonly: fceTrue, isRequired: fceTrue };
-        db2.add({ ...temp, name: "_ent", type: "ref", ref: "_ents", meta: 3 }, task?.context);
+        db2.add({ ...temp, name: "_ent", type: "ref", ref: "_ents", meta: 2 }, task?.context);
         db2.add({ ...temp, name: "id", type: "string", meta: 1 }, task?.context);
       } else if (event === "remove") {
         for (const _col of _db.colsByEnt.values(id)) {
@@ -6986,73 +6983,94 @@
       }
     }
   };
+  var _Type = class extends _Record {
+    constructor(db2, values) {
+      super(db2, values);
+      const v = this.values;
+      v.id = toString3(v.id);
+      const metaRec = metaData._types[v.id];
+      if (metaRec) {
+        this.meta = v.meta = metaRec.meta;
+        v.setter = metaRec.setter;
+        v.getter = metaRec.getter;
+        v.saver = metaRec.saver;
+        v.loader = metaRec.loader;
+      } else {
+        this.meta = v.meta = 0;
+      }
+    }
+  };
   var createRow2 = (db2, values) => {
     values = Object.assign({}, values);
+    console.log(values);
     const _ent = values._ent = toId(values._ent);
-    if (_ent === "_cols") {
-      return new Column(db2, values);
-    }
     if (_ent === "_ents") {
-      return new Entity(db2, values);
+      return new _Entity(db2, values);
     }
-    return new Row(db2, values);
+    if (_ent === "_types") {
+      return new _Type(db2, values);
+    }
+    if (_ent === "_cols") {
+      return new _Column(db2, values);
+    }
+    return new _Record(db2, values);
   };
   var exe2 = (task, values) => {
     const { db: db2 } = task;
-    const row2 = createRow2(db2, values);
-    row2.init(task).ready();
-    return row2;
+    const _rec = createRow2(db2, values);
+    _rec.init(task).ready();
+    return _rec;
   };
-  var roll2 = (task, row2) => {
-    const { changes } = row2.turn;
+  var roll2 = (task, _rec) => {
+    const { changes } = _rec.turn;
     task.assign({ changes });
-    row2.roll();
+    _rec.roll();
   };
-  var rollback2 = (task, row2) => {
+  var rollback2 = (task, _rec) => {
     const { db: db2 } = task;
-    if (!row2) {
+    if (!_rec) {
       return;
     }
-    _chopSyncOut(db2, row2.current);
-    row2.rollback();
-    row2.unreg();
+    _chopSyncOut(db2, _rec.current);
+    _rec.rollback();
+    _rec.unreg();
     task.unsign("record");
   };
   var _recAdd = taskWrap(exe2, roll2, rollback2);
   var exe3 = (isSet2, task, values) => {
     const { db: db2 } = task;
-    let row2 = createRow(db2, values).init(task);
-    const { _ent, id } = row2.current;
+    let _rec = createRow(db2, values).init(task);
+    const { _ent, id } = _rec.current;
     const brother = _chopGetRec(db2, toId(_ent), id);
     if (!brother) {
-      row2.ready();
-      return [row2, true];
+      _rec.ready();
+      return [_rec, true];
     } else {
-      row2.unreg();
-      row2 = _recGetPriv(db2, brother);
-      row2.update(task, values, isSet2);
-      return [row2, false];
+      _rec.unreg();
+      _rec = _recGetPriv(db2, brother);
+      _rec.update(task, values, isSet2);
+      return [_rec, false];
     }
   };
-  var roll3 = (task, [row2, isAdd]) => {
-    const { changes } = row2.turn;
+  var roll3 = (task, [_rec, isAdd]) => {
+    const { changes } = _rec.turn;
     task.assign({ changes });
-    row2.roll();
+    _rec.roll();
   };
   var rollback3 = (task, res) => {
     if (!res) {
       return;
     }
-    const [row2, isAdd] = res;
+    const [_rec, isAdd] = res;
     if (isAdd) {
-      _chopSyncOut(db, row2.current);
+      _chopSyncOut(db, _rec.current);
     }
-    row2.rollback();
+    _rec.rollback();
     task.unsign("record");
     if (isAdd) {
-      row2.unreg();
+      _rec.unreg();
     } else {
-      _chopSyncIn(db, row2.current);
+      _chopSyncIn(db, _rec.current);
     }
   };
   var exeSet = (...a) => exe3(true, ...a);
@@ -7061,35 +7079,59 @@
   var _recAddOrUpdate = taskWrap(exeUpdate, roll3, rollback3);
   var exe4 = (isSet2, task, record, values) => {
     const { db: db2 } = task;
-    const row2 = _recGetPriv(db2, record);
-    row2.update(task, values, isSet2);
-    return row2;
+    const _rec = _recGetPriv(db2, record);
+    _rec.update(task, values, isSet2);
+    return _rec;
   };
-  var roll4 = (task, row2) => {
-    const { changes } = row2.turn;
+  var roll4 = (task, _rec) => {
+    const { changes } = _rec.turn;
     task.assign({ changes });
-    row2.roll();
+    _rec.roll();
   };
-  var rollback4 = (task, row2) => {
+  var rollback4 = (task, _rec) => {
     const { db: db2 } = task;
-    if (!row2) {
+    if (!_rec) {
       return;
     }
-    row2.rollback();
+    _rec.rollback();
     task.unsign("record");
-    _chopSyncIn(db2, row2.current);
+    _chopSyncIn(db2, _rec.current);
   };
   var exeUpdate2 = (...a) => exe4(false, ...a);
   var exeSet2 = (...a) => exe4(true, ...a);
   var _recSet = taskWrap(exeSet2, roll4, rollback4);
   var _recUpdate = taskWrap(exeUpdate2, roll4, rollback4);
+  var isMetaEnt = (_ent) => metaEnts.includes(_ent);
+  var getMetaRow = (_ent, id) => {
+    if (isMetaEnt(_ent)) {
+      return metaData[_ent][id];
+    }
+  };
+  var rowMetaMerge = (_ent, id, rawRow) => {
+    const meta = getMetaRow(_ent, id);
+    const _rec = { ...rawRow, _ent, id };
+    if (!meta) {
+      return _rec;
+    }
+    for (const colName in metaData._cols) {
+      const col = metaData._cols[colName];
+      if (col._ent !== _ent) {
+        continue;
+      }
+      if (col.meta < 2 && _rec.hasOwnProperty(colName)) {
+        continue;
+      }
+      _rec[colName] = meta[colName];
+    }
+    return _rec;
+  };
   var _dbInit = (db2, task, data, save) => {
     const loaded = /* @__PURE__ */ new Set();
     const loadRecs = (_ent, recsRaw) => {
       loaded.add(_ent);
       for (const id in recsRaw) {
-        const row2 = createRow2(db2, rowMetaMerge(_ent, id, recsRaw[id]));
-        _chopSyncIn(db2, row2.current);
+        const _rec = createRow2(db2, rowMetaMerge(_ent, id, recsRaw[id]));
+        _chopSyncIn(db2, _rec.current);
       }
       ;
     };
@@ -7103,21 +7145,21 @@
     }
     const _recs = [];
     for (const [rec] of _chopGetAllRecs(db2)) {
-      const row2 = _recGetPriv(db2, rec);
-      if (row2.state === "pending") {
-        _recs.push(row2.init(task));
+      const _rec = _recGetPriv(db2, rec);
+      if (_rec.state === "pending") {
+        _recs.push(_rec.init(task));
       }
     }
-    for (const row2 of _recs) {
-      row2.ready();
+    for (const _rec of _recs) {
+      _rec.ready();
     }
     db2.fit((next, event, task2) => {
       const { record } = task2;
-      const row2 = _recGetPriv(db2, record);
-      if (!row2) {
+      const _rec = _recGetPriv(db2, record);
+      if (!_rec) {
         return next();
       }
-      row2.fit(next, event, task2);
+      _rec.fit(next, event, task2);
     });
     db2.effect((event, task2) => {
       const { record } = task2;

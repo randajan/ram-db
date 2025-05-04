@@ -1,7 +1,9 @@
 import { cacheds } from "@randajan/props";
-import { Row } from "./Row";
-import { toId } from "../../tools/traits/uni";
+import { _Record } from "./_Record";
+import { join, toId } from "../../tools/traits/uni";
 import { _colCreateGetter, _colCreateSetter, _colCreateStored } from "./static/traits";
+import { toString } from "../../tools/traits/strings";
+import { metaData } from "../../metaData/interface";
 
 export const nameBlackList = [
     "constructor",           // Object konstruktor
@@ -15,15 +17,28 @@ export const nameBlackList = [
     "toJSON"                 // výstup při JSON.stringify()
 ];
 
-export class Column extends Row {
+export class _Column extends _Record {
     constructor(db, values) {
         super(db, values);
 
         const v = this.values;
         v.ent = toId(v.ent);
+        v.name = toString(v.name);
+        v.id = join("-", v.ent, v.name);
 
         if (nameBlackList.includes(v.name)) {
             throw this.fail(`blacklist`, ["column", "name"], ["value", v.name]);
+        }
+
+        const metaRec = metaData._cols[v.id];
+        if (metaRec) {
+            this.meta = v.meta = metaRec.meta;
+        } else if (v.name === "_ent") {
+            this.meta = 2;
+        } else if (v.name === "id") {
+            this.meta = 1;
+        } else {
+            this.meta = 0;
         }
 
         this._traits = {};
@@ -37,9 +52,10 @@ export class Column extends Row {
     }
 
     resetTraits() {
-        delete this._traits.stored;
-        delete this._traits.getter;
-        delete this._traits.setter;
+        const { _traits } = this;
+        delete _traits.stored;
+        delete _traits.getter;
+        delete _traits.setter;
     }
     
     fit(next, event, task) {

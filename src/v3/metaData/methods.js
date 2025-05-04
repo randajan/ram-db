@@ -11,15 +11,15 @@ export const getMetaRow = (_ent, id)=>{
 
 export const rowMetaMerge = (_ent, id, rawRow)=>{
     const meta = getMetaRow(_ent, id);
-    const row = { ...rawRow, _ent, id };
-    if (!meta) { return row; }
+    const _rec = { ...rawRow, _ent, id };
+    if (!meta) { return _rec; }
 
     for (const colName in metaData._cols) {
         const col = metaData._cols[colName];
         if (col._ent !== _ent) { continue; }
-        if (col.meta < 2 && row.hasOwnProperty(colName)) { continue; }
-        row[colName] = meta[colName];
+        if (col.meta < 2 && _rec.hasOwnProperty(colName)) { continue; }
+        _rec[colName] = meta[colName];
     }
 
-    return row;
+    return _rec;
 }

@@ -31,13 +31,13 @@ export const metaData = {
         "function":{ meta:3, setter:(v, c)=>toFunction(v, c), getter, saver:v=>toString(v) },
         "regexp":{ meta:3, setter:(v, c)=>toRegExp(v, c), getter },
         "object":{ meta:3, setter:(v, c)=>toObject(v, c), getter, saver:v=>toString(v) },
-        "ref":{ meta:3, setter:(v, c)=>toId(v, c), getter, saver:v=>toId(v) },
+        "ref":{ meta:3, setter:(v, c)=>toId(v, c), getter:(v, c, db) => db.get(c.ref?.id, x, false), saver:v=>toId(v) },
         "nref":{ meta:3, setter, getter },
     },
     "_cols":{
         "_ents-_ent":{ meta:3, ent:"_ents", name:"_ent", type:"ref", ref:"_ents", isReadonly, isRequired },
         "_ents-id":{ meta:3, ent:"_ents", name:"id", type:"string", isReadonly, isRequired },
-        "_ents-meta":{ meta:3, ent:"_ents", name:"meta", type:"string", isReadonly },
+        "_ents-meta":{ meta:3, ent:"_ents", name:"meta", type:"number", isReadonly },
         // "_ents-cols":{
         //     meta:3, ent:"_ents", name:"cols", type:"ref", ref:"_cols", parent:"_cols-ent", isList:true, noCache:true,
         //     store:(c, db)=>{
@@ -58,19 +58,19 @@ export const metaData = {
         //_types
         "_types-_ent":{ meta:3, ent:"_types", name:"_ent", type:"ref", ref:"_ents", isReadonly, isRequired },
         "_types-id":{ meta:3, ent:"_types", name:"id", type:"string", isReadonly, isRequired },
-        "_types-meta":{ meta:3, ent:"_types", name:"meta", type:"string", isReadonly },
-        "_types-setter":{ meta:3, ent:"_types", name:"setter", type:"function", isReadonly, fallback:_=>v=>v },
-        "_types-getter":{ meta:3, ent:"_types", name:"getter", type:"function", isReadonly, fallback:_=>v=>v },
+        "_types-meta":{ meta:3, ent:"_types", name:"meta", type:"number", isReadonly },
+        "_types-setter":{ meta:3, ent:"_types", name:"setter", type:"function", isReadonly },
+        "_types-getter":{ meta:3, ent:"_types", name:"getter", type:"function", isReadonly },
         "_types-saver":{ meta:3, ent:"_types", name:"saver", type:"function", isReadonly },
-        "_types-loader":{ meta:3, ent:"_types", name:"loader", type:"function", isReadonly},
+        "_types-loader":{ meta:3, ent:"_types", name:"loader", type:"function", isReadonly },
 
         //_cols
         "_cols-_ent":{ meta:3, ent:"_cols", name:"_ent", type:"ref", ref:"_ents", isReadonly, isRequired },
         "_cols-id":{ meta:3, ent:"_cols", name:"id", type:"string", isReadonly, isRequired, formula:r=>join("-", r.ent?.id, r.name) },
-        "_cols-meta":{ meta:3, ent:"_cols", name:"meta", type:"string", isReadonly },
+        "_cols-meta":{ meta:3, ent:"_cols", name:"meta", type:"number", isReadonly },
         "_cols-ent":{ meta:3, ent:"_cols", name:"ent", type:"ref", ref:"_ents", isReadonly, isRequired },
         "_cols-name":{ meta:3, ent:"_cols", name:"name", type:"string", isReadonly, isRequired },
-        "_cols-type":{ meta:3, ent:"_cols", name:"type", type:"ref", ref:"_types", fallback:_=>"string" },
+        "_cols-type":{ meta:3, ent:"_cols", name:"type", type:"ref", ref:"_types", init:_=>"string", isRequired },
         "_cols-ref":{ meta:3, ent:"_cols", name:"ref", type:"ref", ref:"_ents" },
         "_cols-parent":{ meta:3, ent:"_cols", name:"parent", type:"ref", ref:"_cols" },
         "_cols-store":{ meta:3, ent:"_cols", name:"store", type:"function" },
@@ -78,8 +78,8 @@ export const metaData = {
         "_cols-isReadonly":{ meta:3, ent:"_cols", name:"isReadonly", type:"function" },
         "_cols-isRequired":{ meta:3, ent:"_cols", name:"isRequired", type:"function" },
         "_cols-resetIf":{ meta:3, ent:"_cols", name:"resetIf", type:"function" },
-        "_cols-init":{ meta:2, ent:"_cols", name:"init", type:"function" }, //Type should be defined as a function
-        "_cols-fallback":{ meta:2, ent:"_cols", name:"fallback", type:"function" }, //Type should be defined as a function
+        "_cols-init":{ meta:2, ent:"_cols", name:"init", type:"function" }, //_Type should be defined as a function
+        "_cols-fallback":{ meta:2, ent:"_cols", name:"fallback", type:"function" }, //_Type should be defined as a function
         "_cols-validator":{ meta:2, ent:"_cols", name:"validator", type:"function" },
         "_cols-decimal":{ meta:2, ent:"_cols", name:"decimal", type:"number", decimal:0, min:0 },
         "_cols-min":{ meta:2, ent:"_cols", name:"min", type:"number" }, //decimal should be defined as a function

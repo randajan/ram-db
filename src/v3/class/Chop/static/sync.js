@@ -1,5 +1,4 @@
-import { solid } from "@randajan/props";
-import { vault } from "../../../../components/uni/consts";
+import { vault } from "../../../tools/const";
 
 import { toSet } from "../../../../components/uni/formats";
 import { fail } from "../../../tools/traits/uni";

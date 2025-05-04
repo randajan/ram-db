@@ -6,25 +6,25 @@ import { createRow } from "../static/create";
 const exe = (task, values)=>{
     const { db } = task;
 
-    const row = createRow(db, values);
-    row.init(task).ready();
+    const _rec = createRow(db, values);
+    _rec.init(task).ready();
 
-    return row;
+    return _rec;
 }
 
-const roll = (task, row)=>{
-    const { changes } = row.turn;
+const roll = (task, _rec)=>{
+    const { changes } = _rec.turn;
     task.assign({ changes });
-    row.roll();
+    _rec.roll();
 }
 
-const rollback = (task, row)=>{
+const rollback = (task, _rec)=>{
     const { db } = task;
-    if (!row) { return; }
+    if (!_rec) { return; }
     
-    _chopSyncOut(db, row.current);
-    row.rollback();
-    row.unreg();
+    _chopSyncOut(db, _rec.current);
+    _rec.rollback();
+    _rec.unreg();
     task.unsign("record");
 }
 

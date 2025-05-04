@@ -6,23 +6,23 @@ import { _recGetPriv } from "../Record";
 
 const exe = (task, record, force=false)=>{
     const { db } = task;
-    const row = _recGetPriv(db, record);
+    const _rec = _recGetPriv(db, record);
 
-    if (!force && row.meta) { row.fail("is meta"); }
+    if (!force && _rec.meta) { _rec.fail("is meta"); }
     
     _chopSyncOut(db, record, task);
     
-    return row;
+    return _rec;
 }
 
-const roll = (task, row)=>{
-    row.unreg();
+const roll = (task, _rec)=>{
+    _rec.unreg();
 }
 
-const rollback = (task, row)=>{
+const rollback = (task, _rec)=>{
     const { db } = task;
-    if (!row) { return; }
-    _chopSyncIn(db, row.current);
+    if (!_rec) { return; }
+    _chopSyncIn(db, _rec.current);
 }
 
 const exeRemoveForce = (task, record)=>exe(task, record, true);

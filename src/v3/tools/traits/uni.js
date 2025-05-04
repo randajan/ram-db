@@ -21,6 +21,23 @@ export const isEmpty = any=>{
     return false;
 }
 
+export const reArray = (val, trait)=>{
+    
+    if (isNull(val)) { return; }
+    if (!Array.isArray(val)) {
+        const r = trait(val);
+        return !isNull(r) ? [r] : undefined;
+    }
+
+    const res = [];
+    for (const v of val) {
+        const r = trait(v);
+        if (!isNull(r)) { res.push(r); }
+    }
+
+    if (res.length) { return res; }
+}
+
 export const join = (separator, ...vals)=>{
     let s = "";
     for (let v of vals) {

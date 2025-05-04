@@ -1,5 +1,5 @@
 // <define:__slib_info>
-var define_slib_info_default = { isServer: true, isBuild: false, name: "@randajan/ram-db", description: "Realtime database", version: "2.8.8", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "node", port: 3005, dir: { root: "C:\\dev\\lib\\ram-db", dist: "demo/backend/dist" } };
+var define_slib_info_default = { isServer: true, isBuild: false, name: "@randajan/ram-db", description: "Realtime database", version: "2.8.9", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "node", port: 3005, dir: { root: "C:\\dev\\lib\\ram-db", dist: "demo/backend/dist" } };
 
 // node_modules/@randajan/simple-lib/dist/chunk-JLCKRPTS.js
 import chalkNative from "chalk";

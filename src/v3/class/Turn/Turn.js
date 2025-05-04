@@ -4,16 +4,16 @@ import { warn } from "../../tools/traits/uni";
 
 export class Turn {
 
-    static attach(task, row, input, force=false) {
-        return row.turn = new Turn(task, row, input, force);
+    static attach(task, _rec, input, force=false) {
+        return _rec.turn = new Turn(task, _rec, input, force);
     }
 
-    constructor(task, row, input, force=false) {
+    constructor(task, _rec, input, force=false) {
 
         this.task = task;
-        this.row = row;
+        this._rec = _rec;
 
-        this.isChange = row.state === "pending";
+        this.isChange = _rec.state === "pending";
         
         solids(this, {
             force,
@@ -27,13 +27,13 @@ export class Turn {
     }
 
     _prepare() {
-        const { row, task, pendings } = this;
-        const { values, state } = row;
+        const { _rec, task, pendings } = this;
+        const { values, state } = _rec;
 
-        if (!values._ent) { throw row.fail("required", ["column", "_ent"]); }
+        if (!values._ent) { throw _rec.fail("required", ["column", "_ent"]); }
 
-        const _cols = row.getCols();
-        if (!_cols) { throw row.fail("invalid", ["column", "_ent"]); }
+        const _cols = _rec.getCols();
+        if (!_cols) { throw _rec.fail("invalid", ["column", "_ent"]); }
 
         for (const _col of _cols) {
             try { this._prepareCol(_col); } catch(err) {
@@ -43,12 +43,12 @@ export class Turn {
 
         if (state !== "ready" || pendings.size > 0) { return; }
 
-        row.fail("blank", ["values", values]);
+        _rec.fail("blank", ["values", values]);
     }
 
     _prepareCol(_col) {
-        const { row, force, input, output, pendings } = this;
-        const { meta:metaRec, values, state } = row;
+        const { _rec, force, input, output, pendings } = this;
+        const { meta:metaRec, values, state } = _rec;
         const { meta:metaCol, values:{ name, formula, resetIf, isVirtual } } = _col;
 
         const isReal = input.hasOwnProperty(name);
@@ -77,7 +77,7 @@ export class Turn {
     }
 
     pull(_col) {
-        const { task, row, pendings, input, output, changes } = this;
+        const { task, _rec, pendings, input, output, changes } = this;
         const { name, omitChange } = _col.values;
         
         if (pendings.has(_col)) {
@@ -85,13 +85,13 @@ export class Turn {
             pendings.delete(_col);
 
             try {
-                setter(row, input[name], output);
+                setter(_rec, input[name], output);
             } catch(err) {
                 task.catchMinor(err, [["column", name]]); //record fail
             }
             
             //detect changes
-            if (output[name] !== row.values[name]) {
+            if (output[name] !== _rec.values[name]) {
                 changes.add(name);
                 if (!omitChange) { this.isChange = true; }
             }
@@ -102,10 +102,10 @@ export class Turn {
     }
 
     detach(isOk) {
-        const { row, output } = this;
-        if (isOk) { row.values = output; }
-        delete this.row;
-        delete row.turn;
+        const { _rec, output } = this;
+        if (isOk) { _rec.values = output; }
+        delete this._rec;
+        delete _rec.turn;
     }
 
 }

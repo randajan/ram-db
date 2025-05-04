@@ -1,7 +1,7 @@
 import { solids, virtuals } from "@randajan/props";
 import { Effects } from "../Effects/Effects";
 import { toFail } from "./Fails";
-import { vault } from "../../../components/uni/consts";
+import { vault } from "../../tools/const";
 
 
 export class Task {

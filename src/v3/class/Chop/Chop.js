@@ -1,4 +1,4 @@
-import { vault } from "../../../components/uni/consts";
+import { vault } from "../../tools/const";
 
 import { isFce, toFce, toStr, wrapFce } from "../../../components/uni/formats";
 import { solids, virtuals } from "@randajan/props";

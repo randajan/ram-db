@@ -2,6 +2,8 @@
 import { fnToStr } from "@randajan/function-parser";
 import { fail } from "./uni";
 
+
+
 export const toString = (any, opt={})=>{
     const t = typeof any;
 
@@ -19,8 +21,8 @@ export const toString = (any, opt={})=>{
 
     const { min, max } = opt;
 
-    if (min != null && str.length < min) { fail("too short", min); }
-    if (max != null && str.length > max) { str = str.substring(0, max); }
+    if (min != null && str.length < min) { fail("too short", ["min", min]); }
+    if (max != null && str.length > max) { fail("too long", ["max", max]); }
 
     return str;
 }

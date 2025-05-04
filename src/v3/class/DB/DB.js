@@ -1,15 +1,15 @@
 
 import { Chop } from "../Chop/Chop";
 
-import { _recGetPriv } from "../Row/Record";
-import { vault } from "../../../components/uni/consts";
+import { _recGetPriv } from "../Record/Record";
+import { vault } from "../../tools/const";
 import { toId } from "../../tools/traits/uni";
 
 
-import { _recAdd } from "../Row/actions/add";
-import { _recAddOrSet, _recAddOrUpdate } from "../Row/actions/addOr";
-import { _recSet, _recUpdate } from "../Row/actions/update";
-import { _recRemove } from "../Row/actions/remove";
+import { _recAdd } from "../Record/actions/add";
+import { _recAddOrSet, _recAddOrUpdate } from "../Record/actions/addOr";
+import { _recSet, _recUpdate } from "../Record/actions/update";
+import { _recRemove } from "../Record/actions/remove";
 import { SuperMap } from "../SuperMap/SuperMap";
 import { _dbInit } from "./dbInit";
 import { Task } from "../Task/Task";
