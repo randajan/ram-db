@@ -36,7 +36,7 @@
   var define_slib_info_default;
   var init_define_slib_info = __esm({
     "<define:__slib_info>"() {
-      define_slib_info_default = { isServer: false, isBuild: false, name: "@randajan/ram-db", description: "Realtime database", version: "2.8.7", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "web", port: 3005, dir: { root: "C:\\dev\\lib\\ram-db", dist: "demo/frontend/dist" } };
+      define_slib_info_default = { isServer: false, isBuild: false, name: "@randajan/ram-db", description: "Realtime database", version: "2.8.8", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "web", port: 3005, dir: { root: "C:\\dev\\lib\\ram-db", dist: "demo/frontend/dist" } };
     }
   });
 
@@ -5821,26 +5821,26 @@
 
   // dist/v3/index.js
   var import_regex_parser = __toESM(require_lib(), 1);
-  var isNull = (v) => v == null || typeof v === "number" && isNaN(v);
+  var isNull2 = (v) => v == null || typeof v === "number" && isNaN(v);
   var isFce = (fce) => typeof fce === "function";
   var isArr = Array.isArray;
   var isSet = (any) => any instanceof Set;
   var toFce = (fce, defReturn) => isFce(fce) ? fce : () => defReturn;
   var wrapFce = (wrap, what) => (...args) => wrap(what(...args));
-  var toStr = (any, def) => isNull(any) ? def : String(any);
+  var toStr = (any, def) => isNull2(any) ? def : String(any);
   var toSet = (any) => isSet(any) ? any : new Set(any);
   var reArray = (val, trait) => {
-    if (isNull(val)) {
+    if (isNull2(val)) {
       return;
     }
     if (!Array.isArray(val)) {
       const r = trait(val);
-      return !isNull(r) ? [r] : void 0;
+      return !isNull2(r) ? [r] : void 0;
     }
     const res = [];
     for (const v of val) {
       const r = trait(v);
-      if (!isNull(r)) {
+      if (!isNull2(r)) {
         res.push(r);
       }
     }
@@ -6261,8 +6261,8 @@
     }
   };
   var _records = /* @__PURE__ */ new WeakMap();
-  var recReg = (_rec) => _records.set(_rec.current, _rec);
-  var recUnreg = (_rec) => _records.delete(_rec.current);
+  var recReg = (row2) => _records.set(row2.current, row2);
+  var recUnreg = (row2) => _records.delete(row2.current);
   var _recGetPriv = (db2, rec, throwError2 = true) => {
     const _p = _records.get(rec);
     if (_p && _p.db === db2) {
@@ -6273,16 +6273,28 @@
     }
     ;
   };
-  function createRecord(_rec, isCurrent) {
-    const get = (p) => _rec.getCol(p, isCurrent);
+  var _recToJSON = (row2) => {
+    const r = {};
+    for (const _col of row2.getCols()) {
+      const { name, type: { saver } } = _col.current;
+      let value2 = row2.getCol(name, true);
+      if (isNull(value2)) {
+        continue;
+      }
+      r[name] = saver ? saver(value2) : value2;
+    }
+    return r;
+  };
+  function createRecord(row2, isCurrent) {
+    const get = (p) => row2.getCol(p, isCurrent);
     const id = (_) => get("id");
-    const json2 = (_) => _rec.export();
+    const json2 = (_) => _recToJSON(row2);
     const handler = {
       get: (_, p) => p === "toString" ? id : p === "toJSON" ? json2 : get(p),
-      has: (_, p) => _rec.hasCol(p),
-      set: (_, p, value2) => _rec.db.update(proxy, { [p]: value2 }),
-      deleteProperty: (_, p) => _rec.db.update(proxy, { [p]: null }),
-      ownKeys: (_) => [..._rec.getColsNames()],
+      has: (_, p) => row2.hasCol(p),
+      set: (_, p, value2) => row2.db.update(proxy, { [p]: value2 }),
+      deleteProperty: (_, p) => row2.db.update(proxy, { [p]: null }),
+      ownKeys: (_) => [...row2.getColsNames()],
       getOwnPropertyDescriptor: (_, p) => ({
         enumerable: true,
         configurable: true,
@@ -6628,30 +6640,30 @@
   };
   var rowMetaMerge = (_ent, id, rawRow) => {
     const meta = getMetaRow(_ent, id);
-    const row = { ...rawRow, _ent, id };
+    const row2 = { ...rawRow, _ent, id };
     if (!meta) {
-      return row;
+      return row2;
     }
     for (const colName in metaData._cols) {
       const col = metaData._cols[colName];
       if (col._ent !== _ent) {
         continue;
       }
-      if (col.meta < 2 && row.hasOwnProperty(colName)) {
+      if (col.meta < 2 && row2.hasOwnProperty(colName)) {
         continue;
       }
-      row[colName] = meta[colName];
+      row2[colName] = meta[colName];
     }
-    return row;
+    return row2;
   };
   var Turn = class {
-    static attach(task, _rec, input, force = false) {
-      return _rec.turn = new Turn(task, _rec, input, force);
+    static attach(task, row2, input, force = false) {
+      return row2.turn = new Turn(task, row2, input, force);
     }
-    constructor(task, _rec, input, force = false) {
+    constructor(task, row2, input, force = false) {
       this.task = task;
-      this._rec = _rec;
-      this.isChange = _rec.state === "pending";
+      this.row = row2;
+      this.isChange = row2.state === "pending";
       solids(this, {
         force,
         input,
@@ -6662,14 +6674,14 @@
       this._prepare();
     }
     _prepare() {
-      const { _rec, task, pendings } = this;
-      const { values, state } = _rec;
+      const { row: row2, task, pendings } = this;
+      const { values, state } = row2;
       if (!values._ent) {
-        throw _rec.fail("required", ["column", "_ent"]);
+        throw row2.fail("required", ["column", "_ent"]);
       }
-      const _cols = _rec.getCols();
+      const _cols = row2.getCols();
       if (!_cols) {
-        throw _rec.fail("invalid", ["column", "_ent"]);
+        throw row2.fail("invalid", ["column", "_ent"]);
       }
       for (const _col of _cols) {
         try {
@@ -6681,11 +6693,11 @@
       if (state !== "ready" || pendings.size > 0) {
         return;
       }
-      _rec.fail("blank", ["values", values]);
+      row2.fail("blank", ["values", values]);
     }
     _prepareCol(_col) {
-      const { _rec, force, input, output, pendings } = this;
-      const { meta: metaRec, values, state } = _rec;
+      const { row: row2, force, input, output, pendings } = this;
+      const { meta: metaRec, values, state } = row2;
       const { meta: metaCol, values: { name, formula, resetIf, isVirtual } } = _col;
       const isReal = input.hasOwnProperty(name);
       const isMeta = metaRec + metaCol > 3;
@@ -6726,18 +6738,17 @@
       return this;
     }
     pull(_col) {
-      const { task, _rec, pendings, output, input, changes } = this;
-      const { state, current, before } = _rec;
+      const { task, row: row2, pendings, input, output, changes } = this;
       const { name, omitChange } = _col.values;
       if (pendings.has(_col)) {
         const { setter: setter2 } = _col.traits;
         pendings.delete(_col);
         try {
-          setter2(input[name], current, state === "ready" ? before : void 0, output);
+          setter2(row2, input[name], output);
         } catch (err) {
           task.catchMinor(err, [["column", name]]);
         }
-        if (output[name] !== _rec.values[name]) {
+        if (output[name] !== row2.values[name]) {
           changes.add(name);
           if (!omitChange) {
             this.isChange = true;
@@ -6747,121 +6758,23 @@
       return output[name];
     }
     detach(isOk) {
-      const { _rec, output } = this;
+      const { row: row2, output } = this;
       if (isOk) {
-        _rec.values = output;
+        row2.values = output;
       }
-      delete this._rec;
-      delete _rec.turn;
+      delete this.row;
+      delete row2.turn;
     }
   };
-  var blackList = [
-    "constructor",
-    // Object konstruktor
-    "__proto__",
-    // přímý přístup k prototype chain
-    "hasOwnProperty",
-    // důležitá metoda pro práci s vlastnostmi
-    "isPrototypeOf",
-    // používá se v dědičnosti
-    "propertyIsEnumerable",
-    // zjišťuje, zda je vlastnost výčtová
-    "toLocaleString",
-    // převod pro lokalizaci
-    "toString",
-    // převod na řetězec
-    "valueOf",
-    // převod na primitivní hodnotu
-    "toJSON"
-    // výstup při JSON.stringify()
-  ];
-  var createStored = (traits, _col) => {
-    const { db: db2, current: col } = _col;
-    const { store } = col;
-    return store ? store(col, db2) : null;
-  };
-  var createGetter = (traits, _col) => {
-    const { db: db2, current: col, values: v } = _col;
-    const { getter: getter2 } = metaData._types[v.type] || col.type;
-    const typize = v.type == "ref" ? (from) => db2.get(v.ref, from, false) : (v2) => getter2(v2, col);
-    const n = !v.isList ? typize : (f) => reArray(f, typize);
-    return (from, current, before) => {
-      from = n(from);
-      return from;
-    };
-  };
-  var createSetter = (traits, _col) => {
-    const { current: col, values: v } = _col;
-    const { name, formula, validator, isReadonly: isReadonly2, resetIf, init, isRequired: isRequired2, isList } = col;
-    const { setter: setter2 } = metaData._types[v.type] || col.type;
-    const typize = (t) => isNull(t) ? void 0 : setter2(t, col);
-    const n = !isList ? typize : (t) => isNull(t) ? void 0 : reArray(t, typize);
-    return (to3, current, before, output) => {
-      const stored = traits.stored;
-      if (formula) {
-        to3 = output[name] = n(formula(current, before, stored));
-      } else {
-        if (isReadonly2 && isReadonly2(current, before, stored)) {
-          if (before) {
-            warn(`readonly`, ["valueFrom", before], ["valueTo", to3]);
-          }
-        } else {
-          to3 = output[name] = n(to3);
-          if (validator && !validator(current, before, stored)) {
-            fail2("invalid", ["valueTo", to3]);
-          }
-        }
-        if (!before && isNull(to3) || resetIf && resetIf(current, before, stored)) {
-          to3 = output[name] = !init ? void 0 : n(init(current, before, stored));
-        }
-      }
-      if (isRequired2 && isNull(to3) && isRequired2(current, before, stored)) {
-        fail2("required");
-      }
-      return output[name];
-    };
-  };
-  var createTraits = (_col) => {
-    const traits = {};
-    return cacheds(traits, {}, {
-      stored: (_) => createStored(traits, _col),
-      getter: (_) => createGetter(traits, _col),
-      setter: (_) => createSetter(traits, _col)
-    });
-  };
-  var _colSet = (_rec) => {
-    const { _db, values: { _ent, ent, name } } = _rec;
-    if (_ent !== "_cols") {
-      return;
-    }
-    if (blackList.includes(name)) {
-      throw fail2(`blacklist`, ["column", "name"], ["valueTo", name]);
-    }
-    _db.colsByEnt.set(toId(ent), name, _rec);
-    solid3(_rec, "traits", createTraits(_rec), true, true);
-  };
-  var _colRem = (_rec) => {
-    const { _db, values: { _ent, ent, name } } = _rec;
-    if (_ent !== "_cols") {
-      return;
-    }
-    _db.colsByEnt.delete(toId(ent), name);
-  };
-  var RecordPrivate = class {
+  var Row = class {
     constructor(db2, values) {
+      this.db = db2;
+      this._db = vault.get(db2);
       this.state = "pending";
       const v = this.values = Object.assign({}, values);
       v._ent = toId(v._ent);
-      if (v._ent === "_cols") {
-        v.ent = toId(v.ent);
-      }
       this.meta = isMetaEnt(v._ent) ? v.meta : 0;
-      solids(this, {
-        _db: vault.get(db2),
-        db: db2,
-        current: createRecord(this, true),
-        before: createRecord(this, false)
-      });
+      this.current = createRecord(this, true);
       recReg(this);
     }
     fail(reason, ...infos) {
@@ -6883,6 +6796,7 @@
         this.fail("not init");
       }
       turn.execute();
+      this.before = createRecord(this, false);
       this.state = "ready";
       _chopSyncIn(db2, current, task);
       return this;
@@ -6896,18 +6810,6 @@
       _chopSyncIn(db2, current, task);
       return this;
     }
-    export() {
-      const r = {};
-      for (const _col of this.getCols()) {
-        const { name, type: { saver } } = _col.current;
-        let value2 = this.getCol(name, true);
-        if (value2 == null) {
-          continue;
-        }
-        r[name] = saver ? saver(value2) : value2;
-      }
-      return r;
-    }
     getColsNames() {
       return this._db.colsByEnt.keys(this.values._ent);
     }
@@ -6915,161 +6817,279 @@
       return this._db.colsByEnt.values(this.values._ent);
     }
     getCol(colName, isCurrent = true) {
-      const { _db, turn, current, before, values, state } = this;
-      const value2 = values[colName];
+      const { _db, values, state, turn } = this;
       const _col = _db.colsByEnt.get(values._ent, colName);
       if (!_col) {
-        return state === "ready" ? void 0 : value2;
+        return state === "ready" ? void 0 : values[colName];
       }
-      const t = _col.traits;
-      if (!isCurrent) {
-        return t.getter(value2, current, before);
-      }
-      const { isVirtual } = _col === this ? values : _col.current;
-      if (!isVirtual) {
-        return t.getter(turn ? turn.pull(_col) : value2, current, before);
-      }
-      return t.getter(t.setter(value2, current, state === "ready" ? before : void 0, values), current, before);
+      return _col.traits.getter(this, isCurrent ? void 0 : turn);
     }
     hasCol(colName) {
       const { _db, values } = this;
       return _db.colsByEnt.has(values._ent, colName);
     }
+    fit(next, event, task) {
+      next();
+    }
+    roll() {
+      this.turn?.detach(true);
+    }
+    rollback() {
+      this.turn?.detach(false);
+    }
+    unreg() {
+      recUnreg(this);
+    }
   };
-  var exe = (task, values) => {
+  var _colCreateStored = (_col) => {
+    const { db: db2, current: col } = _col;
+    const { store } = col;
+    return store ? store(col, db2) : null;
+  };
+  var _colCreateGetter = (_col) => {
+    const { db: db2, current: col, values: v, traits } = _col;
+    const { isList, name, ref, type, fallback, isVirtual } = v;
+    const { getter: getter2 } = metaData._types[v.type] || col.type;
+    const typize = type == "ref" ? (x2) => db2.get(ref, x2, false) : (x2) => getter2(x2, col);
+    const n = !isList ? typize : (x2) => reArray(x2, typize);
+    return (row2, turn) => {
+      const { current, before, values } = row2;
+      let val = n(isVirtual ? traits.setter(row2) : turn ? turn.pull(_col) : values[name]);
+      if (fallback && isNull2(val)) {
+        val = n(fallback(current, before, traits.stored));
+      }
+      return val;
+    };
+  };
+  var _colCreateSetter = (_col) => {
+    const { current: col, values: v, traits } = _col;
+    const { isList, name, formula, validator, isReadonly: isReadonly2, resetIf, init, isRequired: isRequired2 } = col;
+    const { setter: setter2 } = metaData._types[v.type] || col.type;
+    const typize = (x2) => isNull2(x2) ? void 0 : setter2(x2, col);
+    const n = !isList ? typize : (x2) => reArray(x2, typize);
+    return (row2, val, values = {}) => {
+      const { current, before } = row2;
+      const stored = traits.stored;
+      if (formula) {
+        val = values[name] = n(formula(current, before, stored));
+      } else {
+        if (isReadonly2 && isReadonly2(current, before, stored)) {
+          if (before) {
+            warn(`readonly`, ["valueFrom", before], ["value", val]);
+          }
+        } else {
+          val = values[name] = n(val);
+          if (validator && !validator(current, before, stored)) {
+            fail2("invalid", ["value", val]);
+          }
+        }
+        if (!before && isNull2(val) || resetIf && resetIf(current, before, stored)) {
+          val = values[name] = !init ? void 0 : n(init(current, before, stored));
+        }
+      }
+      if (isRequired2 && isNull2(val) && isRequired2(current, before, stored)) {
+        fail2("required");
+      }
+      return values[name];
+    };
+  };
+  var nameBlackList = [
+    "constructor",
+    // Object konstruktor
+    "__proto__",
+    // přímý přístup k prototype chain
+    "hasOwnProperty",
+    // důležitá metoda pro práci s vlastnostmi
+    "isPrototypeOf",
+    // používá se v dědičnosti
+    "propertyIsEnumerable",
+    // zjišťuje, zda je vlastnost výčtová
+    "toLocaleString",
+    // převod pro lokalizaci
+    "toString",
+    // převod na řetězec
+    "valueOf",
+    // převod na primitivní hodnotu
+    "toJSON"
+    // výstup při JSON.stringify()
+  ];
+  var Column = class extends Row {
+    constructor(db2, values) {
+      super(db2, values);
+      const v = this.values;
+      v.ent = toId(v.ent);
+      if (nameBlackList.includes(v.name)) {
+        throw this.fail(`blacklist`, ["column", "name"], ["value", v.name]);
+      }
+      this._traits = {};
+      this.traits = cacheds({}, this._traits, {
+        stored: (_) => _colCreateStored(this),
+        getter: (_) => _colCreateGetter(this),
+        setter: (_) => _colCreateSetter(this)
+      });
+      this._db.colsByEnt.set(v.ent, v.name, this);
+    }
+    resetTraits() {
+      delete this._traits.stored;
+      delete this._traits.getter;
+      delete this._traits.setter;
+    }
+    fit(next, event, task) {
+      next();
+      this.resetTraits();
+    }
+    unreg() {
+      super.unreg();
+      const { _db, values: { ent, name } } = this;
+      _db.colsByEnt.delete(ent, name);
+    }
+  };
+  var exe = (task, record, force = false) => {
     const { db: db2 } = task;
-    const _rec = new RecordPrivate(db2, values);
-    _rec.init(task).ready();
-    return _rec;
+    const row2 = _recGetPriv(db2, record);
+    if (!force && row2.meta) {
+      row2.fail("is meta");
+    }
+    _chopSyncOut2(db2, record, task);
+    return row2;
   };
-  var roll = (task, _rec) => {
-    const { changes } = _rec.turn;
-    task.assign({ changes });
-    _rec.turn.detach(true);
+  var roll = (task, row2) => {
+    row2.unreg();
   };
-  var rollback = (task, _rec) => {
+  var rollback = (task, row2) => {
     const { db: db2 } = task;
-    if (!_rec) {
+    if (!row2) {
       return;
     }
-    _chopSyncOut(db2, _rec.current);
-    _rec.task.detach(false);
-    task.unsign("record");
-    recUnreg(_rec);
+    _chopSyncIn(db2, row2.current);
   };
-  var _recAdd = taskWrap(exe, roll, rollback);
-  var exe2 = (isSet2, task, values) => {
-    const { db: db2 } = task;
-    let _rec = new RecordPrivate(db2, values).init(task);
-    const { _ent, id } = _rec.current;
-    const brother = _chopGetRec(db2, toId(_ent), id);
-    if (!brother) {
-      _rec.ready();
-      return [_rec, true];
-    } else {
-      recUnreg(_rec);
-      _rec = _recGetPriv(db2, brother);
-      _rec.update(task, values, isSet2);
-      return [_rec, false];
+  var exeRemoveForce = (task, record) => exe(task, record, true);
+  var exeRemove = (task, record) => exe(task, record, false);
+  var _recRemove = taskWrap(exeRemove, roll, rollback);
+  var _recRemoveForce = taskWrap(exeRemoveForce, roll, rollback);
+  var Entity = class extends Row {
+    constructor(db2, values) {
+      super(db2, values);
+    }
+    fit(next, event, task) {
+      next();
+      const { _db, db: db2, values: { id } } = row;
+      if (event === "add") {
+        const temp = { _ent: "_cols", ent: id, isReadonly: fceTrue, isRequired: fceTrue };
+        db2.add({ ...temp, name: "_ent", type: "ref", ref: "_ents", meta: 3 }, task?.context);
+        db2.add({ ...temp, name: "id", type: "string", meta: 1 }, task?.context);
+      } else if (event === "remove") {
+        for (const _col of _db.colsByEnt.values(id)) {
+          _recRemoveForce(db2, [_col.current], task?.context);
+        }
+        ;
+      }
     }
   };
-  var roll2 = (task, [_rec, isAdd]) => {
-    const { changes } = _rec.turn;
-    task.assign({ changes });
-    _rec.turn.detach(true);
+  var createRow2 = (db2, values) => {
+    values = Object.assign({}, values);
+    const _ent = values._ent = toId(values._ent);
+    if (_ent === "_cols") {
+      return new Column(db2, values);
+    }
+    if (_ent === "_ents") {
+      return new Entity(db2, values);
+    }
+    return new Row(db2, values);
   };
-  var rollback2 = (task, res) => {
+  var exe2 = (task, values) => {
+    const { db: db2 } = task;
+    const row2 = createRow2(db2, values);
+    row2.init(task).ready();
+    return row2;
+  };
+  var roll2 = (task, row2) => {
+    const { changes } = row2.turn;
+    task.assign({ changes });
+    row2.roll();
+  };
+  var rollback2 = (task, row2) => {
+    const { db: db2 } = task;
+    if (!row2) {
+      return;
+    }
+    _chopSyncOut(db2, row2.current);
+    row2.rollback();
+    row2.unreg();
+    task.unsign("record");
+  };
+  var _recAdd = taskWrap(exe2, roll2, rollback2);
+  var exe3 = (isSet2, task, values) => {
+    const { db: db2 } = task;
+    let row2 = createRow(db2, values).init(task);
+    const { _ent, id } = row2.current;
+    const brother = _chopGetRec(db2, toId(_ent), id);
+    if (!brother) {
+      row2.ready();
+      return [row2, true];
+    } else {
+      row2.unreg();
+      row2 = _recGetPriv(db2, brother);
+      row2.update(task, values, isSet2);
+      return [row2, false];
+    }
+  };
+  var roll3 = (task, [row2, isAdd]) => {
+    const { changes } = row2.turn;
+    task.assign({ changes });
+    row2.roll();
+  };
+  var rollback3 = (task, res) => {
     if (!res) {
       return;
     }
-    const [_rec, isAdd] = res;
+    const [row2, isAdd] = res;
     if (isAdd) {
-      _chopSyncOut(db, _rec.current);
+      _chopSyncOut(db, row2.current);
     }
-    _rec.task.detach(false);
+    row2.rollback();
     task.unsign("record");
     if (isAdd) {
-      recUnreg(_rec);
+      row2.unreg();
     } else {
-      _chopSyncIn(db, _rec.current);
+      _chopSyncIn(db, row2.current);
     }
   };
-  var exeSet = (...a) => exe2(true, ...a);
-  var exeUpdate = (...a) => exe2(false, ...a);
-  var _recAddOrSet = taskWrap(exeSet, roll2, rollback2);
-  var _recAddOrUpdate = taskWrap(exeUpdate, roll2, rollback2);
-  var exe3 = (isSet2, task, record, values) => {
+  var exeSet = (...a) => exe3(true, ...a);
+  var exeUpdate = (...a) => exe3(false, ...a);
+  var _recAddOrSet = taskWrap(exeSet, roll3, rollback3);
+  var _recAddOrUpdate = taskWrap(exeUpdate, roll3, rollback3);
+  var exe4 = (isSet2, task, record, values) => {
     const { db: db2 } = task;
-    const _rec = _recGetPriv(db2, record);
-    _rec.update(task, values, isSet2);
-    return _rec;
+    const row2 = _recGetPriv(db2, record);
+    row2.update(task, values, isSet2);
+    return row2;
   };
-  var roll3 = (task, _rec) => {
-    const { changes } = _rec.turn;
+  var roll4 = (task, row2) => {
+    const { changes } = row2.turn;
     task.assign({ changes });
-    _rec.turn.detach(true);
+    row2.roll();
   };
-  var rollback3 = (task, _rec) => {
+  var rollback4 = (task, row2) => {
     const { db: db2 } = task;
-    if (!_rec) {
+    if (!row2) {
       return;
     }
-    _rec.turn.detach(false);
+    row2.rollback();
     task.unsign("record");
-    _chopSyncIn(db2, _rec.current);
+    _chopSyncIn(db2, row2.current);
   };
-  var exeUpdate2 = (...a) => exe3(false, ...a);
-  var exeSet2 = (...a) => exe3(true, ...a);
-  var _recSet = taskWrap(exeSet2, roll3, rollback3);
-  var _recUpdate = taskWrap(exeUpdate2, roll3, rollback3);
-  var exe4 = (task, record, force = false) => {
-    const { db: db2 } = task;
-    const _rec = _recGetPriv(db2, record);
-    if (!force && _rec.meta) {
-      _rec.fail("is meta");
-    }
-    _chopSyncOut2(db2, record, task);
-    return _rec;
-  };
-  var roll4 = (task, _rec) => {
-    recUnreg(_rec);
-  };
-  var rollback4 = (task, _rec) => {
-    const { db: db2 } = task;
-    if (!_rec) {
-      return;
-    }
-    _chopSyncIn(db2, _rec.current);
-  };
-  var exeRemoveForce = (task, record) => exe4(task, record, true);
-  var exeRemove = (task, record) => exe4(task, record, false);
-  var _recRemove = taskWrap(exeRemove, roll4, rollback4);
-  var _recRemoveForce = taskWrap(exeRemoveForce, roll4, rollback4);
-  var _entAdd = (task, _rec) => {
-    const { db: db2, values: { _ent, id } } = _rec;
-    if (_ent !== "_ents") {
-      return;
-    }
-    db2.add({ _ent: "_cols", ent: id, name: "_ent", type: "ref", ref: "_ents", meta: 3, isReadonly: fceTrue, isRequired: fceTrue }, task.context);
-    db2.add({ _ent: "_cols", ent: id, name: "id", type: "string", meta: 1, isReadonly: fceTrue, isRequired: fceTrue }, task.context);
-  };
-  var _entRem = (task, _rec) => {
-    const { _db, db: db2, values: { _ent, id } } = _rec;
-    if (_ent !== "_ents") {
-      return;
-    }
-    for (const _col of _db.colsByEnt.values(id)) {
-      _recRemoveForce(db2, [_col.current], task.context);
-    }
-    ;
-  };
+  var exeUpdate2 = (...a) => exe4(false, ...a);
+  var exeSet2 = (...a) => exe4(true, ...a);
+  var _recSet = taskWrap(exeSet2, roll4, rollback4);
+  var _recUpdate = taskWrap(exeUpdate2, roll4, rollback4);
   var _dbInit = (db2, task, data, save) => {
     const loaded = /* @__PURE__ */ new Set();
     const loadRecs = (_ent, recsRaw) => {
       loaded.add(_ent);
       for (const id in recsRaw) {
-        const _rec = new RecordPrivate(db2, rowMetaMerge(_ent, id, recsRaw[id]));
-        _chopSyncIn(db2, _rec.current);
+        const row2 = createRow2(db2, rowMetaMerge(_ent, id, recsRaw[id]));
+        _chopSyncIn(db2, row2.current);
       }
       ;
     };
@@ -7081,33 +7101,23 @@
         loadRecs(_ent, data[_ent]);
       }
     }
-    for (const [_, rec] of _chopGetRecs(db2, "_cols")) {
-      const _rec = _recGetPriv(db2, rec);
-      _colSet(_rec);
-    }
     const _recs = [];
     for (const [rec] of _chopGetAllRecs(db2)) {
-      const _rec = _recGetPriv(db2, rec);
-      if (_rec.state === "pending") {
-        _recs.push(_rec.init(task));
+      const row2 = _recGetPriv(db2, rec);
+      if (row2.state === "pending") {
+        _recs.push(row2.init(task));
       }
     }
-    for (const _rec of _recs) {
-      _rec.ready();
+    for (const row2 of _recs) {
+      row2.ready();
     }
     db2.fit((next, event, task2) => {
       const { record } = task2;
-      next();
-      const _rec = _recGetPriv(db2, record);
-      if (event === "add") {
-        _entAdd(task2, _rec);
-        _colSet(_rec);
-      } else if (event === "update") {
-        _colSet(_rec);
-      } else if (event === "remove") {
-        _entRem(task2, _rec);
-        _colRem(_rec);
+      const row2 = _recGetPriv(db2, record);
+      if (!row2) {
+        return next();
       }
+      row2.fit(next, event, task2);
     });
     db2.effect((event, task2) => {
       const { record } = task2;

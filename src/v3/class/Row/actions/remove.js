@@ -1,28 +1,28 @@
 import { taskWrap } from "../../Task/Task";
 import { _chopSyncIn, _chopSyncOut } from "../../Chop/static/sync";
-import { _recGetPriv, recUnreg } from "../Record";
+import { _recGetPriv } from "../Record";
 
 
 
 const exe = (task, record, force=false)=>{
     const { db } = task;
-    const _rec = _recGetPriv(db, record);
+    const row = _recGetPriv(db, record);
 
-    if (!force && _rec.meta) { _rec.fail("is meta"); }
+    if (!force && row.meta) { row.fail("is meta"); }
     
     _chopSyncOut(db, record, task);
     
-    return _rec;
+    return row;
 }
 
-const roll = (task, _rec)=>{
-    recUnreg(_rec);
+const roll = (task, row)=>{
+    row.unreg();
 }
 
-const rollback = (task, _rec)=>{
+const rollback = (task, row)=>{
     const { db } = task;
-    if (!_rec) { return; }
-    _chopSyncIn(db, _rec.current);
+    if (!row) { return; }
+    _chopSyncIn(db, row.current);
 }
 
 const exeRemoveForce = (task, record)=>exe(task, record, true);

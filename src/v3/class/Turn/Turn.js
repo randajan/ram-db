@@ -4,16 +4,16 @@ import { warn } from "../../tools/traits/uni";
 
 export class Turn {
 
-    static attach(task, _rec, input, force=false) {
-        return _rec.turn = new Turn(task, _rec, input, force);
+    static attach(task, row, input, force=false) {
+        return row.turn = new Turn(task, row, input, force);
     }
 
-    constructor(task, _rec, input, force=false) {
+    constructor(task, row, input, force=false) {
 
         this.task = task;
-        this._rec = _rec;
+        this.row = row;
 
-        this.isChange = _rec.state === "pending";
+        this.isChange = row.state === "pending";
         
         solids(this, {
             force,
@@ -27,13 +27,13 @@ export class Turn {
     }
 
     _prepare() {
-        const { _rec, task, pendings } = this;
-        const { values, state } = _rec;
+        const { row, task, pendings } = this;
+        const { values, state } = row;
 
-        if (!values._ent) { throw _rec.fail("required", ["column", "_ent"]); }
+        if (!values._ent) { throw row.fail("required", ["column", "_ent"]); }
 
-        const _cols = _rec.getCols();
-        if (!_cols) { throw _rec.fail("invalid", ["column", "_ent"]); }
+        const _cols = row.getCols();
+        if (!_cols) { throw row.fail("invalid", ["column", "_ent"]); }
 
         for (const _col of _cols) {
             try { this._prepareCol(_col); } catch(err) {
@@ -43,12 +43,12 @@ export class Turn {
 
         if (state !== "ready" || pendings.size > 0) { return; }
 
-        _rec.fail("blank", ["values", values]);
+        row.fail("blank", ["values", values]);
     }
 
     _prepareCol(_col) {
-        const { _rec, force, input, output, pendings } = this;
-        const { meta:metaRec, values, state } = _rec;
+        const { row, force, input, output, pendings } = this;
+        const { meta:metaRec, values, state } = row;
         const { meta:metaCol, values:{ name, formula, resetIf, isVirtual } } = _col;
 
         const isReal = input.hasOwnProperty(name);
@@ -77,24 +77,21 @@ export class Turn {
     }
 
     pull(_col) {
-        const { task, _rec, pendings, output, input, changes } = this;
-        const { state, current, before } = _rec;
+        const { task, row, pendings, input, output, changes } = this;
         const { name, omitChange } = _col.values;
         
         if (pendings.has(_col)) {
             const { setter } = _col.traits;
-
-            //because computed value of column can reference itself
             pendings.delete(_col);
 
             try {
-                setter(input[name], current, state === "ready" ? before : undefined, output);
+                setter(row, input[name], output);
             } catch(err) {
                 task.catchMinor(err, [["column", name]]); //record fail
             }
             
             //detect changes
-            if (output[name] !== _rec.values[name]) {
+            if (output[name] !== row.values[name]) {
                 changes.add(name);
                 if (!omitChange) { this.isChange = true; }
             }
@@ -105,10 +102,10 @@ export class Turn {
     }
 
     detach(isOk) {
-        const { _rec, output } = this;
-        if (isOk) { _rec.values = output; }
-        delete this._rec;
-        delete _rec.turn;
+        const { row, output } = this;
+        if (isOk) { row.values = output; }
+        delete this.row;
+        delete row.turn;
     }
 
 }

@@ -4,26 +4,27 @@ import { _recGetPriv } from "../Record";
 
 const exe = (isSet, task, record, values)=>{
     const { db } = task;
-    const _rec = _recGetPriv(db, record);
+    const row = _recGetPriv(db, record);
 
-    _rec.update(task, values, isSet);
+    row.update(task, values, isSet);
 
-    return _rec;
+    return row;
 }
 
-const roll = (task, _rec)=>{
-    const { changes } = _rec.turn;
+const roll = (task, row)=>{
+    const { changes } = row.turn;
     task.assign({ changes });
-    _rec.turn.detach(true);
+    row.roll();
+    
 }
 
-const rollback = (task, _rec)=>{
+const rollback = (task, row)=>{
     const { db } = task;
-    if (!_rec) { return; }
+    if (!row) { return; }
     
-    _rec.turn.detach(false);
+    row.rollback();
     task.unsign("record");
-    _chopSyncIn(db, _rec.current);
+    _chopSyncIn(db, row.current);
 }
 
 
