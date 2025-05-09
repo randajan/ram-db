@@ -36,7 +36,7 @@
   var define_slib_info_default;
   var init_define_slib_info = __esm({
     "<define:__slib_info>"() {
-      define_slib_info_default = { isServer: false, isBuild: false, name: "@randajan/ram-db", description: "Realtime database", version: "2.8.9", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "web", port: 3005, dir: { root: "C:\\dev\\lib\\ram-db", dist: "demo/frontend/dist" } };
+      define_slib_info_default = { isServer: false, isBuild: false, name: "@randajan/ram-db", description: "Realtime database", version: "2.8.10", author: { name: "Jan Randa", email: "jnranda@gmail.com", url: "https://www.linkedin.com/in/randajan/" }, env: "development", mode: "web", port: 3005, dir: { root: "C:\\dev\\lib\\ram-db", dist: "demo/frontend/dist" } };
     }
   });
 
@@ -5611,7 +5611,6 @@
 
   // dist/chunk-SG7V4B56.js
   var { solid: solid2, cached: cached2 } = src_default.prop;
-  var vault = /* @__PURE__ */ new WeakMap();
   var eventsWhen = ["before", "after"];
   var events = cached2.all({}, {}, {
     primitive: (_) => [].concat(
@@ -5821,6 +5820,7 @@
 
   // dist/v3/index.js
   var import_regex_parser = __toESM(require_lib(), 1);
+  var vault = /* @__PURE__ */ new WeakMap();
   var isNull2 = (v) => v == null || typeof v === "number" && isNaN(v);
   var isFce = (fce) => typeof fce === "function";
   var isArr = Array.isArray;
@@ -5853,6 +5853,7 @@
     fail: () => fail2,
     isEmpty: () => isEmpty,
     join: () => join,
+    reArray: () => reArray2,
     toId: () => toId,
     warn: () => warn
   });
@@ -5981,6 +5982,25 @@
       return true;
     }
     return false;
+  };
+  var reArray2 = (val, trait) => {
+    if (isNull(val)) {
+      return;
+    }
+    if (!Array.isArray(val)) {
+      const r = trait(val);
+      return !isNull(r) ? [r] : void 0;
+    }
+    const res = [];
+    for (const v of val) {
+      const r = trait(v);
+      if (!isNull(r)) {
+        res.push(r);
+      }
+    }
+    if (res.length) {
+      return res;
+    }
   };
   var join = (separator, ...vals) => {
     let s = "";
@@ -6217,7 +6237,7 @@
     effect(callback) {
       return vault.get(this).effects.add(callback);
     }
-    isIn(groupId, rec) {
+    has(groupId, rec) {
       const { getGroup, isMultiGroup } = vault.get(this);
       const group = getGroup(rec);
       return isMultiGroup ? group.includes(groupId) : group === groupId;
@@ -6251,7 +6271,7 @@
       const { byRec, childs } = vault.get(this);
       const filter2 = toFce(opt.filter, true);
       opt.parent = this;
-      opt.filter = (rec) => this.isIn(id, rec) && filter2(rec);
+      opt.filter = (rec) => this.has(id, rec) && filter2(rec);
       const child = new Chop(id, opt);
       for (const [rec] of byRec) {
         _chopSyncIn(child, rec);
@@ -6260,74 +6280,24 @@
       return child;
     }
   };
-  var _records = /* @__PURE__ */ new WeakMap();
-  var recReg = (_rec) => _records.set(_rec.current, _rec);
-  var recUnreg = (_rec) => _records.delete(_rec.current);
-  var _recGetPriv = (db2, rec, throwError2 = true) => {
-    const _p = _records.get(rec);
-    if (_p && _p.db === db2) {
-      return _p;
-    }
-    if (throwError2) {
-      fail2("is not record");
-    }
-    ;
-  };
-  var _recToJSON = (_rec) => {
-    const r = {};
-    for (const _col of _rec.getCols()) {
-      const { name, type: { saver } } = _col.current;
-      let value2 = _rec.getCol(name, true);
-      if (isNull(value2)) {
-        continue;
-      }
-      r[name] = saver ? saver(value2) : value2;
-    }
-    return r;
-  };
-  function createRecord(_rec, isCurrent) {
-    const get = (p) => _rec.getCol(p, isCurrent);
-    const id = (_) => get("id");
-    const json2 = (_) => _recToJSON(_rec);
-    const handler = {
-      get: (_, p) => p === "toString" ? id : p === "toJSON" ? json2 : get(p),
-      has: (_, p) => _rec.hasCol(p),
-      set: (_, p, value2) => _rec.db.update(proxy, { [p]: value2 }),
-      deleteProperty: (_, p) => _rec.db.update(proxy, { [p]: null }),
-      ownKeys: (_) => [..._rec.getColsNames()],
-      getOwnPropertyDescriptor: (_, p) => ({
-        enumerable: true,
-        configurable: true,
-        value: get(p)
-      })
-    };
-    const proxy = new Proxy({}, handler);
-    return proxy;
-  }
   var Task = class {
-    static is(any) {
-      return any instanceof Task;
-    }
-    static create(db2) {
-      return new Task(db2);
-    }
-    constructor(parent) {
-      if (!Task.is(parent)) {
-        this.db = parent;
+    constructor(db2, context, roll5, rollback5) {
+      this.db = db2;
+      const _db = this._db = vault.get(db2);
+      const parent = this.parent = _db.task;
+      if (parent) {
+        parent.subs.push(this);
+      } else {
+        _db.task = this;
         this.subs = [];
         this.effects = new Effects();
-      } else {
-        this.db = parent.db;
-        this.parent = parent;
-        parent.subs.push(this);
       }
       this.isDone = false;
       this.isOk = true;
+      this.context = context;
+      this.roll = roll5;
+      this.rollback = rollback5;
       this.echo = {};
-      solids(this.echo, {
-        db: this.db,
-        parent: this.parent?.echo
-      }, false);
       virtuals(this.echo, {
         isOk: (_) => this.isOk,
         isDone: (_) => this.isDone,
@@ -6338,9 +6308,6 @@
         record: (_) => this.record,
         changes: (_) => !this.changes ? void 0 : new Set(this.changes)
       });
-    }
-    sub() {
-      return new Task(this);
     }
     assign(obj) {
       Object.assign(this, obj);
@@ -6408,7 +6375,12 @@
       }
     }
     finish(throwError2 = false) {
-      const { isOk, error, echo } = this;
+      const { _db, parent, isOk, error, echo } = this;
+      this.isDone = true;
+      if (parent) {
+        return echo;
+      }
+      delete _db.task;
       if (isOk) {
         this.doRoll();
       } else {
@@ -6422,23 +6394,12 @@
   };
   var taskWrap = (exe5, roll5, rollback5) => {
     return (db2, args, throwError2 = false, context = null) => {
-      const _db = vault.get(db2);
-      const parent = _db.task;
-      const task = parent ? parent.sub() : Task.create(db2);
-      task.assign({ context, roll: roll5, rollback: rollback5 });
-      if (!parent) {
-        _db.task = task;
-      }
+      const task = new Task(db2, context, roll5, rollback5);
       try {
         task.result = exe5(task, ...args);
       } catch (err) {
         task.catch(err);
       }
-      task.isDone = true;
-      if (parent) {
-        return task.echo;
-      }
-      delete _db.task;
       return task.finish(throwError2);
     };
   };
@@ -6552,6 +6513,45 @@
       delete _rec.turn;
     }
   };
+  var _recToJSON = (_rec) => {
+    const r = {};
+    for (const _col of _rec.getCols()) {
+      const { name, type: { saver } } = _col.current;
+      let value2 = _rec.getCol(name, true);
+      if (value2 == null)
+        continue;
+      r[name] = saver ? saver(value2) : value2;
+    }
+    return r;
+  };
+  var Record = class {
+    constructor(_rec, isCurrent) {
+      const get = (p) => _rec.getCol(p, isCurrent);
+      const id = () => get("id");
+      const json2 = () => _recToJSON(_rec);
+      const proxy = new Proxy(this, {
+        get: (_, p) => {
+          if (p === "toString") {
+            return id;
+          }
+          if (p === "toJSON") {
+            return json2;
+          }
+          return get(p);
+        },
+        has: (_, p) => _rec.hasCol(p),
+        set: (_, p, value2) => _rec.db.update(proxy, { [p]: value2 }),
+        deleteProperty: (_, p) => _rec.db.update(proxy, { [p]: null }),
+        ownKeys: (_) => [..._rec.getColsNames()],
+        getOwnPropertyDescriptor: (_, p) => ({
+          enumerable: true,
+          configurable: true,
+          value: get(p)
+        })
+      });
+      return proxy;
+    }
+  };
   var _Record = class {
     constructor(db2, values) {
       this.db = db2;
@@ -6560,8 +6560,8 @@
       this.state = "pending";
       const v = this.values = Object.assign({}, values);
       v._ent = toId(v._ent);
-      this.current = createRecord(this, true);
-      recReg(this);
+      this.current = new Record(this, true);
+      this._db.records.set(this.current, this);
     }
     fail(reason, ...infos) {
       const { id, _ent } = this.values;
@@ -6582,7 +6582,7 @@
         this.fail("not init");
       }
       turn.execute();
-      this.before = createRecord(this, false);
+      this.before = new Record(this, false);
       this.state = "ready";
       _chopSyncIn(db2, current, task);
       return this;
@@ -6624,7 +6624,7 @@
       this.turn?.detach(false);
     }
     unreg() {
-      recUnreg(this);
+      this._db.records.delete(this.current);
     }
   };
   var functions_exports = {};
@@ -6838,10 +6838,10 @@
     };
   };
   var _colCreateSetter = (_col) => {
-    const { current: col, values: v, traits } = _col;
+    const { db: db2, current: col, values: v, traits } = _col;
     const { isList, name, formula, validator, isReadonly: isReadonly2, resetIf, init, isRequired: isRequired2 } = v;
     const { setter: setter2 } = metaData._types[v.type] || col.type;
-    const typize = (x2) => isNull2(x2) ? void 0 : setter2(x2, col, db);
+    const typize = (x2) => isNull2(x2) ? void 0 : setter2(x2, col, db2);
     const n = !isList ? typize : (x2) => reArray(x2, typize);
     return (_rec, val, values = {}) => {
       const { current, before } = _rec;
@@ -6856,7 +6856,7 @@
         } else {
           val = values[name] = n(val);
           if (validator && !validator(current, before, stored)) {
-            fail2("invalid", ["value", val]);
+            _rec.fail("invalid", ["value", val]);
           }
         }
         if (!before && isNull2(val) || resetIf && resetIf(current, before, stored)) {
@@ -6864,7 +6864,7 @@
         }
       }
       if (isRequired2 && isNull2(val) && isRequired2(current, before, stored)) {
-        fail2("required");
+        _rec.fail("required");
       }
       return values[name];
     };
@@ -6934,10 +6934,13 @@
     }
   };
   var exe = (task, record, force = false) => {
-    const { db: db2 } = task;
-    const _rec = _recGetPriv(db2, record);
+    const { db: db2, _db } = task;
+    const _rec = _db.records.get(record);
+    if (!_rec) {
+      throw fail2("not a record");
+    }
     if (!force && _rec.meta) {
-      _rec.fail("is meta");
+      throw _rec.fail("is meta");
     }
     _chopSyncOut2(db2, record, task);
     return _rec;
@@ -6997,12 +7000,18 @@
         v.loader = metaRec.loader;
       } else {
         this.meta = v.meta = 0;
+        v.setter = isNull2(v.setter) ? void 0 : toFunction(v.setter);
       }
+      this._db.typesById.set(v.id, this);
+    }
+    unreg() {
+      super.unreg();
+      const { _db, values: { id } } = this;
+      _db.typesById.delete(id);
     }
   };
-  var createRow2 = (db2, values) => {
+  var createRecord2 = (db2, values) => {
     values = Object.assign({}, values);
-    console.log(values);
     const _ent = values._ent = toId(values._ent);
     if (_ent === "_ents") {
       return new _Entity(db2, values);
@@ -7017,7 +7026,7 @@
   };
   var exe2 = (task, values) => {
     const { db: db2 } = task;
-    const _rec = createRow2(db2, values);
+    const _rec = createRecord2(db2, values);
     _rec.init(task).ready();
     return _rec;
   };
@@ -7038,8 +7047,8 @@
   };
   var _recAdd = taskWrap(exe2, roll2, rollback2);
   var exe3 = (isSet2, task, values) => {
-    const { db: db2 } = task;
-    let _rec = createRow(db2, values).init(task);
+    const { db: db2, _db } = task;
+    let _rec = createRecord(db2, values).init(task);
     const { _ent, id } = _rec.current;
     const brother = _chopGetRec(db2, toId(_ent), id);
     if (!brother) {
@@ -7047,7 +7056,7 @@
       return [_rec, true];
     } else {
       _rec.unreg();
-      _rec = _recGetPriv(db2, brother);
+      _rec = _db.records.get(brother);
       _rec.update(task, values, isSet2);
       return [_rec, false];
     }
@@ -7078,8 +7087,11 @@
   var _recAddOrSet = taskWrap(exeSet, roll3, rollback3);
   var _recAddOrUpdate = taskWrap(exeUpdate, roll3, rollback3);
   var exe4 = (isSet2, task, record, values) => {
-    const { db: db2 } = task;
-    const _rec = _recGetPriv(db2, record);
+    const { _db } = task;
+    const _rec = _db.records.get(record);
+    if (!_rec) {
+      throw fail2("not a record");
+    }
     _rec.update(task, values, isSet2);
     return _rec;
   };
@@ -7125,12 +7137,13 @@
     }
     return _rec;
   };
-  var _dbInit = (db2, task, data, save) => {
+  var _dbInit = (task, data, save) => {
+    const { db: db2, _db } = task;
     const loaded = /* @__PURE__ */ new Set();
     const loadRecs = (_ent, recsRaw) => {
       loaded.add(_ent);
       for (const id in recsRaw) {
-        const _rec = createRow2(db2, rowMetaMerge(_ent, id, recsRaw[id]));
+        const _rec = createRecord2(db2, rowMetaMerge(_ent, id, recsRaw[id]));
         _chopSyncIn(db2, _rec.current);
       }
       ;
@@ -7144,8 +7157,7 @@
       }
     }
     const _recs = [];
-    for (const [rec] of _chopGetAllRecs(db2)) {
-      const _rec = _recGetPriv(db2, rec);
+    for (const [rec, _rec] of _db.records) {
       if (_rec.state === "pending") {
         _recs.push(_rec.init(task));
       }
@@ -7155,7 +7167,10 @@
     }
     db2.fit((next, event, task2) => {
       const { record } = task2;
-      const _rec = _recGetPriv(db2, record);
+      if (!record) {
+        return next();
+      }
+      const _rec = _db.records.get(record);
       if (!_rec) {
         return next();
       }
@@ -7178,11 +7193,13 @@
         getGroup: (rec) => toId(rec._ent)
       });
       const _p = vault.get(this);
+      _p.records = /* @__PURE__ */ new Map();
+      _p.typesById = /* @__PURE__ */ new Map();
       _p.colsByEnt = new SuperMap();
-      _dbInit(this, Task.create(this), data, save);
+      _dbInit(new Task(this), data, save);
     }
-    isRecord(any, throwError2 = false) {
-      return !!_recGetPriv(any, throwError2);
+    isRecord(any) {
+      return vault.get(this).records.has(any);
     }
     add(values, throwError2 = false, context = null) {
       return _recAdd(this, arguments, throwError2, context);

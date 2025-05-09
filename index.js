@@ -13,7 +13,7 @@ slib(
         lib: {
             external: ["chalk"],
             plugins: [ImportGlobPlugin.default()],
-            entries: ["index.js", "async.js", "api/odata.js", "v3/index.js"]
+            entries: ["index.js"] //, "api/odata.js"
         },
         demo:{
             dir:isServer?"demo/backend":"demo/frontend",
