@@ -32,7 +32,7 @@ export const colTo = map({
 
 export const colTraits = {
     type: jet.enumFactory(Object.keys(colTo), {
-        before:raw=>String.jet.simplify(String.jet.to(raw)), 
+        before:raw=>String.jet.to(raw), 
         after:(output, col)=>col.ref ? "ref" : output != null ? output : "string"
     }),
     isReadonly: functionOrNull,
@@ -54,7 +54,7 @@ export const colTraits = {
     scope: (raw, col)=>{
         if (!col.isVirtual) { return _=>"self"; }
         if (typeof raw === "string") {
-            raw = String.jet.simplify(String.jet.to(raw));
+            raw = String.jet.to(raw);
             return _scopes.includes(raw) ? _=>raw : _=>raw.split(",");
         }
         if (Array.isArray(raw)) { return _=>[...raw]; }
