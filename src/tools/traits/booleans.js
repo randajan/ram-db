@@ -1,4 +1,4 @@
 import { boleanString } from "../consts";
 
 
-export const toBoolean = (any)=>typeof any !== "string" ? !!any : !boleanString.test(any);
+export const toBool = (any)=>typeof any !== "string" ? !!any : !boleanString.test(any);

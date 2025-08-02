@@ -10,7 +10,7 @@
             "dependsOrder": "sequence",
             "dependsOn": [
                 "GIT push",
-                "Create build",
+                "Create build"
             ],
             "group": {
                 "kind": "build",
@@ -20,7 +20,7 @@
         {
             "label": "Create build",
             "type": "shell",
-            "command": "node index isBuild=true",
+            "command": "node index isBuild=true"
         },
         {
             "label": "GIT push",
@@ -28,7 +28,8 @@
             "command": "git add .; git commit -m 'Rise version'; git push -u origin main",
             "dependsOn": [
                 "Rise version"
-            ]
+            ],
+            "problemMatcher": []
         },
         {
             "label": "Rise version",
@@ -41,7 +42,7 @@
         {
             "label": "GIT commit",
             "type": "shell",
-            "command": "git add .; git commit -m '${input:commit}'",
+            "command": "git add .; git commit -m '${input:commit}'"
         }
     ],
     "inputs": [

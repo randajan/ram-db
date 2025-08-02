@@ -5,7 +5,7 @@ import { solids, virtuals } from "@randajan/props";
 import { fail } from "../../tools/traits/uni";
 
 import { _chopGetAllRecs, _chopGetRec, _chopGetRecs, _chopSyncIn } from "./static/sync";
-import { toBoolean } from "../../tools/traits/booleans";
+import { toBool } from "../../tools/traits/booleans";
 import { SuperMap } from "../SuperMap/SuperMap";
 import { Effects } from "../Effects/Effects";
 import { Fits } from "../Effects/Fits";
@@ -19,7 +19,7 @@ export class Chop {
 
         const { parent } = opt;
 
-        const isMultiGroup = toBoolean(opt.isMultiGroup);
+        const isMultiGroup = toBool(opt.isMultiGroup);
         const filter = toFce(opt.filter, true);
         const getId = isFce(opt.getId) ? opt.getId : (r=>r.id);
         const getGroup = !isMultiGroup ? toFce(opt.getGroup) : wrapFce(toArr, toFce(opt.getGroup, [undefined]));
