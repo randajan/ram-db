@@ -8,7 +8,8 @@
             "type": "shell",
             "command": "npm publish --access=public",
             "dependsOn": [
-                "Rise Version"
+                "Create build",
+                "Git push"
             ],
             "group": {
                 "kind": "build",
@@ -16,26 +17,48 @@
             }
         },
         {
-            "label": "Rise Version",
+            "label": "Git push",
+            "type": "shell",
+            "command": "git push",
+            "dependsOn": [
+                "Rise version",
+            ],
+        },
+        {
+            "label": "Rise version",
             "type": "shell",
             "command": "npm version ${input:npmVersion}",
             "dependsOn": [
-                "GIT commit"
+                "Git commit"
             ]
         },
         {
-            "label": "GIT commit",
+            "label": "Git commit",
             "type": "shell",
-            "command": "git add .; git commit -m '${input:commit}'; git push -u origin main",
+            "command": "git",
+            "args": [
+                "commit", "-m",
+                "${input:commit}",
+            ],
             "dependsOn": [
-                "Build package"
-            ]
+                "Git add all",
+            ],
         },
         {
-            "label": "Build package",
+            "label": "Git add all",
+            "type": "shell",
+            "command": "git add .",
+        },
+        {
+            "label": "Git set upstream",
+            "type": "shell",
+            "command": "git branch -u origin/${input:branch}"
+        },
+        {
+            "label": "Create build",
             "type": "shell",
             "command": "node index isBuild=true",
-        }
+        },
     ],
     "inputs": [
         {
@@ -45,8 +68,14 @@
             "type": "promptString"
         },
         {
+            "id": "branch",
+            "description": "Git branch:",
+            "default": "",
+            "type": "promptString"
+        },
+        {
             "id": "npmVersion",
-            "description": "Npm Version:",
+            "description": "Package version:",
             "default": "patch",
             "type": "pickString",
             "options": [
