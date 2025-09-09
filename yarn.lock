@@ -138,20 +138,26 @@
   resolved "https://registry.yarnpkg.com/@randajan/jet-core/-/jet-core-4.1.0.tgz#21dc6b01b342f321dcf4f93aff82686e71dce021"
   integrity sha512-pzSeyTmDgioSZZ4xLLqjpBGT35XY1uMcLsBhOuLYnItx/qmi8KGzZDgNGwVkvF+4m2eWTQQa03+kS/AI8Ve3bg==
 
-"@randajan/odata-server@^2.3.1":
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/@randajan/odata-server/-/odata-server-2.3.1.tgz#f16ca51b975cfc93f671b927350cd6e19b0aaefc"
-  integrity sha512-eQngHV2rKZjtIPJCVoaLVKbvnMxSkK3uSriFBvCF7yRyoG9IfU1oFX09K0CQGCTHsBKSmT/KKv2DFE+lEc7TDA==
+"@randajan/odata-server@^2.6.0":
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/@randajan/odata-server/-/odata-server-2.6.0.tgz#a642c221c6a36bc6dbd569b45ac89ba64b21ef6f"
+  integrity sha512-G7EhXydcV8bp/RNPMoJnc3e8p9rCsUiau0zM9p3KrDbM5bOVOQks9hbwMr31UnTqpLewh9Z5pds/zVBvjbqqpw==
   dependencies:
+    "@randajan/props" "^0.1.4"
     methods "1.1.2"
     odata-parser "^1.4.1"
-    path-to-regexp "6.2.1"
+    path-to-regexp "^8.2.0"
     xmlbuilder "15.1.1"
 
-"@randajan/queue@^0.1.3":
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@randajan/queue/-/queue-0.1.3.tgz#e6b7d61dbf2cd96e752f0df0be367010a8a932e5"
-  integrity sha512-YTps+G5FsR3nf0LorKZyD8uP0HFgc36wC+mC+SZnO+7hkenN/fr3eHlYkzqcMlTbnPdeC6868InKIhYKGJZTfA==
+"@randajan/props@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@randajan/props/-/props-0.1.4.tgz#af4fa4327d69e1cbfd281df0c2e546cf6761f66d"
+  integrity sha512-F0qkf+s2p6SEO5nkHNCAL34/m39CAPF8j0+isx7TazvBHk8BXoCQxLEM5f6PL3G6R1TCSFVkqerI4T017yTQBA==
+
+"@randajan/queue@^0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@randajan/queue/-/queue-0.1.6.tgz#e587016b966181cc050319a6bfadafbeb81ad69b"
+  integrity sha512-RbLmUuPEKrZYizlM/IucP2c+wDNPSGgy1JpKB7YEQYBrYp8lW60mqoD6D8gnr2Nm84P1B+EblX4h2r1LMozfPw==
 
 "@randajan/simple-lib@^2.3.1":
   version "2.3.1"
@@ -688,6 +694,15 @@ fs-extra@^11.2.0:
   version "11.2.0"
   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-11.2.0.tgz#e70e17dfad64232287d01929399e0ea7c86b0e5b"
   integrity sha512-PmDi3uwK5nFuXh7XDTlVnS17xJS7vW36is2+w3xcv8SVxiB4NyATf4ctkVY5bkSjX0Y4nbvZCq1/EjtEyr9ktw==
+  dependencies:
+    graceful-fs "^4.2.0"
+    jsonfile "^6.0.1"
+    universalify "^2.0.0"
+
+fs-extra@^11.3.1:
+  version "11.3.1"
+  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-11.3.1.tgz#ba7a1f97a85f94c6db2e52ff69570db3671d5a74"
+  integrity sha512-eXvGGwZ5CL17ZSwHWd3bbgk7UUpF6IFHtP57NYYakPvHOs8GDgDe5KJI36jIJzDkJ6eJjuzRA8eBQb6SkKue0g==
   dependencies:
     graceful-fs "^4.2.0"
     jsonfile "^6.0.1"
@@ -1246,10 +1261,10 @@ path-is-absolute@^1.0.0:
   resolved "https://registry.yarnpkg.com/path-is-absolute/-/path-is-absolute-1.0.1.tgz#174b9268735534ffbc7ace6bf53a5a9e1b5c5f5f"
   integrity sha512-AVbw3UJ2e9bq64vSaS9Am0fje1Pa8pbGqTTsmXfaIiMpnr5DlDhfJOuLj9Sf95ZPVDAUerDfEk88MPmPe7UCQg==
 
-path-to-regexp@6.2.1:
-  version "6.2.1"
-  resolved "https://registry.yarnpkg.com/path-to-regexp/-/path-to-regexp-6.2.1.tgz#d54934d6798eb9e5ef14e7af7962c945906918e5"
-  integrity sha512-JLyh7xT1kizaEvcaXOQwOc2/Yhw6KZOvPf1S8401UyLk86CU79LN3vl7ztXGm/pZ+YjoyAJ4rxmHwbkBXJX+yw==
+path-to-regexp@^8.2.0:
+  version "8.3.0"
+  resolved "https://registry.yarnpkg.com/path-to-regexp/-/path-to-regexp-8.3.0.tgz#aa818a6981f99321003a08987d3cec9c3474cd1f"
+  integrity sha512-7jdwVIRtsP8MYpdXSwOS0YdD0Du+qOoF/AEPIt88PcCFrZCzx41oxku1jD88hZBwbNUIEfpqvuhjFaMAqMTWnA==
 
 pause-stream@0.0.11:
   version "0.0.11"

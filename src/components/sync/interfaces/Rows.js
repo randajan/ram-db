@@ -136,7 +136,7 @@ export class Rows extends Chop {
     return super.addChop(name, {
       ...opt,
       loader: (chop, bundle) => {
-        chop.on("afterReset", this.on("beforeUpdate", row=>bundle.remove(row)), false);
+        chop.on("afterReset", this.on("beforeUpdate", row=>bundle.remove(row, { throwError:false })), false);
         chop.on("afterReset", this.on("afterUpdate", row=>bundle.set(row)), false);
       }
     });
