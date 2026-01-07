@@ -145,6 +145,22 @@
   dependencies:
     "@randajan/simple-lib" "^2.3.2"
 
+"@randajan/function-parser@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@randajan/function-parser/-/function-parser-0.2.0.tgz#40b88651117e2cbc1e7eaa7274ec73294fe313fb"
+  integrity sha512-hooJAYwg8Sb8vDDLdxYccQ522hDteo63IAZ+TGWZsG+J+7USEbBE5DqrdPLvXyisLCdniu7tJ3+R1THpc+vOQg==
+  dependencies:
+    "@randajan/regex-parser" "^0.0.2"
+    "@randajan/simple-lib" "^2.3.2"
+
+"@randajan/jet@^6.0.2":
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/@randajan/jet/-/jet-6.0.2.tgz#e9c9fb9033a66b4089fbdd771923e8115b9879c9"
+  integrity sha512-SZ4UN62zBPK/BvXkNb1Ip86VipMBi0DECPkAm6hMDQ/JVhiFvDqYNxH0UDVaD8ZIcTu3eBJkpEtQHLMvwTxl0w==
+  dependencies:
+    "@randajan/function-parser" "^0.2.0"
+    "@randajan/regex-parser" "^0.0.2"
+
 "@randajan/props@^0.1.4":
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/@randajan/props/-/props-0.1.4.tgz#af4fa4327d69e1cbfd281df0c2e546cf6761f66d"
@@ -154,6 +170,11 @@
   version "0.1.6"
   resolved "https://registry.yarnpkg.com/@randajan/queue/-/queue-0.1.6.tgz#e587016b966181cc050319a6bfadafbeb81ad69b"
   integrity sha512-RbLmUuPEKrZYizlM/IucP2c+wDNPSGgy1JpKB7YEQYBrYp8lW60mqoD6D8gnr2Nm84P1B+EblX4h2r1LMozfPw==
+
+"@randajan/regex-parser@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@randajan/regex-parser/-/regex-parser-0.0.2.tgz#e76e668930dc0e685285ae03357c96350d2cae3e"
+  integrity sha512-kyHlwMVUixp0IyshY4/FZeqgJzO+z4m1todwzGO91Db9QXheaf7b/u3v1eXAisCGnTdY1WPlHa+PtMg24VjJQw==
 
 "@randajan/simple-lib@^2.3.1":
   version "2.3.1"

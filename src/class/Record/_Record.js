@@ -36,8 +36,8 @@ export class _Record {
         return this;
     }
 
-    ready() {
-        const { db, state, current, turn, task } = this;
+    ready(task) {
+        const { db, state, current, turn } = this;
         if (state !== "init") { this.fail("not init"); }
 
         turn.execute();

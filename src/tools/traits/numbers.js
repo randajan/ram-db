@@ -1,3 +1,4 @@
+import { jet } from "@randajan/jet";
 import { fail } from "./uni";
 
 const _nums = /-?(\d+(\s+\d+)*)*[,.]?\d+/;
@@ -10,14 +11,9 @@ const strToNum = str=>{
 
 
 export const toNumber = (any, opt={})=>{
-    const t = typeof any;
-
-    let num;
-    if (t === "number") { num = any; }
-    if (t === "string") { num = strToNum(any); }
-    else { num = Number(any); }
-
     const { min, max, dec } = opt;
+
+    let n = jet.num.to(any);
 
     if (isNaN(num)) { fail("not a number"); }
     if (max != null) { num = Math.min(num, max); }

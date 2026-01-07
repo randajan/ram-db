@@ -2,7 +2,6 @@ import { fcePass, fceTrue } from "../tools/consts";
 
 import { toFunction } from "../tools/traits/functions";
 import { toRegExp } from "../tools/traits/regexp";
-import { toBool } from "../tools/traits/booleans";
 import { toNumber } from "../tools/traits/numbers";
 import { toString } from "../tools/traits/strings";
 import { toObject } from "../tools/traits/objects";
@@ -24,7 +23,7 @@ export const metaData = {
     },
     "_types":{
         "string":{ meta:3, setter:(v, c)=>toString(v, c), getter },
-        "boolean":{ meta:3, setter:(v, c)=>toBool(v, c), getter },
+        "boolean":{ meta:3, setter:(v, c)=>jet.bol.to(v, c), getter },
         "number":{ meta:3, setter:(v, c)=>toNumber(v, c), getter },
         "datetime":{ meta:3, setter:(v, c)=>toDate(v, c), getter },
         "duration":{ meta:3, setter:(v, c)=>toNumber(v, c), getter },

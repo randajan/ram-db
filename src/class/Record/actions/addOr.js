@@ -12,7 +12,7 @@ const exe = (isSet, task, values)=>{
     const brother = _chopGetRec(db, toId(_ent), id);
 
     if (!brother) {
-        _rec.ready();
+        _rec.ready(task);
         return [_rec, true];
     } else {
         _rec.unreg();

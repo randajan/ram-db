@@ -17,6 +17,7 @@
   },
   "license": "MIT",
   "peerDependencies": {
+    "@randajan/jet": "^6.0.2",
     "@randajan/odata-server": "^2.3.1",
     "@randajan/queue": "^0.1.6",
     "fs-extra": "^11.3.0"

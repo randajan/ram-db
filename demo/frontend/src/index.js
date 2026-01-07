@@ -3,7 +3,7 @@ import { info } from "@randajan/simple-lib/web";
 import socketIOClient from "socket.io-client";
 import { BifrostRouter } from "@randajan/bifrost/client";
 
-import { DB } from "../../../dist/v3/index";
+import { DB } from "../../../dist/index";
 
 const socket = socketIOClient(`localhost:${info.port+1}`);
 export const bifrost = new BifrostRouter(socket);

@@ -6,7 +6,7 @@ const exe = (task, values)=>{
     const { db } = task;
 
     const _rec = createRecord(db, values);
-    _rec.init(task).ready();
+    _rec.init(task).ready(task);
 
     return _rec;
 }
